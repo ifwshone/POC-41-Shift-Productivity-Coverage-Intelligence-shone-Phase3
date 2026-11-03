@@ -47,8 +47,25 @@ All data is synthetic (no personal or restricted data). The single source of tru
    yarn dev
    ```
 
+
 4. **Open the application:**
    Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+
+
+   ## 🛠️ Build Verification & Deployment Details
+
+### Directory for Client Build
+All Node.js build commands must be executed strictly inside the `frontend/` subdirectory where `package.json` resides:
+
+```bash
+# 1. Navigate to the frontend directory
+cd frontend
+
+# 2. Perform a clean dependency installation
+npm ci
+
+# 3. Create the production build
+npm run build
 
 ## 🏗️ Architecture
 
