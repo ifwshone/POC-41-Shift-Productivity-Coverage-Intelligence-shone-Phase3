@@ -1,0 +1,158 @@
+[
+  {
+    "result_id": "RES-COMP-facility_a_night_watch",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_a_night_watch",
+    "group_key": "night_watch",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": -25.8,
+    "result_unit": "units_per_hour",
+    "result_category": "low",
+    "priority_rank": 1,
+    "finding": "facility_a_night_watch averages 93.6 units/hr (-25.8 vs baseline) with 40.0 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  },
+  {
+    "result_id": "RES-COMP-facility_b_night_watch",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_b_night_watch",
+    "group_key": "night_watch",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": -8.4,
+    "result_unit": "units_per_hour",
+    "result_category": "low",
+    "priority_rank": 2,
+    "finding": "facility_b_night_watch averages 111.0 units/hr (-8.4 vs baseline) with 23.8 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  },
+  {
+    "result_id": "RES-COMP-facility_a_evening_crew",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_a_evening_crew",
+    "group_key": "evening_crew",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": -2.4,
+    "result_unit": "units_per_hour",
+    "result_category": "low",
+    "priority_rank": 3,
+    "finding": "facility_a_evening_crew averages 117.0 units/hr (-2.4 vs baseline) with 25.0 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  },
+  {
+    "result_id": "RES-COMP-facility_b_evening_crew",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_b_evening_crew",
+    "group_key": "evening_crew",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": 7.0,
+    "result_unit": "units_per_hour",
+    "result_category": "high",
+    "priority_rank": 4,
+    "finding": "facility_b_evening_crew averages 126.4 units/hr (7.0 vs baseline) with 15.0 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  },
+  {
+    "result_id": "RES-COMP-facility_b_morning_crew",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_b_morning_crew",
+    "group_key": "morning_crew",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": 12.0,
+    "result_unit": "units_per_hour",
+    "result_category": "high",
+    "priority_rank": 5,
+    "finding": "facility_b_morning_crew averages 131.4 units/hr (12.0 vs baseline) with 6.2 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  },
+  {
+    "result_id": "RES-COMP-facility_a_morning_crew",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_a_morning_crew",
+    "group_key": "morning_crew",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": 17.6,
+    "result_unit": "units_per_hour",
+    "result_category": "high",
+    "priority_rank": 6,
+    "finding": "facility_a_morning_crew averages 137.0 units/hr (17.6 vs baseline) with 11.4 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  }
+]

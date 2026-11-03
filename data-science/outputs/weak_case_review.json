@@ -1,0 +1,19 @@
+
+[
+    {
+      "record_group": "Facility A Night Watch",
+      "output": "Rank 1 (Priority)",
+      "concern": "Highly deterministic poor performance without variance.",
+      "likely_cause": "Synthetic data authoring intent (designed to be critical).",
+      "impact": "Results look artificially clean and lack real-world noise.",
+      "action_limitation": "Label as synthetic demonstration only."
+    },
+    {
+      "record_group": "Backend Shift Data",
+      "output": "Excluded",
+      "concern": "Not compared against frontend facilities.",
+      "likely_cause": "Data granularity mismatch (shifts vs facility-teams).",
+      "impact": "Limits overall comparative scope to frontend nodes only.",
+      "action_limitation": "Enforce source-separation rule."
+    }
+  ]
