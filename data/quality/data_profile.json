@@ -1,0 +1,172 @@
+{
+  "columns": 20,
+  "columns_profile": {
+    "category": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 3,
+      "value_counts": {
+        "evening_crew": 43,
+        "morning_crew": 43,
+        "night_watch": 43
+      }
+    },
+    "data_version": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 1,
+      "value_counts": {
+        "1.0.0": 129
+      }
+    },
+    "entity_id": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 9
+    },
+    "entity_name": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 9
+    },
+    "is_synthetic": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 1,
+      "value_counts": {
+        "true": 129
+      }
+    },
+    "latitude": {
+      "dtype": "float64",
+      "non_null": 0,
+      "null": 129,
+      "unique": 0
+    },
+    "longitude": {
+      "dtype": "float64",
+      "non_null": 0,
+      "null": 129,
+      "unique": 0
+    },
+    "metric_name": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 4,
+      "value_counts": {
+        "attendance_rate": 21,
+        "kpi_output_per_hour": 6,
+        "output_per_hour": 51,
+        "overtime_hours": 51
+      }
+    },
+    "metric_unit": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 3,
+      "value_counts": {
+        "hours": 51,
+        "ratio": 21,
+        "units_per_hour": 57
+      }
+    },
+    "metric_value": {
+      "dtype": "float64",
+      "max": 149.5,
+      "mean": 62.7089,
+      "min": 0.85,
+      "non_null": 129,
+      "null": 0,
+      "unique": 99
+    },
+    "observed_at": {
+      "dtype": "str",
+      "max": "2026-10-30T00:00:00Z",
+      "min": "2026-10-24T00:00:00Z",
+      "non_null": 123,
+      "null": 6,
+      "unique": 7,
+      "unparseable": 0
+    },
+    "record_id": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 129
+    },
+    "record_type": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 2,
+      "value_counts": {
+        "entity": 6,
+        "measurement": 123
+      }
+    },
+    "related_entity_id": {
+      "dtype": "float64",
+      "non_null": 0,
+      "null": 129,
+      "unique": 0
+    },
+    "source_name": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 2,
+      "value_counts": {
+        "Backend synthetic shift generator (main.py, seed 42)": 63,
+        "Frontend mockDatabase (page.tsx)": 66
+      }
+    },
+    "source_record_id": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 129
+    },
+    "stage": {
+      "dtype": "float64",
+      "non_null": 0,
+      "null": 129,
+      "unique": 0
+    },
+    "status": {
+      "dtype": "str",
+      "non_null": 129,
+      "null": 0,
+      "unique": 3,
+      "value_counts": {
+        "critical": 20,
+        "optimal": 61,
+        "warning": 48
+      }
+    },
+    "subcategory": {
+      "dtype": "str",
+      "non_null": 66,
+      "null": 63,
+      "unique": 2,
+      "value_counts": {
+        "facility_a": 33,
+        "facility_b": 33,
+        "nan": 63
+      }
+    },
+    "text_value": {
+      "dtype": "str",
+      "non_null": 6,
+      "null": 123,
+      "unique": 6
+    }
+  },
+  "rows": 129
+}

@@ -41,6 +41,7 @@ The content is organized as follows:
 
 <directory_structure>
 backend/
+  Dockerfile
   main.py
   mock_data.json
   requirements.txt
@@ -49,12 +50,14 @@ frontend/
     globals.css
     layout.tsx
     page.tsx
+  Dockerfile
   next-env.d.ts
   package.json
   postcss.config.mjs
   tailwind.config.js
   tsconfig.json
 .gitignore
+docker-compose.yml
 README.md
 UAT_CHECKLIST.md
 VAR_REPORT.md
@@ -62,6 +65,22 @@ VAR_REPORT.md
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="backend/Dockerfile">
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies system-wide
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+</file>
 
 <file path="backend/main.py">
 # backend/main.py
@@ -132,8 +151,26 @@ async def get_coverage_intelligence():
 
 </file>
 
-<file path="backend/requirements.txt">
+<file path="frontend/Dockerfile">
+# Stage 1: Build
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
 
+# Stage 2: Production Runner
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+
+EXPOSE 3000
+CMD ["npm", "start"]
 </file>
 
 <file path="frontend/next-env.d.ts">
@@ -221,6 +258,31 @@ const config = {
     "node_modules"
   ]
 }
+</file>
+
+<file path="docker-compose.yml">
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: unless-stopped
 </file>
 
 <file path="README.md">
@@ -325,6 +387,14 @@ Following the recent architectural updates and code append integrations, the das
 ## Next Steps
 * **API Integration:** The frontend architecture is validated. The system is ready to swap the internal `mockDatabase` object with live fetch calls to the Python backend.
 * **Component Testing:** Initiate end-to-end (E2E) testing on the chart drill-down interactions and CSV export payload generation.
+</file>
+
+<file path="backend/requirements.txt">
+fastapi
+uvicorn
+pandas
+numpy
+python-dotenv
 </file>
 
 <file path="frontend/app/globals.css">
@@ -680,6 +750,60 @@ export default function RootLayout({
     </html>
   )
 }
+</file>
+
+<file path="frontend/tailwind.config.js">
+// frontend/tailwind.config.js
+// NOTE: Tailwind v4 generates utilities from the @theme block in app/globals.css.
+// This file mirrors the same palette so the brand tokens live in one obvious place.
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+      "./app/**/*.{js,ts,jsx,tsx}",
+      "./src/app/**/*.{js,ts,jsx,tsx}",
+      "./components/**/*.{js,ts,jsx,tsx}",
+      "./src/components/**/*.{js,ts,jsx,tsx}"
+    ],
+  theme: {
+    extend: {
+      colors: {
+        deep: "#04100b",      // Custom Deep DNA background (replaces #030712), luminance ~0.4%
+        surface: "#0a1812",   // Surface / panels
+        "surface-2": "#0f2119",
+        accent: "#b8f23f",    // Accent Primary: "Vital Lime" (Human Utilization)
+        sky: "#6ec8ff",       // Accent Secondary
+        warn: "#ffb02e",
+        crit: "#ff4d6a",
+        mist: "#d9ead6",      // Text (soft sage, not pure white)
+        moss: "#7e9686",      // Muted text
+      },
+      fontFamily: {
+        sans: ['DM Sans', 'sans-serif'],
+        display: ['Bricolage Grotesque', 'sans-serif'],
+        mono: ['DM Mono', 'monospace'],
+      }
+    },
+  },
+  plugins: [],
+}
+</file>
+
+<file path=".gitignore">
+# Frontend
+frontend/node_modules/
+frontend/.next/
+.next/
+node_modules/
+
+# Backend
+backend/venv/
+backend/__pycache__/
+venv/
+*.pyc
+
+
+# Security (Never push API keys)
+.env
 </file>
 
 <file path="frontend/app/page.tsx">
@@ -1326,60 +1450,6 @@ export default function ShiftProductivityDashboard() {
       </div>
     );
 }
-</file>
-
-<file path="frontend/tailwind.config.js">
-// frontend/tailwind.config.js
-// NOTE: Tailwind v4 generates utilities from the @theme block in app/globals.css.
-// This file mirrors the same palette so the brand tokens live in one obvious place.
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-      "./app/**/*.{js,ts,jsx,tsx}",
-      "./src/app/**/*.{js,ts,jsx,tsx}",
-      "./components/**/*.{js,ts,jsx,tsx}",
-      "./src/components/**/*.{js,ts,jsx,tsx}"
-    ],
-  theme: {
-    extend: {
-      colors: {
-        deep: "#04100b",      // Custom Deep DNA background (replaces #030712), luminance ~0.4%
-        surface: "#0a1812",   // Surface / panels
-        "surface-2": "#0f2119",
-        accent: "#b8f23f",    // Accent Primary: "Vital Lime" (Human Utilization)
-        sky: "#6ec8ff",       // Accent Secondary
-        warn: "#ffb02e",
-        crit: "#ff4d6a",
-        mist: "#d9ead6",      // Text (soft sage, not pure white)
-        moss: "#7e9686",      // Muted text
-      },
-      fontFamily: {
-        sans: ['DM Sans', 'sans-serif'],
-        display: ['Bricolage Grotesque', 'sans-serif'],
-        mono: ['DM Mono', 'monospace'],
-      }
-    },
-  },
-  plugins: [],
-}
-</file>
-
-<file path=".gitignore">
-# Frontend
-frontend/node_modules/
-frontend/.next/
-.next/
-node_modules/
-
-# Backend
-backend/venv/
-backend/__pycache__/
-venv/
-*.pyc
-
-
-# Security (Never push API keys)
-.env
 </file>
 
 </files>

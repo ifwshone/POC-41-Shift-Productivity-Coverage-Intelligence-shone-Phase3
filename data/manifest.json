@@ -1,0 +1,24 @@
+{
+  "project_id": "POC-41",
+  "project_title": "Shift Productivity & Coverage Intelligence",
+  "data_version": "1.0.0",
+  "canonical_file": "data/canonical/intelligence_data.csv",
+  "published_file": "data/published/intelligence_data.json",
+  "source_type": "synthetic",
+  "source_names": [
+    "Frontend mockDatabase (page.tsx)",
+    "Backend synthetic shift generator (main.py, seed 42)"
+  ],
+  "is_sampled": false,
+  "sampling_method": "full_population_retained",
+  "random_seed": 42,
+  "original_record_count": 51,
+  "sample_record_count": 51,
+  "canonical_record_count": 129,
+  "canonical_column_count": 20,
+  "source_sample_size_mb": 0.008787,
+  "canonical_file_size_mb": 0.031265,
+  "published_file_size_mb": 0.0703,
+  "contains_synthetic_data": true,
+  "contains_personal_data": false
+}

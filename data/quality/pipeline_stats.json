@@ -1,0 +1,14 @@
+{
+  "original_column_count": 13,
+  "original_raw_size_bytes": 4388,
+  "original_record_count": 51,
+  "original_sources": {
+    "Backend synthetic shift generator (main.py, seed 42)": 21,
+    "Frontend mockDatabase (page.tsx)": 30,
+    "backend/mock_data.json (empty fallback)": 0
+  },
+  "rows_removed": 0,
+  "sample_column_count": 13,
+  "sample_record_count": 51,
+  "sampling_method": "full_population_retained"
+}

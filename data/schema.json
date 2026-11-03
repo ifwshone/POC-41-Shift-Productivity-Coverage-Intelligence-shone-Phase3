@@ -1,0 +1,140 @@
+{
+  "record_id": {
+    "type": "string",
+    "required": true,
+    "nullable": false,
+    "unique": true,
+    "description": "Stable unique canonical record identifier (REC-00001...)"
+  },
+  "record_type": {
+    "type": "string",
+    "required": true,
+    "nullable": false,
+    "allowed_values": [
+      "entity",
+      "event",
+      "transaction",
+      "measurement",
+      "process",
+      "scenario",
+      "node",
+      "edge",
+      "document"
+    ],
+    "description": "entity (node KPI snapshot) or measurement (dated metric reading)"
+  },
+  "observed_at": {
+    "type": "datetime",
+    "required": false,
+    "nullable": true,
+    "format": "ISO-8601",
+    "description": "Observation time, ISO 8601 UTC; blank for undated snapshot rows"
+  },
+  "entity_id": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "description": "Facility+team node id (facility_a_morning_crew) or shift id (shift_morning)"
+  },
+  "related_entity_id": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "description": "Unused in this project (no relationships)"
+  },
+  "entity_name": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "description": "Readable node/shift name"
+  },
+  "category": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "description": "Team / shift (morning_crew, evening_crew, night_watch)"
+  },
+  "subcategory": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "description": "Facility (facility_a, facility_b); blank for backend rows with no facility"
+  },
+  "status": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "description": "Coverage status: optimal, warning, critical"
+  },
+  "stage": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "description": "Unused in this project (no lifecycle)"
+  },
+  "metric_name": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "description": "output_per_hour, overtime_hours, attendance_rate, kpi_output_per_hour"
+  },
+  "metric_value": {
+    "type": "number",
+    "required": false,
+    "nullable": true,
+    "description": "Numeric value, no symbols"
+  },
+  "metric_unit": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "description": "units_per_hour, hours, ratio"
+  },
+  "text_value": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "max_length": 500,
+    "description": "Operational insight text (<=500 chars), entity rows only"
+  },
+  "latitude": {
+    "type": "number",
+    "required": false,
+    "nullable": true,
+    "min": -90,
+    "max": 90,
+    "description": "Not applicable (no geography in source data)"
+  },
+  "longitude": {
+    "type": "number",
+    "required": false,
+    "nullable": true,
+    "min": -180,
+    "max": 180,
+    "description": "Not applicable (no geography in source data)"
+  },
+  "source_name": {
+    "type": "string",
+    "required": true,
+    "nullable": false,
+    "description": "Originating source or generator"
+  },
+  "source_record_id": {
+    "type": "string",
+    "required": false,
+    "nullable": true,
+    "description": "Source-side identifier plus metric suffix"
+  },
+  "is_synthetic": {
+    "type": "boolean",
+    "required": true,
+    "nullable": false,
+    "description": "true for every record (all supplied sources are synthetic)"
+  },
+  "data_version": {
+    "type": "string",
+    "required": true,
+    "nullable": false,
+    "description": "Package version; must equal manifest.data_version"
+  }
+}
