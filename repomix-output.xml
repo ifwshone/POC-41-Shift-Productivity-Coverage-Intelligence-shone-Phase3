@@ -60,10 +60,30 @@ data/
   manifest.json
   README.md
   schema.json
+data-science/
+  notebooks/
+    01_canonical_data_validation_and_readiness.ipynb
+  outputs/
+    analytical_readiness.json
+    canonical_profile.json
+    quality_assessment.json
+    representativeness_assessment.json
+  scripts/
+    _ds_common.py
+    assess_analytical_readiness.py
+    assess_data_quality.py
+    assess_representativeness.py
+    profile_canonical_data.py
+  README.md
 docs/
+  ANALYTICAL_READINESS_REPORT.md
   CANONICAL_DATA_MAPPING.md
   CANONICAL_DATA_PACKAGE_VALIDATION.md
+  CANONICAL_DATA_PROFILE.md
+  DATA_ARCHETYPE_CONFIRMATION.md
+  DATA_QUALITY_ASSESSMENT.md
   DATA_SOURCE_INVENTORY.md
+  REPRESENTATIVENESS_ASSESSMENT.md
   SAMPLING_AND_REDUCTION_REPORT.md
 frontend/
   app/
@@ -95,6 +115,1815 @@ VAR_REPORT.md
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="data-science/notebooks/01_canonical_data_validation_and_readiness.ipynb">
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 01 - Canonical Data Validation and Readiness (POC-41)\n",
+    "Read-only notebook. Source: `data/canonical/intelligence_data.csv` only. No charts, features or models. Run from this folder after `python scripts/data_pipeline/run_pipeline.py` and the four `data-science/scripts` programs."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": 1,
+   "source": [
+    "import json\n",
+    "from pathlib import Path\n",
+    "import pandas as pd\n",
+    "ROOT = Path.cwd().resolve().parents[1]\n",
+    "df = pd.read_csv(ROOT/'data'/'canonical'/'intelligence_data.csv', dtype={'is_synthetic': str})\n",
+    "man = json.loads((ROOT/'data'/'manifest.json').read_text())\n",
+    "out = lambda n: json.loads((ROOT/'data-science'/'outputs'/n).read_text())\n",
+    "print('rows x cols:', df.shape, '| data_version:', sorted(df.data_version.unique()), '| manifest:', man['data_version'])"
+   ],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "rows x cols: (129, 20) | data_version: ['1.0.0'] | manifest: 1.0.0\n"
+     ]
+    }
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 1. Structural gate (Post #1 validation, re-run)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": 2,
+   "source": [
+    "q = out('quality_assessment.json')\n",
+    "print(q['post1_validation'])\n",
+    "print('Quality status:', q['status'], '| blocking issues:', [i for i in q['issues'] if i['severity']=='blocking'])"
+   ],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{'command': 'python scripts/data_pipeline/validate_data.py', 'result': 'PASS', 'summary': 'Validation PASS (39/39 checks)'}\n",
+      "Quality status: PASS | blocking issues: []\n"
+     ]
+    }
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 2. Record types, sources and provenance"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": 3,
+   "source": [
+    "print(df.record_type.value_counts().to_string()); print()\n",
+    "print(df.groupby(['source_name','is_synthetic']).size().to_string())"
+   ],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "record_type\n",
+      "measurement    123\n",
+      "entity           6\n",
+      "\n",
+      "source_name                                           is_synthetic\n",
+      "Backend synthetic shift generator (main.py, seed 42)  true            63\n",
+      "Frontend mockDatabase (page.tsx)                      true            66\n"
+     ]
+    }
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 3. Field completeness"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": 4,
+   "source": [
+    "c = df.isna().sum().to_frame('null'); c['null_pct'] = (c['null']/len(df)*100).round(1); c['unique'] = df.nunique()\n",
+    "print(c.to_string())"
+   ],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                   null  null_pct  unique\n",
+      "record_id             0       0.0     129\n",
+      "record_type           0       0.0       2\n",
+      "observed_at           6       4.7       7\n",
+      "entity_id             0       0.0       9\n",
+      "related_entity_id   129     100.0       0\n",
+      "entity_name           0       0.0       9\n",
+      "category              0       0.0       3\n",
+      "subcategory          63      48.8       2\n",
+      "status                0       0.0       3\n",
+      "stage               129     100.0       0\n",
+      "metric_name           0       0.0       4\n",
+      "metric_value          0       0.0      99\n",
+      "metric_unit           0       0.0       3\n",
+      "text_value          123      95.3       6\n",
+      "latitude            129     100.0       0\n",
+      "longitude           129     100.0       0\n",
+      "source_name           0       0.0       2\n",
+      "source_record_id      0       0.0     129\n",
+      "is_synthetic          0       0.0       1\n",
+      "data_version          0       0.0       1\n"
+     ]
+    }
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 4. Numerical coverage by source and metric"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": 5,
+   "source": [
+    "m = df[df.metric_value.notna()].groupby(['source_name','metric_name','metric_unit']).metric_value.agg(['count','min','max','mean','median','std']).round(2)\n",
+    "print(m.to_string())"
+   ],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                                                                                         count     min     max    mean  median    std\n",
+      "source_name                                          metric_name         metric_unit                                                 \n",
+      "Backend synthetic shift generator (main.py, seed 42) attendance_rate     ratio              21    0.85    0.98    0.91    0.90   0.04\n",
+      "                                                     output_per_hour     units_per_hour     21  111.90  149.50  129.65  131.00  13.23\n",
+      "                                                     overtime_hours      hours              21    5.70   38.90   20.44   17.50  11.06\n",
+      "Frontend mockDatabase (page.tsx)                     kpi_output_per_hour units_per_hour      6   95.20  142.10  121.58  123.45  17.22\n",
+      "                                                     output_per_hour     units_per_hour     30   85.00  142.00  119.40  121.00  15.21\n",
+      "                                                     overtime_hours      hours              30    5.00   45.00   20.23   19.00  11.53\n"
+     ]
+    }
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 5. Temporal coverage (observations per series)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": 6,
+   "source": [
+    "d = df[df.observed_at.notna()].copy(); d['day'] = d.observed_at.str[:10]\n",
+    "print(d.groupby('source_name').day.agg(['min','max','nunique']).to_string()); print()\n",
+    "print(d.groupby(['source_name','entity_id','metric_name']).size().groupby('source_name').agg(['count','min','max']).rename(columns={'count':'series'}).to_string())"
+   ],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                                                             min         max  nunique\n",
+      "source_name                                                                          \n",
+      "Backend synthetic shift generator (main.py, seed 42)  2026-10-24  2026-10-30        7\n",
+      "Frontend mockDatabase (page.tsx)                      2026-10-24  2026-10-28        5\n",
+      "\n",
+      "                                                      series  min  max\n",
+      "source_name                                                           \n",
+      "Backend synthetic shift generator (main.py, seed 42)       9    7    7\n",
+      "Frontend mockDatabase (page.tsx)                          12    5    5\n"
+     ]
+    }
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 6. Categories, status, geography, text"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": 7,
+   "source": [
+    "for col in ['category','subcategory','status']:\n",
+    "    print(col, df[col].fillna('<missing>').value_counts().to_dict())\n",
+    "print('coordinates populated:', int(df.latitude.notna().sum()), '| stage populated:', int(df.stage.notna().sum()))\n",
+    "print('text values:', int(df.text_value.notna().sum()), 'unique:', int(df.text_value.nunique()))"
+   ],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "category {'evening_crew': 43, 'morning_crew': 43, 'night_watch': 43}\n",
+      "subcategory {'<missing>': 63, 'facility_a': 33, 'facility_b': 33}\n",
+      "status {'optimal': 61, 'warning': 48, 'critical': 20}\n",
+      "coordinates populated: 0 | stage populated: 0\n",
+      "text values: 6 unique: 6\n"
+     ]
+    }
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 7. Quality observations (non-blocking)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": 8,
+   "source": [
+    "for o in q['observations']:\n",
+    "    print(o['id'], '-', o['finding'], '\\n   ', o['detail'])"
+   ],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "OBS-1 - Headline KPI is not derivable from the daily series \n",
+      "    kpi_output_per_hour differs from the latest daily output by up to 4.1 units and from the 5-day mean by up to 5.1; treat KPI as a separate source-stated value.\n",
+      "OBS-2 - Frontend status is monotone in the KPI \n",
+      "    Statuses ordered by KPI are consistent: True. Thresholds are implicit in the UI code, not documented.\n",
+      "OBS-3 - Backend status is not tied to backend metrics \n",
+      "    Backend coverage_status is drawn at random (70/20/10) independently of output; mean output by status: {\"critical\": 137.97, \"optimal\": 127.15, \"warning\": 131.18}. It is a label, not an outcome derived from the metrics.\n",
+      "OBS-4 - Different scopes share metric names \n",
+      "    output_per_hour and overtime_hours exist in both sources (facility-level vs shift-level). Always filter by source_name; do not pool.\n",
+      "OBS-5 - Short, fully synthetic series \n",
+      "    Frontend series have 5 daily points, backend 7. All rows are synthetic.\n"
+     ]
+    }
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 8. Representativeness"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": 9,
+   "source": [
+    "r = out('representativeness_assessment.json')\n",
+    "print(r['result'], '-', r['scope_of_result']); print(r['original_sampling']); print(r['underrepresented_areas'])"
+   ],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "PASS - PASS applies to the 7-day comparative view of 2 facilities x 3 teams. It does NOT cover 30-day or year-to-date horizons.\n",
+      "{'method': 'full_population_retained', 'original_records': 51, 'sample_records': 51, 'canonical_records': 129, 'full_population_retained': True}\n",
+      "['Time: only 5-7 consecutive days; no weekly cycle, month or year coverage.', 'Backend rows have no facility, so facility comparison exists only in the frontend source.', 'Critical cases are rare: 1 frontend node and ~3 backend shift-days.']\n"
+     ]
+    }
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 9. Analytical readiness matrix"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": 10,
+   "source": [
+    "a = out('analytical_readiness.json')\n",
+    "print(pd.DataFrame(a['tracks'])[['track','status']].to_string(index=False)); print()\n",
+    "print('Primary question:', a['primary_question']['question']); print('Predictive:', a['predictive_intelligence']['status']); print('FINAL:', a['final_result'])"
+   ],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "              track      status\n",
+      "    A - Comparative   SUPPORTED\n",
+      "          B - Trend CONDITIONAL\n",
+      "C - Risk & Priority CONDITIONAL\n",
+      "        D - Anomaly    REJECTED\n",
+      "   E - Segmentation    REJECTED\n",
+      "     F - Predictive    REJECTED\n",
+      "     G - Simulation    REJECTED\n",
+      "   H - Text & Theme    REJECTED\n",
+      "\n",
+      "Primary question: Across Facility A and B, which team's output per hour and overtime hours differ most from the other groups during 2026-10-24 to 2026-10-28, and how consistent is that gap day to day?\n",
+      "Predictive: REJECTED\n",
+      "FINAL: DATA READY FOR ANALYTICAL TRACK DEVELOPMENT\n"
+     ]
+    }
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "name": "python"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
+</file>
+
+<file path="data-science/outputs/analytical_readiness.json">
+{
+  "final_result": "DATA READY FOR ANALYTICAL TRACK DEVELOPMENT",
+  "data_version": "1.0.0",
+  "data_version_changed_in_post2": false,
+  "confirmed_archetype": {
+    "primary": "Time-Series Measurement (short, frontend facility-level)",
+    "secondary": "Entity / Snapshot (node KPI + insight)",
+    "note": "Backend shift-level series are a second, separate measurement scope."
+  },
+  "primary_question": {
+    "target_user": "Shift operations manager responsible for staffing and coverage",
+    "operational_problem": "Output per hour and overtime differ by facility and team; managers need to know where coverage review is most needed.",
+    "question": "Across Facility A and B, which team's output per hour and overtime hours differ most from the other groups during 2026-10-24 to 2026-10-28, and how consistent is that gap day to day?",
+    "decision_supported": "Which facility/team to review first for supervisor coverage and overtime allocation (demonstration decision on synthetic data).",
+    "primary_track": "A - Comparative",
+    "supporting_track": "B - Trend (descriptive, 5 days)",
+    "rejected_tracks": [
+      "D - Anomaly",
+      "E - Segmentation",
+      "F - Predictive",
+      "G - Simulation",
+      "H - Text & Theme"
+    ]
+  },
+  "tracks": [
+    {
+      "track": "A - Comparative",
+      "status": "SUPPORTED",
+      "evidence": "6 facility x team groups, each with 5 daily observations of output and overtime (frontend, facility-level); 3 shifts x 7 days in backend. Quality PASS, representativeness PASS.",
+      "missing_requirement": "Groups are small (5-7 observations): differences are descriptive, not statistically strong. Compare within a source only.",
+      "recommendation": "PRIMARY track."
+    },
+    {
+      "track": "B - Trend",
+      "status": "CONDITIONAL",
+      "evidence": "Ordered consecutive daily observations exist, but each series has only 5-7 points over one month (2026-10-24 to 2026-10-30).",
+      "missing_requirement": "Fewer than 12 ordered periods; no weekly/seasonal cycle; Last-30-Days and Year-to-Date views are interpolated by the UI, not in the data.",
+      "recommendation": "SUPPORTING track, descriptive direction over the 5-7 observed days only. No forecasting."
+    },
+    {
+      "track": "C - Risk & Priority",
+      "status": "CONDITIONAL",
+      "evidence": "Explainable factors exist (attendance_rate, output_per_hour, overtime_hours) plus a status label (optimal/warning/critical).",
+      "missing_requirement": "No documented urgency definition; status thresholds are implicit in UI code; backend status is random and unrelated to its metrics (OBS-3); attendance exists only in backend.",
+      "recommendation": "Conditional: only a transparent, rule-based frontend 'coverage review priority' using output, overtime and source-stated status, with documented weights. Not a score of real risk."
+    },
+    {
+      "track": "D - Anomaly",
+      "status": "REJECTED",
+      "evidence": "Largest comparable baseline is 7 observations per series.",
+      "missing_requirement": "Needs a meaningful baseline (>= 20 comparable observations); backend values are uniform-random, so extremes are generator noise and cannot be separated from errors.",
+      "recommendation": "Reject."
+    },
+    {
+      "track": "E - Segmentation",
+      "status": "REJECTED",
+      "evidence": "Only 9 entities (6 facility-team nodes, 3 shifts) and 3-4 informative numeric fields.",
+      "missing_requirement": "Segments of 6 nodes carry no business meaning beyond the existing team/facility grouping.",
+      "recommendation": "Reject."
+    },
+    {
+      "track": "F - Predictive",
+      "status": "REJECTED",
+      "evidence": "Predictive checklist below.",
+      "missing_requirement": "No genuine target (status is authored/random label), no real historical outcomes, <=7 observations per series, no validation split possible, no decision-time inputs, high leakage risk (status is a function of KPI in frontend).",
+      "recommendation": "Reject. Row count (129) does not justify prediction."
+    },
+    {
+      "track": "G - Simulation",
+      "status": "REJECTED",
+      "evidence": "No scenario records, no parameter columns, record_type 'scenario' absent.",
+      "missing_requirement": "Controlled inputs and comparable scenarios.",
+      "recommendation": "Reject."
+    },
+    {
+      "track": "H - Text & Theme",
+      "status": "REJECTED",
+      "evidence": "6 text values, 6 unique, one per node.",
+      "missing_requirement": "Sparse, generic, authored insight sentences; no volume for themes.",
+      "recommendation": "Reject."
+    }
+  ],
+  "supported": [
+    "A - Comparative"
+  ],
+  "conditional": [
+    "B - Trend",
+    "C - Risk & Priority"
+  ],
+  "rejected": [
+    "D - Anomaly",
+    "E - Segmentation",
+    "F - Predictive",
+    "G - Simulation",
+    "H - Text & Theme"
+  ],
+  "predictive_intelligence": {
+    "status": "REJECTED",
+    "checklist": {
+      "genuine_target": false,
+      "historical_examples": false,
+      "decision_time_availability": false,
+      "no_leakage": false,
+      "distribution_reported": true,
+      "baseline_definable": true,
+      "defensible_validation": false,
+      "decision_value": false
+    }
+  },
+  "thresholds_used": {
+    "min_group_obs": 5,
+    "trend_supported_periods": 12,
+    "trend_conditional_periods": 3,
+    "anomaly_baseline_min": 20
+  },
+  "limitations": [
+    "All data synthetic; findings demonstrate method, not real operations.",
+    "Frontend (facility-level) and backend (shift-level) are different scopes; never pool or concatenate.",
+    "5-7 daily points per series, one month only.",
+    "Last-30-Days / Year-to-Date UI views are not backed by source data.",
+    "Frontend status/KPI/text are authored; backend status is random.",
+    "No geography, stages, relationships or scenarios."
+  ],
+  "controls_for_post3": [
+    "Read only data/canonical/intelligence_data.csv; filter by source_name first.",
+    "Compare groups within a source; report n for every comparison.",
+    "Label every output synthetic and descriptive; no forecast, anomaly flag or predictive score.",
+    "No second dataset; any canonical fix goes through scripts/data_pipeline with a version bump and Post #1 re-validation.",
+    "Do not alter the operational page."
+  ]
+}
+</file>
+
+<file path="data-science/outputs/canonical_profile.json">
+{
+  "structure": {
+    "rows": 129,
+    "columns": 20,
+    "file_size_mb": 0.0313,
+    "data_versions": [
+      "1.0.0"
+    ],
+    "manifest_data_version": "1.0.0",
+    "source_count": 2,
+    "record_type_distribution": {
+      "measurement": 123,
+      "entity": 6
+    }
+  },
+  "completeness": {
+    "record_id": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "record_type": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "observed_at": {
+      "non_null": 123,
+      "null": 6,
+      "null_pct": 4.65
+    },
+    "entity_id": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "related_entity_id": {
+      "non_null": 0,
+      "null": 129,
+      "null_pct": 100.0
+    },
+    "entity_name": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "category": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "subcategory": {
+      "non_null": 66,
+      "null": 63,
+      "null_pct": 48.84
+    },
+    "status": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "stage": {
+      "non_null": 0,
+      "null": 129,
+      "null_pct": 100.0
+    },
+    "metric_name": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "metric_value": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "metric_unit": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "text_value": {
+      "non_null": 6,
+      "null": 123,
+      "null_pct": 95.35
+    },
+    "latitude": {
+      "non_null": 0,
+      "null": 129,
+      "null_pct": 100.0
+    },
+    "longitude": {
+      "non_null": 0,
+      "null": 129,
+      "null_pct": 100.0
+    },
+    "source_name": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "source_record_id": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "is_synthetic": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "data_version": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    }
+  },
+  "fully_empty_fields": [
+    "related_entity_id",
+    "stage",
+    "latitude",
+    "longitude"
+  ],
+  "uniqueness": {
+    "unique_counts": {
+      "record_id": 129,
+      "record_type": 2,
+      "observed_at": 7,
+      "entity_id": 9,
+      "related_entity_id": 0,
+      "entity_name": 9,
+      "category": 3,
+      "subcategory": 2,
+      "status": 3,
+      "stage": 0,
+      "metric_name": 4,
+      "metric_value": 99,
+      "metric_unit": 3,
+      "text_value": 6,
+      "latitude": 0,
+      "longitude": 0,
+      "source_name": 2,
+      "source_record_id": 129,
+      "is_synthetic": 1,
+      "data_version": 1
+    },
+    "duplicate_record_ids": 0,
+    "duplicate_natural_keys(source,entity,metric,observed_at)": 0,
+    "entity_rows_per_entity_metric": "1",
+    "repeated_entity_relationships": 0,
+    "related_entity_id_populated": 0
+  },
+  "numerical": {
+    "Backend synthetic shift generator (main.py, seed 42) :: attendance_rate": {
+      "unit": [
+        "ratio"
+      ],
+      "count": 21,
+      "min": 0.85,
+      "max": 0.98,
+      "mean": 0.9071,
+      "median": 0.9,
+      "std": 0.0404,
+      "invalid": 0,
+      "negative": 0
+    },
+    "Backend synthetic shift generator (main.py, seed 42) :: output_per_hour": {
+      "unit": [
+        "units_per_hour"
+      ],
+      "count": 21,
+      "min": 111.9,
+      "max": 149.5,
+      "mean": 129.6524,
+      "median": 131.0,
+      "std": 13.2277,
+      "invalid": 0,
+      "negative": 0
+    },
+    "Backend synthetic shift generator (main.py, seed 42) :: overtime_hours": {
+      "unit": [
+        "hours"
+      ],
+      "count": 21,
+      "min": 5.7,
+      "max": 38.9,
+      "mean": 20.4381,
+      "median": 17.5,
+      "std": 11.0632,
+      "invalid": 0,
+      "negative": 0
+    },
+    "Frontend mockDatabase (page.tsx) :: kpi_output_per_hour": {
+      "unit": [
+        "units_per_hour"
+      ],
+      "count": 6,
+      "min": 95.2,
+      "max": 142.1,
+      "mean": 121.5833,
+      "median": 123.45,
+      "std": 17.2181,
+      "invalid": 0,
+      "negative": 0
+    },
+    "Frontend mockDatabase (page.tsx) :: output_per_hour": {
+      "unit": [
+        "units_per_hour"
+      ],
+      "count": 30,
+      "min": 85.0,
+      "max": 142.0,
+      "mean": 119.4,
+      "median": 121.0,
+      "std": 15.2125,
+      "invalid": 0,
+      "negative": 0
+    },
+    "Frontend mockDatabase (page.tsx) :: overtime_hours": {
+      "unit": [
+        "hours"
+      ],
+      "count": 30,
+      "min": 5.0,
+      "max": 45.0,
+      "mean": 20.2333,
+      "median": 19.0,
+      "std": 11.5271,
+      "invalid": 0,
+      "negative": 0
+    }
+  },
+  "temporal": {
+    "non_null_dates": 123,
+    "parse_rate_pct": 100.0,
+    "undated_rows": 6,
+    "earliest": "2026-10-24",
+    "latest": "2026-10-30",
+    "unique_dates": 7,
+    "max_share_on_single_date_pct": 17.07,
+    "per_source": {
+      "Backend synthetic shift generator (main.py, seed 42)": {
+        "earliest": "2026-10-24",
+        "latest": "2026-10-30",
+        "unique_dates": 7,
+        "missing_days_in_span": 0,
+        "unique_months": 1,
+        "series_count": 9,
+        "observations_per_series_min": 7,
+        "observations_per_series_max": 7
+      },
+      "Frontend mockDatabase (page.tsx)": {
+        "earliest": "2026-10-24",
+        "latest": "2026-10-28",
+        "unique_dates": 5,
+        "missing_days_in_span": 0,
+        "unique_months": 1,
+        "series_count": 12,
+        "observations_per_series_min": 5,
+        "observations_per_series_max": 5
+      }
+    }
+  },
+  "categorical": {
+    "category": {
+      "distribution": {
+        "evening_crew": 43,
+        "morning_crew": 43,
+        "night_watch": 43
+      },
+      "distinct": 3,
+      "rare_values_lt_5pct": [],
+      "near_constant": false
+    },
+    "subcategory": {
+      "distribution": {
+        "<missing>": 63,
+        "facility_a": 33,
+        "facility_b": 33
+      },
+      "distinct": 3,
+      "rare_values_lt_5pct": [],
+      "near_constant": false
+    },
+    "status": {
+      "distribution": {
+        "optimal": 61,
+        "warning": 48,
+        "critical": 20
+      },
+      "distinct": 3,
+      "rare_values_lt_5pct": [],
+      "near_constant": false
+    },
+    "metric_name": {
+      "distribution": {
+        "output_per_hour": 51,
+        "overtime_hours": 51,
+        "attendance_rate": 21,
+        "kpi_output_per_hour": 6
+      },
+      "distinct": 4,
+      "rare_values_lt_5pct": [
+        "kpi_output_per_hour"
+      ],
+      "near_constant": false
+    },
+    "metric_unit": {
+      "distribution": {
+        "units_per_hour": 57,
+        "hours": 51,
+        "ratio": 21
+      },
+      "distinct": 3,
+      "rare_values_lt_5pct": [],
+      "near_constant": false
+    },
+    "entity_id": {
+      "distribution": {
+        "shift_evening": 21,
+        "shift_morning": 21,
+        "shift_night": 21,
+        "facility_a_evening_crew": 11,
+        "facility_a_morning_crew": 11,
+        "facility_a_night_watch": 11,
+        "facility_b_evening_crew": 11,
+        "facility_b_morning_crew": 11,
+        "facility_b_night_watch": 11
+      },
+      "distinct": 9,
+      "rare_values_lt_5pct": [],
+      "near_constant": false
+    }
+  },
+  "status_stage": {
+    "status_distribution": {
+      "optimal": 61,
+      "warning": 48,
+      "critical": 20
+    },
+    "stage_populated": 0,
+    "stage_note": "No lifecycle stages exist in this case study."
+  },
+  "geographic": {
+    "valid_coordinate_pairs": 0,
+    "populated_latitude": 0,
+    "populated_longitude": 0,
+    "note": "No geography in the source data; the map in the UI is schematic."
+  },
+  "text": {
+    "non_null": 6,
+    "unique": 6,
+    "avg_length": 72.5,
+    "max_length": 82,
+    "possibly_truncated(len==500)": 0
+  },
+  "provenance": {
+    "source_distribution": {
+      "Frontend mockDatabase (page.tsx)": 66,
+      "Backend synthetic shift generator (main.py, seed 42)": 63
+    },
+    "synthetic_true": 129,
+    "synthetic_false": 0
+  }
+}
+</file>
+
+<file path="data-science/outputs/quality_assessment.json">
+{
+  "status": "PASS",
+  "data_version": "1.0.0",
+  "post1_validation": {
+    "command": "python scripts/data_pipeline/validate_data.py",
+    "result": "PASS",
+    "summary": "Validation PASS (39/39 checks)"
+  },
+  "dimensions": {
+    "completeness": {
+      "required_fields_complete": true,
+      "measurement_rows_with_metric_name_and_value_pct": 100.0,
+      "measurement_rows_with_date_pct": 100.0,
+      "measurement_rows_with_entity_pct": 100.0,
+      "entity_rows_with_text_pct": 100.0,
+      "fully_empty_optional_fields": [
+        "related_entity_id",
+        "stage",
+        "latitude",
+        "longitude"
+      ]
+    },
+    "uniqueness": {
+      "duplicate_record_ids": 0,
+      "duplicate_natural_keys": 0,
+      "duplicate_source_record_ids": 0
+    },
+    "validity": {
+      "unparseable_dates": 0,
+      "invalid_record_types": 0,
+      "non_numeric_metric_values": 0,
+      "schema_fields": 20,
+      "text_over_500": 0
+    },
+    "consistency": {
+      "metric_units": {
+        "attendance_rate": [
+          "ratio"
+        ],
+        "kpi_output_per_hour": [
+          "units_per_hour"
+        ],
+        "output_per_hour": [
+          "units_per_hour"
+        ],
+        "overtime_hours": [
+          "hours"
+        ]
+      },
+      "mixed_unit_metrics": {},
+      "status_vocabulary": [
+        "critical",
+        "optimal",
+        "warning"
+      ],
+      "snake_case_ids_and_categories": true,
+      "boolean_values": [
+        "true"
+      ],
+      "single_data_version": true
+    },
+    "accuracy": {
+      "measurement_rows_checked": 123,
+      "measurement_mismatches": 0,
+      "entity_rows_checked": 6,
+      "entity_mismatches": 0
+    },
+    "provenance": {
+      "rows_with_source_name": 129,
+      "rows_with_source_record_id": 129,
+      "synthetic_rows": 129,
+      "non_synthetic_rows": 0,
+      "manifest_sources_match": true
+    },
+    "safety": {
+      "personal_data_patterns_found": false,
+      "secret_patterns_found": false,
+      "manifest_contains_personal_data": false
+    },
+    "reproducibility": {
+      "post1_regeneration_check": "PASS",
+      "note": "validate_data.py regenerates canonical CSV and JSON from the source sample and compares bytes."
+    }
+  },
+  "issues": [],
+  "observations": [
+    {
+      "id": "OBS-1",
+      "finding": "Headline KPI is not derivable from the daily series",
+      "detail": "kpi_output_per_hour differs from the latest daily output by up to 4.1 units and from the 5-day mean by up to 5.1; treat KPI as a separate source-stated value."
+    },
+    {
+      "id": "OBS-2",
+      "finding": "Frontend status is monotone in the KPI",
+      "detail": "Statuses ordered by KPI are consistent: True. Thresholds are implicit in the UI code, not documented."
+    },
+    {
+      "id": "OBS-3",
+      "finding": "Backend status is not tied to backend metrics",
+      "detail": "Backend coverage_status is drawn at random (70/20/10) independently of output; mean output by status: {\"critical\": 137.97, \"optimal\": 127.15, \"warning\": 131.18}. It is a label, not an outcome derived from the metrics."
+    },
+    {
+      "id": "OBS-4",
+      "finding": "Different scopes share metric names",
+      "detail": "output_per_hour and overtime_hours exist in both sources (facility-level vs shift-level). Always filter by source_name; do not pool."
+    },
+    {
+      "id": "OBS-5",
+      "finding": "Short, fully synthetic series",
+      "detail": "Frontend series have 5 daily points, backend 7. All rows are synthetic."
+    }
+  ]
+}
+</file>
+
+<file path="data-science/outputs/representativeness_assessment.json">
+{
+  "result": "PASS",
+  "data_version": "1.0.0",
+  "original_sampling": {
+    "method": "full_population_retained",
+    "original_records": 51,
+    "sample_records": 51,
+    "canonical_records": 129,
+    "full_population_retained": true
+  },
+  "coverage": {
+    "categories": {
+      "teams_expected": 3,
+      "teams_present": [
+        "evening_crew",
+        "morning_crew",
+        "night_watch"
+      ],
+      "facilities_expected": 2,
+      "facilities_present": [
+        "facility_a",
+        "facility_b"
+      ],
+      "node_rows_each": {
+        "facility_a_evening_crew": 11,
+        "facility_a_morning_crew": 11,
+        "facility_a_night_watch": 11,
+        "facility_b_evening_crew": 11,
+        "facility_b_morning_crew": 11,
+        "facility_b_night_watch": 11
+      }
+    },
+    "time": {
+      "span_days": 7,
+      "earliest": "2026-10-24",
+      "latest": "2026-10-30",
+      "ui_time_horizons": {
+        "Last 7 Days": 7,
+        "Last 30 Days": 30,
+        "Year to Date": 300
+      },
+      "horizon_support": {
+        "Last 7 Days": "partial (5 days frontend, 7 days backend)",
+        "Last 30 Days": "not supported by source data (UI interpolates)",
+        "Year to Date": "not supported by source data (UI interpolates)"
+      }
+    },
+    "geography": {
+      "status": "not applicable",
+      "detail": "No coordinates in source data; map positions are schematic."
+    },
+    "status": {
+      "canonical": {
+        "optimal": 61,
+        "warning": 48,
+        "critical": 20
+      },
+      "frontend_nodes": {
+        "warning": 3,
+        "optimal": 2,
+        "critical": 1
+      },
+      "backend_shift_days": {
+        "optimal": 13,
+        "warning": 5,
+        "critical": 3
+      }
+    },
+    "rare_records": {
+      "critical_rows": 20,
+      "critical_share_pct": 15.5,
+      "frontend_critical_nodes": 1,
+      "backend_critical_shift_days": 3,
+      "all_source_critical_rows_retained": true
+    },
+    "scenario": {
+      "status": "not applicable",
+      "detail": "No adjustable inputs or scenario parameters."
+    },
+    "text": {
+      "non_null": 6,
+      "unique": 6,
+      "detail": "One insight per frontend node only; no review/feedback text."
+    },
+    "network": {
+      "status": "not applicable",
+      "related_entity_rows": 0
+    }
+  },
+  "canonical_vs_source_sample_missing": {
+    "facility_team_nodes": [],
+    "dates": []
+  },
+  "underrepresented_areas": [
+    "Time: only 5-7 consecutive days; no weekly cycle, month or year coverage.",
+    "Backend rows have no facility, so facility comparison exists only in the frontend source.",
+    "Critical cases are rare: 1 frontend node and ~3 backend shift-days."
+  ],
+  "sampling_bias": [
+    "Source is the whole synthetic population, so there is no sampling bias against it (nothing was dropped).",
+    "Population bias: the population itself is hand-authored (frontend) or uniform-random (backend) and does not represent real operations.",
+    "Frontend facility/team values were authored to tell a story (e.g. night shift critical); effects found later are designed, not discovered."
+  ],
+  "scope_of_result": "PASS applies to the 7-day comparative view of 2 facilities x 3 teams. It does NOT cover 30-day or year-to-date horizons."
+}
+</file>
+
+<file path="data-science/scripts/_ds_common.py">
+"""Shared helpers for Post #2. Reads ONLY data/canonical/intelligence_data.csv (and manifest/schema/source sample for checks)."""
+import json
+from pathlib import Path
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[2]
+CANONICAL = ROOT / "data" / "canonical" / "intelligence_data.csv"
+MANIFEST = ROOT / "data" / "manifest.json"
+SCHEMA = ROOT / "data" / "schema.json"
+SOURCE_SAMPLE = ROOT / "data" / "source-sample" / "source_sample.csv"
+OUT = ROOT / "data-science" / "outputs"
+
+
+def load():
+    return pd.read_csv(CANONICAL, dtype={"is_synthetic": str})
+
+
+def dump(name, obj):
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / name).write_text(json.dumps(obj, indent=2, sort_keys=False, default=str) + "\n", "utf-8")
+    print(f"wrote data-science/outputs/{name}")
+
+
+def read_out(name):
+    return json.loads((OUT / name).read_text("utf-8"))
+</file>
+
+<file path="data-science/scripts/assess_analytical_readiness.py">
+"""Analytical-track readiness (A-H) driven by measured evidence from the canonical CSV and the earlier outputs. No modelling."""
+import pandas as pd
+from _ds_common import *
+
+MIN_GROUP_OBS = 5        # comparative groups need at least this many observations
+TREND_SUPPORTED = 12     # ordered periods needed for an unconditional trend track
+TREND_CONDITIONAL = 3    # fewer than this cannot even describe direction
+BASELINE_MIN = 20        # comparable observations per baseline for anomaly work
+
+
+def main():
+    df = load()
+    man = json.loads(MANIFEST.read_text("utf-8"))
+    q, rep = read_out("quality_assessment.json"), read_out("representativeness_assessment.json")
+    meas = df[df.record_type == "measurement"]
+    fe = meas[meas.source_name.str.startswith("Frontend")]
+    be = meas[meas.source_name.str.startswith("Backend")]
+    gsize = fe[fe.metric_name == "output_per_hour"].groupby(["subcategory", "category"]).size()
+    series = meas.groupby(["source_name", "entity_id", "metric_name"]).size()
+    max_series = int(series.max())
+    n_ent, n_txt = int(df.entity_id.nunique()), int(df.text_value.nunique())
+    factors = sorted(meas.metric_name.unique())
+    base_ok = q["status"] == "PASS" and rep["result"] == "PASS"
+
+    A = ("SUPPORTED" if base_ok and gsize.size >= 2 and gsize.min() >= MIN_GROUP_OBS else "REJECTED")
+    B = ("SUPPORTED" if max_series >= TREND_SUPPORTED else "CONDITIONAL" if max_series >= TREND_CONDITIONAL else "REJECTED")
+    C = "CONDITIONAL" if len(factors) >= 2 and df.status.notna().any() else "REJECTED"
+    tracks = [
+        {"track": "A - Comparative", "status": A,
+         "evidence": f"{gsize.size} facility x team groups, each with {int(gsize.min())} daily observations of output and overtime (frontend, facility-level); 3 shifts x 7 days in backend. Quality PASS, representativeness PASS.",
+         "missing_requirement": "Groups are small (5-7 observations): differences are descriptive, not statistically strong. Compare within a source only.",
+         "recommendation": "PRIMARY track."},
+        {"track": "B - Trend", "status": B,
+         "evidence": f"Ordered consecutive daily observations exist, but each series has only {int(series.min())}-{max_series} points over one month (2026-10-24 to 2026-10-30).",
+         "missing_requirement": f"Fewer than {TREND_SUPPORTED} ordered periods; no weekly/seasonal cycle; Last-30-Days and Year-to-Date views are interpolated by the UI, not in the data.",
+         "recommendation": "SUPPORTING track, descriptive direction over the 5-7 observed days only. No forecasting."},
+        {"track": "C - Risk & Priority", "status": C,
+         "evidence": f"Explainable factors exist ({', '.join(factors)}) plus a status label (optimal/warning/critical).",
+         "missing_requirement": "No documented urgency definition; status thresholds are implicit in UI code; backend status is random and unrelated to its metrics (OBS-3); attendance exists only in backend.",
+         "recommendation": "Conditional: only a transparent, rule-based frontend 'coverage review priority' using output, overtime and source-stated status, with documented weights. Not a score of real risk."},
+        {"track": "D - Anomaly", "status": "REJECTED",
+         "evidence": f"Largest comparable baseline is {max_series} observations per series.",
+         "missing_requirement": f"Needs a meaningful baseline (>= {BASELINE_MIN} comparable observations); backend values are uniform-random, so extremes are generator noise and cannot be separated from errors.",
+         "recommendation": "Reject."},
+        {"track": "E - Segmentation", "status": "REJECTED",
+         "evidence": f"Only {n_ent} entities (6 facility-team nodes, 3 shifts) and 3-4 informative numeric fields.",
+         "missing_requirement": "Segments of 6 nodes carry no business meaning beyond the existing team/facility grouping.",
+         "recommendation": "Reject."},
+        {"track": "F - Predictive", "status": "REJECTED",
+         "evidence": "Predictive checklist below.",
+         "missing_requirement": "No genuine target (status is authored/random label), no real historical outcomes, <=7 observations per series, no validation split possible, no decision-time inputs, high leakage risk (status is a function of KPI in frontend).",
+         "recommendation": "Reject. Row count (129) does not justify prediction."},
+        {"track": "G - Simulation", "status": "REJECTED",
+         "evidence": "No scenario records, no parameter columns, record_type 'scenario' absent.",
+         "missing_requirement": "Controlled inputs and comparable scenarios.", "recommendation": "Reject."},
+        {"track": "H - Text & Theme", "status": "REJECTED",
+         "evidence": f"{int(df.text_value.notna().sum())} text values, {n_txt} unique, one per node.",
+         "missing_requirement": "Sparse, generic, authored insight sentences; no volume for themes.", "recommendation": "Reject."}]
+    pred = {"genuine_target": False, "historical_examples": False, "decision_time_availability": False, "no_leakage": False,
+            "distribution_reported": True, "baseline_definable": True, "defensible_validation": False, "decision_value": False}
+    status = {t["status"] for t in tracks}
+    supported = [t["track"] for t in tracks if t["status"] == "SUPPORTED"]
+    final = ("DATA READY FOR ANALYTICAL TRACK DEVELOPMENT" if supported and base_ok
+             else "CANONICAL DATA CHANGES REQUIRED" if not base_ok else "DATA INSUFFICIENT FOR PHASE 3")
+    dump("analytical_readiness.json", {
+        "final_result": final, "data_version": man["data_version"], "data_version_changed_in_post2": False,
+        "confirmed_archetype": {"primary": "Time-Series Measurement (short, frontend facility-level)", "secondary": "Entity / Snapshot (node KPI + insight)",
+                                "note": "Backend shift-level series are a second, separate measurement scope."},
+        "primary_question": {
+            "target_user": "Shift operations manager responsible for staffing and coverage",
+            "operational_problem": "Output per hour and overtime differ by facility and team; managers need to know where coverage review is most needed.",
+            "question": "Across Facility A and B, which team's output per hour and overtime hours differ most from the other groups during 2026-10-24 to 2026-10-28, and how consistent is that gap day to day?",
+            "decision_supported": "Which facility/team to review first for supervisor coverage and overtime allocation (demonstration decision on synthetic data).",
+            "primary_track": "A - Comparative", "supporting_track": "B - Trend (descriptive, 5 days)",
+            "rejected_tracks": [t["track"] for t in tracks if t["status"] == "REJECTED"]},
+        "tracks": tracks, "supported": supported, "conditional": [t["track"] for t in tracks if t["status"] == "CONDITIONAL"],
+        "rejected": [t["track"] for t in tracks if t["status"] == "REJECTED"],
+        "predictive_intelligence": {"status": "REJECTED", "checklist": pred},
+        "thresholds_used": {"min_group_obs": MIN_GROUP_OBS, "trend_supported_periods": TREND_SUPPORTED, "trend_conditional_periods": TREND_CONDITIONAL, "anomaly_baseline_min": BASELINE_MIN},
+        "limitations": ["All data synthetic; findings demonstrate method, not real operations.", "Frontend (facility-level) and backend (shift-level) are different scopes; never pool or concatenate.",
+                        "5-7 daily points per series, one month only.", "Last-30-Days / Year-to-Date UI views are not backed by source data.",
+                        "Frontend status/KPI/text are authored; backend status is random.", "No geography, stages, relationships or scenarios."],
+        "controls_for_post3": ["Read only data/canonical/intelligence_data.csv; filter by source_name first.", "Compare groups within a source; report n for every comparison.",
+                               "Label every output synthetic and descriptive; no forecast, anomaly flag or predictive score.",
+                               "No second dataset; any canonical fix goes through scripts/data_pipeline with a version bump and Post #1 re-validation.",
+                               "Do not alter the operational page."]})
+    print("Final:", final)
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="data-science/scripts/assess_data_quality.py">
+"""Quality dimensions: completeness, uniqueness, validity, consistency, accuracy, provenance, safety, reproducibility.
+Blocking issues fail the run (exit 1). Observations are non-blocking findings that later posts must respect."""
+import re, subprocess, sys
+import numpy as np
+import pandas as pd
+from _ds_common import *
+
+ALLOWED = {"record_type": ["entity", "event", "transaction", "measurement", "process", "scenario", "node", "edge", "document"]}
+EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+")
+SECRET = re.compile(r"(api[_-]?key|secret|password|token|bearer)\s*[:=]\s*\S{6,}", re.I)
+
+
+def main():
+    df = load()
+    schema = json.loads(SCHEMA.read_text("utf-8"))
+    man = json.loads(MANIFEST.read_text("utf-8"))
+    src = pd.read_csv(SOURCE_SAMPLE, dtype=str, keep_default_na=False)
+    issues, dims = [], {}
+
+    def issue(sev, field, msg):
+        issues.append({"severity": sev, "field": field, "issue": msg})
+
+    # Structural re-validation (Post #1 gate), run as the guide requires
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "data_pipeline" / "validate_data.py")], capture_output=True, text=True, cwd=ROOT)
+    post1 = {"command": "python scripts/data_pipeline/validate_data.py", "result": "PASS" if r.returncode == 0 else "FAIL",
+             "summary": r.stdout.strip().splitlines()[0] if r.stdout.strip() else r.stderr[-200:]}
+    if r.returncode:
+        issue("blocking", "package", "Post #1 structural validation failed")
+
+    # Completeness
+    for c in ["record_id", "record_type", "source_name", "is_synthetic", "data_version"]:
+        if df[c].isna().any():
+            issue("blocking", c, f"{int(df[c].isna().sum())} missing values")
+    meas = df[df.record_type == "measurement"]
+    ent = df[df.record_type == "entity"]
+    comp = {"required_fields_complete": not any(i["field"] in ("record_id", "record_type", "source_name", "is_synthetic", "data_version") for i in issues),
+            "measurement_rows_with_metric_name_and_value_pct": round(float((meas.metric_name.notna() & meas.metric_value.notna()).mean() * 100), 2),
+            "measurement_rows_with_date_pct": round(float(meas.observed_at.notna().mean() * 100), 2),
+            "measurement_rows_with_entity_pct": round(float(meas.entity_id.notna().mean() * 100), 2),
+            "entity_rows_with_text_pct": round(float(ent.text_value.notna().mean() * 100), 2),
+            "fully_empty_optional_fields": [c for c in df.columns if df[c].isna().all()]}
+    dims["completeness"] = comp
+
+    # Uniqueness
+    dup_ids = int(df.record_id.duplicated().sum())
+    if dup_ids:
+        issue("blocking", "record_id", f"{dup_ids} duplicate identifiers")
+    dated = df[df.observed_at.notna()]
+    dup_nat = int(dated.duplicated(["source_name", "entity_id", "metric_name", "observed_at"]).sum())
+    dup_src = int(df.source_record_id.duplicated().sum())
+    if dup_nat or dup_src:
+        issue("blocking", "natural_key", f"{dup_nat} duplicate (source,entity,metric,date); {dup_src} duplicate source_record_id")
+    dims["uniqueness"] = {"duplicate_record_ids": dup_ids, "duplicate_natural_keys": dup_nat, "duplicate_source_record_ids": dup_src}
+
+    # Validity
+    parsed = pd.to_datetime(dated.observed_at, format="%Y-%m-%dT%H:%M:%SZ", errors="coerce")
+    bad_dates = int(parsed.isna().sum())
+    if bad_dates:
+        issue("blocking", "observed_at", f"{bad_dates} non-ISO-8601 dates")
+    bad_type = int((~df.record_type.isin(ALLOWED["record_type"])).sum())
+    if bad_type:
+        issue("blocking", "record_type", f"{bad_type} values outside the allowed list")
+    mv = pd.to_numeric(df.metric_value, errors="coerce")
+    bad_num = int((df.metric_value.notna() & mv.isna()).sum())
+    if bad_num:
+        issue("blocking", "metric_value", f"{bad_num} non-numeric values")
+    for col, lo, hi in (("latitude", -90, 90), ("longitude", -180, 180)):
+        v = pd.to_numeric(df[col], errors="coerce")
+        if (df[col].notna() & ~v.between(lo, hi)).any():
+            issue("blocking", col, "out-of-range coordinates")
+    att = df[df.metric_name == "attendance_rate"].metric_value
+    if ((att < 0) | (att > 1)).any():
+        issue("blocking", "metric_value", "attendance_rate outside 0-1")
+    if (mv < 0).any():
+        issue("blocking", "metric_value", "negative metric values")
+    dims["validity"] = {"unparseable_dates": bad_dates, "invalid_record_types": bad_type,
+                        "non_numeric_metric_values": bad_num, "schema_fields": len(schema), "text_over_500": int((df.text_value.dropna().str.len() > 500).sum())}
+
+    # Consistency
+    units = df.dropna(subset=["metric_name"]).groupby("metric_name").metric_unit.apply(lambda s: sorted(s.dropna().unique()))
+    mixed = {k: v for k, v in units.items() if len(v) > 1}
+    if mixed:
+        issue("blocking", "metric_unit", f"mixed units: {mixed}")
+    slug_ok = df.entity_id.dropna().str.fullmatch(r"[a-z0-9_]+").all() and df.category.dropna().str.fullmatch(r"[a-z0-9_]+").all()
+    status_vocab = sorted(df.status.dropna().unique())
+    if not slug_ok or not set(status_vocab) <= {"optimal", "warning", "critical"}:
+        issue("blocking", "category/status", "non-standard category or status vocabulary")
+    # entity status must equal the status on that entity's measurement rows (frontend)
+    fe_m = meas[meas.source_name.str.startswith("Frontend")].groupby("entity_id").status.nunique()
+    if (fe_m > 1).any():
+        issue("blocking", "status", "frontend entity status varies within an entity")
+    dims["consistency"] = {"metric_units": units.to_dict(), "mixed_unit_metrics": mixed, "status_vocabulary": status_vocab,
+                           "snake_case_ids_and_categories": bool(slug_ok), "boolean_values": sorted(df.is_synthetic.unique()),
+                           "single_data_version": sorted(df.data_version.astype(str).unique()) == [man["data_version"]]}
+
+    # Accuracy against the source sample (independent re-derivation from source_record_id)
+    idx = src.set_index("source_row_id")
+    mism, checked = 0, 0
+    for _, r_ in meas.iterrows():
+        row_id, metric = r_.source_record_id.rsplit("|", 1)
+        checked += 1
+        if row_id not in idx.index or abs(float(idx.loc[row_id, metric]) - float(r_.metric_value)) > 1e-9:
+            mism += 1
+    kpi_mism = 0
+    for _, r_ in ent.iterrows():
+        fac, team = r_.source_record_id.split("|")[1:3]
+        s = src[(src.facility == fac) & (src.team == team)].iloc[0]
+        kpi_mism += int(abs(float(s.node_kpi_output_per_hour) - float(r_.metric_value)) > 1e-9 or s.node_issue_text != r_.text_value)
+    if mism or kpi_mism:
+        issue("blocking", "metric_value", f"{mism} measurement and {kpi_mism} entity rows differ from the source sample")
+    dims["accuracy"] = {"measurement_rows_checked": checked, "measurement_mismatches": mism, "entity_rows_checked": len(ent), "entity_mismatches": kpi_mism}
+
+    # Provenance, safety, reproducibility
+    dims["provenance"] = {"rows_with_source_name": int(df.source_name.notna().sum()), "rows_with_source_record_id": int(df.source_record_id.notna().sum()),
+                          "synthetic_rows": int((df.is_synthetic == "true").sum()), "non_synthetic_rows": int((df.is_synthetic == "false").sum()),
+                          "manifest_sources_match": sorted(man["source_names"]) == sorted(df.source_name.unique())}
+    txt = CANONICAL.read_text("utf-8")
+    safe = not EMAIL.search(txt) and not SECRET.search(txt)
+    if not safe:
+        issue("blocking", "text", "personal-data or secret pattern found")
+    dims["safety"] = {"personal_data_patterns_found": bool(EMAIL.search(txt)), "secret_patterns_found": bool(SECRET.search(txt)),
+                      "manifest_contains_personal_data": man["contains_personal_data"]}
+    dims["reproducibility"] = {"post1_regeneration_check": post1["result"], "note": "validate_data.py regenerates canonical CSV and JSON from the source sample and compares bytes."}
+
+    # Non-blocking observations (source behaviour later tracks must respect)
+    obs = []
+    fe_ent = ent[ent.source_name.str.startswith("Frontend")]
+    ser = meas[(meas.metric_name == "output_per_hour") & meas.source_name.str.startswith("Frontend")].groupby("entity_id").metric_value
+    k = fe_ent.set_index("entity_id").metric_value
+    diff = (k - ser.last()).abs()
+    obs.append({"id": "OBS-1", "finding": "Headline KPI is not derivable from the daily series",
+                "detail": f"kpi_output_per_hour differs from the latest daily output by up to {diff.max():.1f} units and from the 5-day mean by up to {(k - ser.mean()).abs().max():.1f}; treat KPI as a separate source-stated value."})
+    order = fe_ent.sort_values("metric_value", ascending=False)[["metric_value", "status"]]
+    rank = {"optimal": 0, "warning": 1, "critical": 2}
+    monotone = all(rank[a] <= rank[b] for a, b in zip(order.status, order.status[1:]))
+    obs.append({"id": "OBS-2", "finding": "Frontend status is monotone in the KPI", "detail": f"Statuses ordered by KPI are consistent: {monotone}. Thresholds are implicit in the UI code, not documented."})
+    be = meas[meas.source_name.str.startswith("Backend") & (meas.metric_name == "output_per_hour")]
+    gm = be.groupby("status").metric_value.agg(["count", "mean"]).round(2)
+    obs.append({"id": "OBS-3", "finding": "Backend status is not tied to backend metrics",
+                "detail": "Backend coverage_status is drawn at random (70/20/10) independently of output; mean output by status: " + json.dumps(gm["mean"].to_dict()) + ". It is a label, not an outcome derived from the metrics."})
+    obs.append({"id": "OBS-4", "finding": "Different scopes share metric names",
+                "detail": "output_per_hour and overtime_hours exist in both sources (facility-level vs shift-level). Always filter by source_name; do not pool."})
+    obs.append({"id": "OBS-5", "finding": "Short, fully synthetic series", "detail": "Frontend series have 5 daily points, backend 7. All rows are synthetic."})
+
+    blocking = [i for i in issues if i["severity"] == "blocking"]
+    dump("quality_assessment.json", {"status": "PASS" if not blocking else "FAIL", "data_version": man["data_version"],
+                                     "post1_validation": post1, "dimensions": dims, "issues": issues, "observations": obs})
+    if blocking:
+        raise SystemExit("Blocking data-quality issues found")
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="data-science/scripts/assess_representativeness.py">
+"""Representativeness: canonical vs source sample vs case-study behaviour (map of facility x team, statuses, time horizons)."""
+import pandas as pd
+from _ds_common import *
+
+UI_HORIZONS_DAYS = {"Last 7 Days": 7, "Last 30 Days": 30, "Year to Date": 300}
+
+
+def main():
+    df = load()
+    man = json.loads(MANIFEST.read_text("utf-8"))
+    src = pd.read_csv(SOURCE_SAMPLE, dtype=str, keep_default_na=False)
+    stats = json.loads((ROOT / "data" / "quality" / "pipeline_stats.json").read_text("utf-8"))
+    full_pop = man["sampling_method"] == "full_population_retained" and man["original_record_count"] == man["sample_record_count"]
+
+    fe = df[df.source_name.str.startswith("Frontend")]
+    be = df[df.source_name.str.startswith("Backend")]
+    cov = {"categories": {"teams_expected": 3, "teams_present": sorted(df.category.unique()),
+                          "facilities_expected": 2, "facilities_present": sorted(fe.subcategory.dropna().unique()),
+                          "node_rows_each": fe.groupby("entity_id").size().to_dict()}}
+    nodes_ok = fe.entity_id.nunique() == 6 and fe.groupby("entity_id").size().nunique() == 1
+    dates = pd.to_datetime(df.observed_at.dropna(), utc=True)
+    span = (dates.max() - dates.min()).days + 1
+    cov["time"] = {"span_days": int(span), "earliest": dates.min().strftime("%Y-%m-%d"), "latest": dates.max().strftime("%Y-%m-%d"),
+                   "ui_time_horizons": UI_HORIZONS_DAYS,
+                   "horizon_support": {"Last 7 Days": "partial (5 days frontend, 7 days backend)", "Last 30 Days": "not supported by source data (UI interpolates)",
+                                       "Year to Date": "not supported by source data (UI interpolates)"}}
+    cov["geography"] = {"status": "not applicable", "detail": "No coordinates in source data; map positions are schematic."}
+    sc = df.status.value_counts()
+    node_status = fe[fe.record_type == "entity"].status.value_counts().to_dict()
+    be_status = be[be.metric_name == "output_per_hour"].status.value_counts().to_dict()
+    cov["status"] = {"canonical": sc.to_dict(), "frontend_nodes": node_status, "backend_shift_days": be_status}
+    cov["rare_records"] = {"critical_rows": int(sc.get("critical", 0)), "critical_share_pct": round(float(sc.get("critical", 0) / len(df) * 100), 2),
+                           "frontend_critical_nodes": node_status.get("critical", 0), "backend_critical_shift_days": be_status.get("critical", 0),
+                           "all_source_critical_rows_retained": stats["rows_removed"] == 0}
+    cov["scenario"] = {"status": "not applicable", "detail": "No adjustable inputs or scenario parameters."}
+    t = df.text_value.dropna()
+    cov["text"] = {"non_null": int(len(t)), "unique": int(t.nunique()), "detail": "One insight per frontend node only; no review/feedback text."}
+    cov["network"] = {"status": "not applicable", "related_entity_rows": int(df.related_entity_id.notna().sum())}
+
+    # canonical vs source sample: every source-sample group is carried into canonical
+    miss = {"facility_team_nodes": sorted(set((src[src.facility != ""].facility + "|" + src[src.facility != ""].team).unique()) -
+                                          set((fe.subcategory.str.replace("_", " ").str.title() + "|" + fe.category.str.replace("_", " ").str.title()).unique())),
+            "dates": sorted(set(src.record_date) - set(df.observed_at.dropna().str.slice(0, 10)))}
+    conv_ok = not miss["dates"] and df.entity_id.nunique() == 9
+    under = []
+    if span < 8:
+        under.append("Time: only 5-7 consecutive days; no weekly cycle, month or year coverage.")
+    under.append("Backend rows have no facility, so facility comparison exists only in the frontend source.")
+    under.append("Critical cases are rare: 1 frontend node and ~3 backend shift-days.")
+    bias = ["Source is the whole synthetic population, so there is no sampling bias against it (nothing was dropped).",
+            "Population bias: the population itself is hand-authored (frontend) or uniform-random (backend) and does not represent real operations.",
+            "Frontend facility/team values were authored to tell a story (e.g. night shift critical); effects found later are designed, not discovered."]
+    result = "PASS" if full_pop and nodes_ok and conv_ok else "CHANGES REQUIRED"
+    dump("representativeness_assessment.json", {
+        "result": result, "data_version": man["data_version"],
+        "original_sampling": {"method": man["sampling_method"], "original_records": man["original_record_count"],
+                              "sample_records": man["sample_record_count"], "canonical_records": man["canonical_record_count"],
+                              "full_population_retained": full_pop},
+        "coverage": cov, "canonical_vs_source_sample_missing": miss, "underrepresented_areas": under, "sampling_bias": bias,
+        "scope_of_result": "PASS applies to the 7-day comparative view of 2 facilities x 3 teams. It does NOT cover 30-day or year-to-date horizons."})
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="data-science/scripts/profile_canonical_data.py">
+"""Canonical profile: structure, completeness, uniqueness, numeric, temporal, categorical, status, geo, text, provenance."""
+import pandas as pd
+from _ds_common import *
+
+KEY = ["source_name", "entity_id", "metric_name", "observed_at"]
+
+
+def main():
+    df = load()
+    man = json.loads(MANIFEST.read_text("utf-8"))
+    n = len(df)
+    p = {"structure": {
+        "rows": n, "columns": len(df.columns), "file_size_mb": round(CANONICAL.stat().st_size / 1024 ** 2, 4),
+        "data_versions": sorted(df.data_version.astype(str).unique()), "manifest_data_version": man["data_version"],
+        "source_count": int(df.source_name.nunique()),
+        "record_type_distribution": df.record_type.value_counts().to_dict()}}
+
+    p["completeness"] = {c: {"non_null": int(df[c].notna().sum()), "null": int(df[c].isna().sum()),
+                             "null_pct": round(float(df[c].isna().mean() * 100), 2)} for c in df.columns}
+    p["fully_empty_fields"] = [c for c in df.columns if df[c].isna().all()]
+
+    dated = df[df.observed_at.notna()]
+    p["uniqueness"] = {
+        "unique_counts": {c: int(df[c].nunique()) for c in df.columns},
+        "duplicate_record_ids": int(df.record_id.duplicated().sum()),
+        "duplicate_natural_keys(source,entity,metric,observed_at)": int(dated.duplicated(KEY).sum()),
+        "entity_rows_per_entity_metric": df[df.record_type == "entity"].groupby(["entity_id", "metric_name"]).size().max(),
+        "repeated_entity_relationships": 0, "related_entity_id_populated": int(df.related_entity_id.notna().sum())}
+
+    num = {}
+    for (src, m), g in df[df.metric_value.notna()].groupby(["source_name", "metric_name"]):
+        v = pd.to_numeric(g.metric_value, errors="coerce")
+        num[f"{src} :: {m}"] = {"unit": sorted(g.metric_unit.dropna().unique()), "count": int(v.count()), "min": float(v.min()),
+                                "max": float(v.max()), "mean": round(float(v.mean()), 4), "median": float(v.median()),
+                                "std": round(float(v.std()), 4), "invalid": int(v.isna().sum()),
+                                "negative": int((v < 0).sum())}
+    p["numerical"] = num
+
+    d = pd.to_datetime(dated.observed_at, errors="coerce", utc=True)
+    days = d.dt.normalize()
+    per = {}
+    for src, g in dated.assign(_d=days).groupby("source_name"):
+        u = sorted(g._d.unique())
+        full = pd.date_range(u[0], u[-1], freq="D", tz="UTC")
+        series = g.groupby(["entity_id", "metric_name"]).size()
+        per[src] = {"earliest": u[0].strftime("%Y-%m-%d"), "latest": u[-1].strftime("%Y-%m-%d"), "unique_dates": len(u),
+                    "missing_days_in_span": int(len(full) - len(u)), "unique_months": int(g._d.dt.strftime("%Y-%m").nunique()),
+                    "series_count": int(len(series)), "observations_per_series_min": int(series.min()),
+                    "observations_per_series_max": int(series.max())}
+    p["temporal"] = {"non_null_dates": int(len(dated)), "parse_rate_pct": round(float(d.notna().mean() * 100), 2),
+                     "undated_rows": int(n - len(dated)), "earliest": d.min().strftime("%Y-%m-%d"), "latest": d.max().strftime("%Y-%m-%d"),
+                     "unique_dates": int(days.nunique()), "max_share_on_single_date_pct": round(float(days.value_counts(normalize=True).max() * 100), 2),
+                     "per_source": per}
+
+    cat = {}
+    for c in ["category", "subcategory", "status", "metric_name", "metric_unit", "entity_id"]:
+        vc = df[c].fillna("<missing>").value_counts()
+        cat[c] = {"distribution": vc.to_dict(), "distinct": int(len(vc)), "rare_values_lt_5pct": [k for k, v in vc.items() if v / n < 0.05],
+                  "near_constant": bool(vc.iloc[0] / n > 0.95)}
+    p["categorical"] = cat
+    p["status_stage"] = {"status_distribution": df.status.fillna("<missing>").value_counts().to_dict(),
+                         "stage_populated": int(df.stage.notna().sum()), "stage_note": "No lifecycle stages exist in this case study."}
+    lat, lon = pd.to_numeric(df.latitude, errors="coerce"), pd.to_numeric(df.longitude, errors="coerce")
+    p["geographic"] = {"valid_coordinate_pairs": int((lat.between(-90, 90) & lon.between(-180, 180)).sum()),
+                       "populated_latitude": int(lat.notna().sum()), "populated_longitude": int(lon.notna().sum()),
+                       "note": "No geography in the source data; the map in the UI is schematic."}
+    t = df.text_value.dropna()
+    p["text"] = {"non_null": int(len(t)), "unique": int(t.nunique()), "avg_length": round(float(t.str.len().mean()), 1),
+                 "max_length": int(t.str.len().max()), "possibly_truncated(len==500)": int((t.str.len() == 500).sum())}
+    p["provenance"] = {"source_distribution": df.source_name.value_counts().to_dict(),
+                       "synthetic_true": int((df.is_synthetic == "true").sum()), "synthetic_false": int((df.is_synthetic == "false").sum())}
+    dump("canonical_profile.json", p)
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="data-science/README.md">
+# /data-science - Post #2: Validation, Profiling & Analytical Readiness (POC-41)
+
+Reads **only** `data/canonical/intelligence_data.csv` (version 1.0.0, 129 rows x 20 columns, all synthetic). No second dataset, charts, features or models are created. Outputs are JSON assessments and reports.
+
+```bash
+pip install pandas numpy
+python scripts/data_pipeline/run_pipeline.py          # Post #1 package + validation (39 checks)
+cd data-science/scripts
+python profile_canonical_data.py                      # -> outputs/canonical_profile.json
+python assess_data_quality.py                         # -> outputs/quality_assessment.json (re-runs Post #1 validation)
+python assess_representativeness.py                   # -> outputs/representativeness_assessment.json
+python assess_analytical_readiness.py                 # -> outputs/analytical_readiness.json
+```
+
+Run in that order (readiness reads the quality and representativeness outputs). The notebook `notebooks/01_canonical_data_validation_and_readiness.ipynb` is a read-only walkthrough of the same evidence.
+
+Reports: `docs/CANONICAL_DATA_PROFILE.md`, `DATA_QUALITY_ASSESSMENT.md`, `REPRESENTATIVENESS_ASSESSMENT.md`, `DATA_ARCHETYPE_CONFIRMATION.md`, `ANALYTICAL_READINESS_REPORT.md`.
+
+Result: **DATA READY FOR ANALYTICAL TRACK DEVELOPMENT** (Track A primary, B and C conditional, D-H rejected, predictive rejected). No canonical change was needed, so `data_version` stays 1.0.0.
+</file>
+
+<file path="docs/ANALYTICAL_READINESS_REPORT.md">
+# Analytical Readiness Report
+
+## Target User
+Shift operations manager responsible for staffing and coverage.
+
+## Canonical Data Version
+1.0.0 (unchanged in Post #2; no canonical correction was required).
+
+## Confirmed Data Archetype
+Time-Series Measurement (short) with Entity Snapshot secondary. See `DATA_ARCHETYPE_CONFIRMATION.md`.
+
+## Primary Analytical Question
+Across Facility A and B, which team's output per hour and overtime hours differ most from the other groups during 2026-10-24 to 2026-10-28, and how consistent is that gap day to day?
+
+## Decision to Be Supported
+Which facility/team to review first for supervisor coverage and overtime allocation (demonstration decision on synthetic data).
+
+## Data Coverage Summary
+129 rows, 20 columns, all synthetic. 6 facility-team nodes x 5 days (frontend) and 3 shifts x 7 days (backend), 2026-10-24 to 2026-10-30. No geography, stages, relationships or scenarios; 6 text values.
+
+## Quality Summary
+Post #1 validation PASS (39/39); quality assessment PASS with 0 blocking issues; 129/129 values match the source sample. Five non-blocking observations are listed in `DATA_QUALITY_ASSESSMENT.md`.
+
+## Representativeness Summary
+PASS for the 7-day comparative view. Full population retained; no sampling bias, but the population is authored or random. 30-day and year-to-date views are not backed by data.
+
+## Track Readiness Matrix
+| Track | Status | Evidence | Missing Requirement | Recommendation |
+|---|---|---|---|---|
+| A - Comparative | SUPPORTED | 6 facility x team groups, each with 5 daily observations of output and overtime (frontend, facility-level); 3 shifts x 7 days in backend. Quality PASS, representativeness PASS. | Groups are small (5-7 observations): differences are descriptive, not statistically strong. Compare within a source only. | PRIMARY track. |
+| B - Trend | CONDITIONAL | Ordered consecutive daily observations exist, but each series has only 5-7 points over one month (2026-10-24 to 2026-10-30). | Fewer than 12 ordered periods; no weekly/seasonal cycle; Last-30-Days and Year-to-Date views are interpolated by the UI, not in the data. | SUPPORTING track, descriptive direction over the 5-7 observed days only. No forecasting. |
+| C - Risk & Priority | CONDITIONAL | Explainable factors exist (attendance_rate, output_per_hour, overtime_hours) plus a status label (optimal/warning/critical). | No documented urgency definition; status thresholds are implicit in UI code; backend status is random and unrelated to its metrics (OBS-3); attendance exists only in backend. | Conditional: only a transparent, rule-based frontend 'coverage review priority' using output, overtime and source-stated status, with documented weights. Not a score of real risk. |
+| D - Anomaly | REJECTED | Largest comparable baseline is 7 observations per series. | Needs a meaningful baseline (>= 20 comparable observations); backend values are uniform-random, so extremes are generator noise and cannot be separated from errors. | Reject. |
+| E - Segmentation | REJECTED | Only 9 entities (6 facility-team nodes, 3 shifts) and 3-4 informative numeric fields. | Segments of 6 nodes carry no business meaning beyond the existing team/facility grouping. | Reject. |
+| F - Predictive | REJECTED | Predictive checklist below. | No genuine target (status is authored/random label), no real historical outcomes, <=7 observations per series, no validation split possible, no decision-time inputs, high leakage risk (status is a function of KPI in frontend). | Reject. Row count (129) does not justify prediction. |
+| G - Simulation | REJECTED | No scenario records, no parameter columns, record_type 'scenario' absent. | Controlled inputs and comparable scenarios. | Reject. |
+| H - Text & Theme | REJECTED | 6 text values, 6 unique, one per node. | Sparse, generic, authored insight sentences; no volume for themes. | Reject. |
+
+## Recommended Primary Track
+A - Comparative.
+
+## Optional Supporting Track
+B - Trend, descriptive over the 5-7 observed days only. Track C may be explored only as a transparent rule-based review-priority list, clearly labelled synthetic.
+
+## Rejected Tracks
+D - Anomaly, E - Segmentation, F - Predictive, G - Simulation, H - Text & Theme.
+
+## Predictive Intelligence Decision
+**REJECTED.** Checklist:
+- Genuine target: No
+- Historical examples: No
+- Decision time availability: No
+- No leakage: No
+- Distribution reported: Yes
+- Baseline definable: Yes
+- Defensible validation: No
+- Decision value: No
+Row count does not justify prediction.
+
+## Important Limitations
+- All data synthetic; findings demonstrate method, not real operations.
+- Frontend (facility-level) and backend (shift-level) are different scopes; never pool or concatenate.
+- 5-7 daily points per series, one month only.
+- Last-30-Days / Year-to-Date UI views are not backed by source data.
+- Frontend status/KPI/text are authored; backend status is random.
+- No geography, stages, relationships or scenarios.
+
+## Required Controls for Post #3
+- Read only data/canonical/intelligence_data.csv; filter by source_name first.
+- Compare groups within a source; report n for every comparison.
+- Label every output synthetic and descriptive; no forecast, anomaly flag or predictive score.
+- No second dataset; any canonical fix goes through scripts/data_pipeline with a version bump and Post #1 re-validation.
+- Do not alter the operational page.
+
+## Final Result
+DATA READY FOR ANALYTICAL TRACK DEVELOPMENT
+</file>
+
+<file path="docs/CANONICAL_DATA_PROFILE.md">
+# Canonical Data Profile
+
+## Project
+POC-41 Shift Productivity & Coverage Intelligence. Source: `data/canonical/intelligence_data.csv` only. Machine-readable: `data-science/outputs/canonical_profile.json`.
+
+## Canonical Data Version
+1.0.0 (CSV and manifest agree).
+
+## File Size
+0.0313 MB.
+
+## Dataset Dimensions
+129 rows x 20 columns; 2 sources; 9 entities; 99 distinct metric values.
+
+## Record-Type Distribution
+`measurement` 123 (95.3%), `entity` 6 (4.7%). No event, process, scenario, node, edge or document rows.
+
+## Source Distribution
+Frontend `mockDatabase` 66 rows (facility-level); Backend synthetic generator 63 rows (shift-level, no facility).
+
+## Synthetic / Non-Synthetic Distribution
+129 synthetic, 0 non-synthetic.
+
+## Field Completeness
+Fully populated (0 nulls): record_id, record_type, entity_id, entity_name, category, status, metric_name, metric_value, metric_unit, source_name, source_record_id, is_synthetic, data_version.
+Partly populated: observed_at (6 null = entity snapshot rows), subcategory (63 null = backend rows with no facility), text_value (123 null; 6 populated).
+Fully empty by design: related_entity_id, stage, latitude, longitude (129 null each).
+
+## Numerical Coverage
+| Source :: metric | Unit | n | Min | Max | Mean | Median | Std |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Frontend :: output_per_hour | units_per_hour | 30 | 85.0 | 142.0 | 119.40 | 121.0 | 15.21 |
+| Frontend :: overtime_hours | hours | 30 | 5.0 | 45.0 | 20.23 | 19.0 | 11.53 |
+| Frontend :: kpi_output_per_hour | units_per_hour | 6 | 95.2 | 142.1 | 121.58 | 123.45 | 17.22 |
+| Backend :: output_per_hour | units_per_hour | 21 | 111.9 | 149.5 | 129.65 | 131.0 | 13.23 |
+| Backend :: overtime_hours | hours | 21 | 5.7 | 38.9 | 20.44 | 17.5 | 11.06 |
+| Backend :: attendance_rate | ratio | 21 | 0.85 | 0.98 | 0.907 | 0.90 | 0.040 |
+
+Invalid or negative values: 0. Each metric has exactly one unit.
+
+## Date and Time Coverage
+123 dated rows, 100% parse as ISO 8601. Frontend 2026-10-24 to 2026-10-28 (5 days); backend 2026-10-24 to 2026-10-30 (7 days). No gaps in either span; one calendar month. 21 series (12 frontend with 5 points, 9 backend with 7 points). Largest single-date share 17.1%. 6 entity rows are undated snapshots.
+
+## Category and Status Coverage
+Team (`category`): morning/evening/night 43 each. Facility (`subcategory`): A 33, B 33, blank 63. Status: optimal 61, warning 48, critical 20. No near-constant field; only rare value is the metric `kpi_output_per_hour` (6 rows, 4.7%). No stage values exist.
+
+## Geographic Coverage
+No coordinates (0 valid pairs). The UI map is schematic.
+
+## Text Coverage
+6 non-null, 6 unique; average length 72.5, maximum 82 characters; none truncated.
+
+## Important Observations
+- Duplicate `record_id`: 0. Duplicate (source, entity, metric, date) keys: 0.
+- Frontend and backend share metric names at different scopes; always filter by `source_name`.
+- Series are short (5-7 points) and wholly synthetic.
+</file>
+
+<file path="docs/DATA_ARCHETYPE_CONFIRMATION.md">
+# Data Archetype Confirmation
+
+## What One Canonical Record Represents
+A `measurement` row = one metric reading for one entity on one day (e.g. Facility A Night Watch, output_per_hour, 2026-10-26). An `entity` row = one headline KPI plus insight text for a facility-team node (undated snapshot).
+
+## Primary Archetype
+Time-Series Measurement (short): repeated daily metrics per entity across ordered, consecutive days.
+
+## Secondary Archetype
+Entity / Snapshot: 6 node-level KPI + insight records.
+
+## Evidence
+123 of 129 rows are dated measurements; 21 series, each complete with no gaps (12 frontend series of 5 points, 9 backend series of 7 points).
+
+## Populated Canonical Fields
+record_id, record_type, observed_at (123), entity_id, entity_name, category, subcategory (66), status, metric_name, metric_value, metric_unit, text_value (6), source_name, source_record_id, is_synthetic, data_version.
+
+## Time Behaviour
+Daily, consecutive, one month. Enough to describe day-to-day movement; not enough for seasonality, trend significance or forecasting.
+
+## Entity Behaviour
+6 facility-team nodes (frontend) and 3 shift entities (backend), each repeated across days. Nodes are comparable with each other.
+
+## Relationship Behaviour
+None.
+
+## Text Behaviour
+6 unique authored sentences; descriptive annotation, not analysable text.
+
+## Archetypes Considered but Rejected
+- Event/Transaction: rows are readings, not incidents.
+- Process Lifecycle: no stage, ageing or outcome.
+- Simulation/Scenario: no controllable inputs.
+- Network: no edges.
+- Text-Enriched: too little text.
+- Hybrid: not essential to the primary question.
+
+## Final Confirmation
+Time-Series Measurement (primary, short, descriptive only) with Entity Snapshot (secondary). The two sources are separate scopes (facility-level vs shift-level) and are not one series.
+</file>
+
+<file path="docs/DATA_QUALITY_ASSESSMENT.md">
+# Data Quality Assessment
+
+## Validation Command and Result
+`python scripts/data_pipeline/validate_data.py` re-run by `assess_data_quality.py`: **PASS (39/39 checks)**. Quality script result: PASS, 0 blocking issues. Output: `data-science/outputs/quality_assessment.json`.
+
+## Completeness
+All required fields (record_id, record_type, source_name, is_synthetic, data_version) are 100% populated. 100% of measurement rows have metric name, value, date and entity. 100% of entity rows have insight text. Empty optional fields are structurally inapplicable.
+
+## Uniqueness
+0 duplicate record_ids, 0 duplicate natural keys, 0 duplicate source_record_ids.
+
+## Validity
+All dates match `YYYY-MM-DDTHH:MM:SSZ`; all metric values numeric and non-negative; attendance within 0-1; record types allowed; no text over 500 characters.
+
+## Consistency
+One unit per metric; lowercase snake_case ids and categories; status vocabulary optimal/warning/critical only; boolean values `true` only; single data version equal to the manifest.
+
+## Accuracy Against Source Sample
+Every canonical value was re-derived from `source_record_id` and compared with `source_sample.csv`: 123 of 123 measurement rows and 6 of 6 entity rows match (0 mismatches).
+
+## Provenance
+129/129 rows carry source_name and source_record_id; manifest source names match.
+
+## Safety
+No e-mail or secret patterns; manifest `contains_personal_data=false`; all data synthetic.
+
+## Reproducibility
+Post #1 validation regenerates the canonical CSV and published JSON byte-identically from the source sample.
+
+## Blocking Issues
+None.
+
+## Non-Blocking Observations (carry into Post #3)
+1. Frontend headline KPI is not derivable from its daily series (differs by up to 4.1 from the latest value and 5.1 from the 5-day mean); treat it as a separate stated value.
+2. Frontend status is monotone in the KPI, but thresholds are implicit in UI code.
+3. Backend `status` is random and unrelated to backend metrics (mean output: critical 137.97, optimal 127.15, warning 131.18), so it is a label, not an outcome.
+4. Same metric names exist at two scopes; do not pool.
+5. Series are short and fully synthetic.
+
+## Corrections Applied Through Pipeline
+None required.
+
+## Updated Data Version
+Unchanged: 1.0.0 (no canonical change).
+
+## Final Quality Result
+PASS
+</file>
+
+<file path="docs/REPRESENTATIVENESS_ASSESSMENT.md">
+# Representativeness Assessment
+
+## Project and Case-Study Purpose
+Compare shift output, overtime and coverage status across 2 facilities x 3 teams for a shift operations manager.
+
+## Canonical Data Version
+1.0.0
+
+## Original Sampling Method
+`full_population_retained`: 51 source records, 51 retained, 129 canonical records. Nothing was removed.
+
+## Source Sample Summary
+51 rows x 13 columns (30 frontend, 21 backend).
+
+## Canonical Record Summary
+129 rows: 123 measurements, 6 entity snapshots.
+
+## Coverage Assessment
+### Categories
+All 3 teams and both facilities present. Each of the 6 facility-team nodes has exactly 11 rows. Every source group and date carries into the canonical file (0 missing).
+### Time Periods
+2026-10-24 to 2026-10-30 (7 days max). The UI's Last 7 Days is partly backed (5-7 days). Last 30 Days and Year to Date are interpolated by the UI and **not** backed by source data.
+### Geography
+Not applicable: no coordinates; the map is schematic.
+### Status and Process Stages
+Optimal 61, warning 48, critical 20 rows. No lifecycle stages exist in this case study.
+### Severity and Rare Records
+Critical rows: 20 (15.5%) - 1 frontend node (Facility A Night Watch) and 3 backend shift-days. All retained.
+### Scenario Boundaries
+Not applicable; no scenario inputs.
+### Text Groups
+6 authored insight sentences, one per frontend node.
+### Network Relationships
+Not applicable; `related_entity_id` empty.
+
+## Underrepresented Areas
+- Only 5-7 consecutive days; no weekly, monthly or annual behaviour.
+- Facility comparison exists only in the frontend source (backend has no facility).
+- Critical cases are few (1 node, 3 shift-days).
+
+## Missing Case-Study Behaviour
+30-day and year-to-date history; real overtime causes; staffing levels; shift handover.
+
+## Sampling Bias
+No sampling bias against the source (full population kept). Population bias remains: frontend values are hand-authored (night shift designed to look critical) and backend values are uniform-random, so neither represents real operations.
+
+## Impact on Future Analysis
+Supports a descriptive, within-source comparison over one week. Effects found are designed or random artefacts; present them as method demonstrations. No claims about real facilities.
+
+## Required Correction
+None.
+
+## Representativeness Result
+PASS (scope: 7-day comparative view of 2 facilities x 3 teams; not valid for 30-day or year-to-date horizons).
+</file>
 
 <file path="backend/Dockerfile">
 FROM python:3.11-slim
@@ -547,7 +2376,7 @@ REC-00129,measurement,2026-10-30T00:00:00Z,shift_night,,Night Watch (all facilit
   "checks_total": 39,
   "checks_failed": 0,
   "errors": [],
-  "total_data_size_mb_excluding_validation_report": 0.1205,
+  "total_data_size_mb_excluding_validation_report": 0.1208,
   "canonical_rows": 129,
   "canonical_columns": 20,
   "sha256_canonical_csv": "4c1dde605e022631df25283657c71b21e2b75f500dbd57069653cc65725fe9f1",
@@ -561,7 +2390,7 @@ REC-00129,measurement,2026-10-30T00:00:00Z,shift_night,,Night Watch (all facilit
     {
       "check": "total_data_size_le_10mb",
       "status": "PASS",
-      "detail": "0.1205 MB"
+      "detail": "0.1208 MB"
     },
     {
       "check": "each_file_le_5mb",
@@ -1089,39 +2918,6 @@ Command: `python scripts/data_pipeline/validate_data.py` (or `run_pipeline.py` f
 - Existing app files (`frontend/`, `backend/`) are **unchanged**; this post only adds `/data`, `/scripts/data_pipeline`, `/docs`.
 - The app does not read `/data` at runtime and needs no live API, so deployment is unaffected. `package.json` was deliberately not given a `prebuild` hook: the frontend Docker build context is `./frontend` and the Node image has no Python.
 - Local `npm ci && npm run build` and the Render deploy must be confirmed on your machine (see submission notes); the cloud sandbox used here could not complete `npm ci` (npm crashed) and could not reach the live URL.
-</file>
-
-<file path="docs/DATA_SOURCE_INVENTORY.md">
-# Data Source Inventory
-
-## Project
-POC-41 - Shift Productivity & Coverage Intelligence (Phase 2 repo: `POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2`; live: Render URL `poc-41-shift-productivity-coverage-rit9.onrender.com`).
-
-## Existing Application Data Flow
-`frontend/app/page.tsx` holds a hard-coded `mockDatabase` (2 facilities x 3 teams) and a 5-date array. The page reads it directly (`useMemo`); filters (Location / Team / Time Horizon) only select from it. "Last 30 Days" and "Year to Date" are produced in the browser by `buildSeries()` from a sine-based `seeded()` function, interpolating around the 5 real points. The CSV export is built client-side. The frontend **never calls the backend**. `backend/main.py` exposes `GET /api/v1/intelligence/coverage`, which generates 21 synthetic rows (NumPy seed 42); `backend/mock_data.json` is an empty (0-byte) fallback.
-
-| Source | Type | Access Method | Current Usage | Raw Size | Record Count | Sensitivity | Phase 3 Decision |
-|---|---|---|---|---:|---:|---|---|
-| `mockDatabase` + `dates` in `frontend/app/page.tsx` | synthetic (hard-coded) | static file, parsed by regex | Drives every chart/marker/KPI on the page | ~2.2 KB | 30 daily rows (6 nodes x 5 days) + 6 node KPIs/insights | Synthetic | **Use** |
-| `generate_synthetic_shift_data()` in `backend/main.py` | synthetic generator | function body extracted via `ast`, run with seed 42 | `/api/v1/intelligence/coverage` (not called by UI) | ~2.2 KB | 21 (7 days x 3 shifts) | Synthetic | **Use** |
-| `backend/mock_data.json` | JSON | file | Fallback only | 0 B | 0 | n/a | Exclude (empty) |
-| `buildSeries()` 30-day / YTD output in `page.tsx` | derived in browser | computed at render | "Last 30 Days"/"Year to Date" views | n/a | 30 / 10 per node | Synthetic | **Exclude** - interpolated padding, adds no independent information |
-
-## Excluded Sources
-Interpolated 30-day/YTD series (above); empty `mock_data.json`; repository screenshots (`*.png`) and test reports (not data).
-
-## Licensing or Access Notes
-All data is authored within the project. No external API, licence, key or login is involved. The live Render URL was not reachable from the build sandbox; it is not needed (no runtime data fetch).
-
-## Data Risks
-- Synthetic only: no real operational conclusions; every row has `is_synthetic=true`.
-- Two sources use different vocabularies (UI `Warning` vs backend `Strained`) - normalised to `warning`.
-- Backend rows have no facility; they are shift-level and are not merged into facility rows.
-- Frontend and backend values are unrelated generators; do not compare them as one series.
-- No personal data, secrets or restricted data found; `.env` is git-ignored.
-
-## Selected Phase 3 Source
-Both synthetic sources above, extracted into `data/source-sample/source_sample.csv` (51 rows x 13 columns).
 </file>
 
 <file path="docs/SAMPLING_AND_REDUCTION_REPORT.md">
@@ -1879,72 +3675,6 @@ services:
     restart: unless-stopped
 </file>
 
-<file path="README.md">
-# RealRails Shift Productivity Dashboard
-
-An enterprise-grade, high-performance telemetry dashboard designed to visualize operational shift metrics, output trends, and workforce coverage. 
-
-Built with a strict UX architecture, this dashboard enforces a **70/30 spatial split**: 70% of the viewport is dedicated to the primary visualization stage, while the remaining 30% acts as a contextual intelligence sidebar.
-
-## 🚀 Key Features
-
-* **Output-Per-Hour Trend:** A temporal visualization mapping real-time output against historical Bureau of Labor Statistics (BLS) baselines.
-* **Overtime Pareto Analysis:** A composed chart tracking overtime hours with a cumulative percentage curve to quickly identify operational bottlenecks.
-* **Coverage Heatmap:** A CSS-grid-based geographical and temporal density map for instant shift coverage recognition.
-* **Shift Matrix Context:** A relational state tracker displaying active scopes, team hierarchy, and real-time status (Optimal, Warning, Critical).
-* **Data Export:** Built-in payload generation to download active bounded datasets as CSV for external reporting.
-* **Strict Brand DNA:** Adheres to a custom dark-mode aesthetic utilizing an Obsidian Black (`#030712`) background with Electric Cyan (`#38BDF8`) and Emerald (`#10B981`) telemetry accents.
-
-## 🛠️ Tech Stack
-
-* **Framework:** React / Next.js (App Router)
-* **Styling:** Tailwind CSS
-* **Data Visualization:** Recharts
-* **State Management:** React Hooks (`useState`, `useMemo`, `useEffect`)
-
-## 📦 Installation & Setup
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-org/realrails-dashboard.git
-   cd realrails-dashboard
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Run the development server:**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-4. **Open the application:**
-   Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 🏗️ Architecture
-
-The UI is built on a responsive grid that guarantees the 70/30 split on desktop environments. 
-
-* `frontend/app/page.tsx`: The main dashboard component containing state logic, the intelligence sidebar, and the visualization grid.
-* `mockDatabase`: A simulated data layer used for frontend validation (ready to be swapped with a Python REST/GraphQL API).
-
-## 🧪 Testing (UAT)
-
-A rigorous User Acceptance Testing (UAT) protocol is established for this project. Please refer to the `uat_cases.md` or the `Shift_Productivity_UAT_Table.xlsx` file in the testing directory to validate:
-* Interactive handshake events between the 70% stage and 30% sidebar.
-* Temporal, risk, and ownership filter logic.
-* Dynamic intelligence rendering based on active data nodes.
-
----
-*Built for the RealRails Telemetry Initiative.*
-</file>
-
 <file path="UAT_CHECKLIST.md">
 # Functional UAT Checklist
 
@@ -1989,6 +3719,44 @@ uvicorn
 pandas
 numpy
 python-dotenv
+</file>
+
+<file path="docs/DATA_SOURCE_INVENTORY.md">
+# Data Source Inventory
+
+## Project
+POC-41 - Shift Productivity & Coverage Intelligence (Phase 2 repo: `POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2`; live: Render URL `poc-41-shift-productivity-coverage-rit9.onrender.com`).
+
+## Existing Application Data Flow
+`frontend/app/page.tsx` reads a hard-coded `mockDatabase` directly; Location / Team / Time Horizon filters only select from it. The frontend never calls the backend. The CSV export is built in the browser. "Last 30 Days" and "Year to Date" are interpolated in the browser from the 5 real points (excluded, see below). `backend/main.py` serves `GET /api/v1/intelligence/coverage` from a seeded generator; `backend/mock_data.json` is an empty fallback.
+
+| Source | Type | Access Method | Current Usage | Raw Size | Record Count | Sensitivity | Phase 3 Decision |
+|---|---|---|---|---:|---:|---|---|
+| `frontend/app/page.tsx` (`mockDatabase`, `dates`) | Synthetic, static | In-file constant, parsed by regex (not executed) | Drives all map markers, KPIs and charts; update pattern: static | ~2.2 KB | 30 daily rows + 6 node KPI/insight records | Synthetic | Use |
+| `backend/main.py` (`generate_synthetic_shift_data`) | Synthetic generator, seed 42 | Function extracted via `ast` and run locally | `/api/v1/intelligence/coverage` (not called by the UI); update pattern: generated on request, deterministic | ~2.2 KB | 21 | Synthetic | Use |
+| `backend/mock_data.json` | JSON | File | Fallback only | 0 B | 0 | n/a | Exclude (empty) |
+| `buildSeries()` 30-day / YTD output | Derived in browser | Computed at render | Time Horizon views | n/a | 30 / 10 per node | Synthetic | Exclude (interpolated padding) |
+
+## Source Granularity & Downstream Analytics Caution
+- **Frontend source:** facility/team operational state over 5 dates (2 facilities x 3 teams x 5 dates = 30 rows, 2026-10-24 to 2026-10-28).
+- **Backend source:** shift-level records over 7 dates (7 dates x 3 shifts = 21 rows, 2026-10-24 to 2026-10-30) with no facility field; it also carries `attendance_rate` and `coverage_status`, which the frontend lacks.
+- **Analytical distinction:** the two streams have different scopes and independent generators. They are kept together in the canonical file for completeness (separated by `source_name`, `entity_id` and `subcategory`), but later Phase 3 work must analyse each according to its own scope and must not concatenate them into one continuous time series.
+
+## Excluded Sources
+Interpolated 30-day/YTD series (above); empty `mock_data.json`; repository screenshots (`*.png`) and test reports (not data).
+
+## Licensing or Access Notes
+All records are synthetic with deterministic seeds; nothing is scraped. All data is authored within the project. No external API, licence, key or login is involved. The live Render URL was not reachable from the build sandbox; it is not needed (no runtime data fetch).
+
+## Data Risks
+- Synthetic only: no real operational conclusions; every row has `is_synthetic=true`.
+- Two sources use different vocabularies (UI `Warning` vs backend `Strained`) - normalised to `warning`.
+- Backend rows have no facility; they are shift-level and are not merged into facility rows.
+- Frontend and backend values are unrelated generators; do not compare them as one series.
+- No personal data, secrets or restricted data found; `.env` is git-ignored.
+
+## Selected Phase 3 Source
+Both synthetic sources above, extracted into `data/source-sample/source_sample.csv` (51 rows x 13 columns).
 </file>
 
 <file path="frontend/app/globals.css">
@@ -2408,6 +4176,76 @@ venv/
 
 # Security (Never push API keys)
 .env
+</file>
+
+<file path="README.md">
+# RealRails Shift Productivity Dashboard
+
+An enterprise-grade, high-performance telemetry dashboard designed to visualize operational shift metrics, output trends, and workforce coverage. 
+
+An operational map view of shift output and coverage across facilities, with a contextual intelligence panel. All data shown is synthetic.
+
+## Current Application Behaviour
+
+The page is an interactive operational map: six markers (2 facilities x 3 teams) show output-per-hour and a status colour (Optimal / Warning / Critical). Location, Team and Time Horizon selectors drive an Intelligence side panel with an output trend, an overtime chart and an insight text, and a CSV export of the selected view.
+
+* The frontend reads a hard-coded **synthetic** `mockDatabase` in `frontend/app/page.tsx`; it does not call the backend or any external API.
+* "Last 30 Days" and "Year to Date" views are interpolated in the browser from the 5 base data points (display only, not source data).
+* The backend (`backend/main.py`) serves a **synthetic**, seeded (42) shift-level dataset at `/api/v1/intelligence/coverage`.
+* Frontend data is facility/team-level; backend data is shift-level with no facility. They are different synthetic scopes and must **not** be treated as one comparable operational series in later analytics.
+
+## Phase 3 Canonical Data Package
+
+All data is synthetic (no personal or restricted data). The single source of truth is `data/canonical/intelligence_data.csv` (129 records, 20 columns, version 1.0.0), generated from a 51-record source sample (full population retained, no sampling needed). See `data/README.md` and `docs/`. Regenerate and validate with `python scripts/data_pipeline/run_pipeline.py`.
+
+## 🛠️ Tech Stack
+
+* **Framework:** React / Next.js (App Router)
+* **Styling:** Tailwind CSS
+* **Charts:** Recharts
+* **Backend:** FastAPI (synthetic data generator)
+* **Data pipeline:** Python (pandas, numpy)
+
+## 📦 Installation & Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/ifwshone/POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2.git
+   cd POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2/frontend
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+4. **Open the application:**
+   Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🏗️ Architecture
+
+* `frontend/app/page.tsx`: the page, its state logic, the synthetic `mockDatabase` and the intelligence panel.
+* `backend/main.py`: synthetic shift-level API (not consumed by the UI yet).
+* `data/` and `scripts/data_pipeline/`: Phase 3 canonical data package and its reproducible pipeline (not read by the app at runtime).
+
+## 🧪 Testing (UAT)
+
+A rigorous User Acceptance Testing (UAT) protocol is established for this project. See `UAT_CHECKLIST.md` (note: written for an earlier layout; re-verify against the current map UI):
+* Interactive handshake events between the 70% stage and 30% sidebar.
+* Temporal, risk, and ownership filter logic.
+* Dynamic intelligence rendering based on active data nodes.
+
+---
+*Built for the RealRails Telemetry Initiative.*
 </file>
 
 <file path="frontend/app/page.tsx">

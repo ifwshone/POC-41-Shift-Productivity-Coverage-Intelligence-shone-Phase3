@@ -1,0 +1,131 @@
+{
+  "final_result": "DATA READY FOR ANALYTICAL TRACK DEVELOPMENT",
+  "data_version": "1.0.0",
+  "data_version_changed_in_post2": false,
+  "confirmed_archetype": {
+    "primary": "Time-Series Measurement (short, frontend facility-level)",
+    "secondary": "Entity / Snapshot (node KPI + insight)",
+    "note": "Backend shift-level series are a second, separate measurement scope."
+  },
+  "primary_question": {
+    "target_user": "Shift operations manager responsible for staffing and coverage",
+    "operational_problem": "Output per hour and overtime differ by facility and team; managers need to know where coverage review is most needed.",
+    "question": "Across Facility A and B, which team's output per hour and overtime hours differ most from the other groups during 2026-10-24 to 2026-10-28, and how consistent is that gap day to day?",
+    "decision_supported": "Which facility/team to review first for supervisor coverage and overtime allocation (demonstration decision on synthetic data).",
+    "primary_track": "A - Comparative",
+    "supporting_track": "B - Trend (descriptive, 5 days)",
+    "rejected_tracks": [
+      "D - Anomaly",
+      "E - Segmentation",
+      "F - Predictive",
+      "G - Simulation",
+      "H - Text & Theme"
+    ]
+  },
+  "tracks": [
+    {
+      "track": "A - Comparative",
+      "status": "SUPPORTED",
+      "evidence": "6 facility x team groups, each with 5 daily observations of output and overtime (frontend, facility-level); 3 shifts x 7 days in backend. Quality PASS, representativeness PASS.",
+      "missing_requirement": "Groups are small (5-7 observations): differences are descriptive, not statistically strong. Compare within a source only.",
+      "recommendation": "PRIMARY track."
+    },
+    {
+      "track": "B - Trend",
+      "status": "CONDITIONAL",
+      "evidence": "Ordered consecutive daily observations exist, but each series has only 5-7 points over one month (2026-10-24 to 2026-10-30).",
+      "missing_requirement": "Fewer than 12 ordered periods; no weekly/seasonal cycle; Last-30-Days and Year-to-Date views are interpolated by the UI, not in the data.",
+      "recommendation": "SUPPORTING track, descriptive direction over the 5-7 observed days only. No forecasting."
+    },
+    {
+      "track": "C - Risk & Priority",
+      "status": "CONDITIONAL",
+      "evidence": "Explainable factors exist (attendance_rate, output_per_hour, overtime_hours) plus a status label (optimal/warning/critical).",
+      "missing_requirement": "No documented urgency definition; status thresholds are implicit in UI code; backend status is random and unrelated to its metrics (OBS-3); attendance exists only in backend.",
+      "recommendation": "Conditional: only a transparent, rule-based frontend 'coverage review priority' using output, overtime and source-stated status, with documented weights. Not a score of real risk."
+    },
+    {
+      "track": "D - Anomaly",
+      "status": "REJECTED",
+      "evidence": "Largest comparable baseline is 7 observations per series.",
+      "missing_requirement": "Needs a meaningful baseline (>= 20 comparable observations); backend values are uniform-random, so extremes are generator noise and cannot be separated from errors.",
+      "recommendation": "Reject."
+    },
+    {
+      "track": "E - Segmentation",
+      "status": "REJECTED",
+      "evidence": "Only 9 entities (6 facility-team nodes, 3 shifts) and 3-4 informative numeric fields.",
+      "missing_requirement": "Segments of 6 nodes carry no business meaning beyond the existing team/facility grouping.",
+      "recommendation": "Reject."
+    },
+    {
+      "track": "F - Predictive",
+      "status": "REJECTED",
+      "evidence": "Predictive checklist below.",
+      "missing_requirement": "No genuine target (status is authored/random label), no real historical outcomes, <=7 observations per series, no validation split possible, no decision-time inputs, high leakage risk (status is a function of KPI in frontend).",
+      "recommendation": "Reject. Row count (129) does not justify prediction."
+    },
+    {
+      "track": "G - Simulation",
+      "status": "REJECTED",
+      "evidence": "No scenario records, no parameter columns, record_type 'scenario' absent.",
+      "missing_requirement": "Controlled inputs and comparable scenarios.",
+      "recommendation": "Reject."
+    },
+    {
+      "track": "H - Text & Theme",
+      "status": "REJECTED",
+      "evidence": "6 text values, 6 unique, one per node.",
+      "missing_requirement": "Sparse, generic, authored insight sentences; no volume for themes.",
+      "recommendation": "Reject."
+    }
+  ],
+  "supported": [
+    "A - Comparative"
+  ],
+  "conditional": [
+    "B - Trend",
+    "C - Risk & Priority"
+  ],
+  "rejected": [
+    "D - Anomaly",
+    "E - Segmentation",
+    "F - Predictive",
+    "G - Simulation",
+    "H - Text & Theme"
+  ],
+  "predictive_intelligence": {
+    "status": "REJECTED",
+    "checklist": {
+      "genuine_target": false,
+      "historical_examples": false,
+      "decision_time_availability": false,
+      "no_leakage": false,
+      "distribution_reported": true,
+      "baseline_definable": true,
+      "defensible_validation": false,
+      "decision_value": false
+    }
+  },
+  "thresholds_used": {
+    "min_group_obs": 5,
+    "trend_supported_periods": 12,
+    "trend_conditional_periods": 3,
+    "anomaly_baseline_min": 20
+  },
+  "limitations": [
+    "All data synthetic; findings demonstrate method, not real operations.",
+    "Frontend (facility-level) and backend (shift-level) are different scopes; never pool or concatenate.",
+    "5-7 daily points per series, one month only.",
+    "Last-30-Days / Year-to-Date UI views are not backed by source data.",
+    "Frontend status/KPI/text are authored; backend status is random.",
+    "No geography, stages, relationships or scenarios."
+  ],
+  "controls_for_post3": [
+    "Read only data/canonical/intelligence_data.csv; filter by source_name first.",
+    "Compare groups within a source; report n for every comparison.",
+    "Label every output synthetic and descriptive; no forecast, anomaly flag or predictive score.",
+    "No second dataset; any canonical fix goes through scripts/data_pipeline with a version bump and Post #1 re-validation.",
+    "Do not alter the operational page."
+  ]
+}

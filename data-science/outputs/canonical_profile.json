@@ -1,0 +1,365 @@
+{
+  "structure": {
+    "rows": 129,
+    "columns": 20,
+    "file_size_mb": 0.0313,
+    "data_versions": [
+      "1.0.0"
+    ],
+    "manifest_data_version": "1.0.0",
+    "source_count": 2,
+    "record_type_distribution": {
+      "measurement": 123,
+      "entity": 6
+    }
+  },
+  "completeness": {
+    "record_id": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "record_type": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "observed_at": {
+      "non_null": 123,
+      "null": 6,
+      "null_pct": 4.65
+    },
+    "entity_id": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "related_entity_id": {
+      "non_null": 0,
+      "null": 129,
+      "null_pct": 100.0
+    },
+    "entity_name": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "category": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "subcategory": {
+      "non_null": 66,
+      "null": 63,
+      "null_pct": 48.84
+    },
+    "status": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "stage": {
+      "non_null": 0,
+      "null": 129,
+      "null_pct": 100.0
+    },
+    "metric_name": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "metric_value": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "metric_unit": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "text_value": {
+      "non_null": 6,
+      "null": 123,
+      "null_pct": 95.35
+    },
+    "latitude": {
+      "non_null": 0,
+      "null": 129,
+      "null_pct": 100.0
+    },
+    "longitude": {
+      "non_null": 0,
+      "null": 129,
+      "null_pct": 100.0
+    },
+    "source_name": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "source_record_id": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "is_synthetic": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    },
+    "data_version": {
+      "non_null": 129,
+      "null": 0,
+      "null_pct": 0.0
+    }
+  },
+  "fully_empty_fields": [
+    "related_entity_id",
+    "stage",
+    "latitude",
+    "longitude"
+  ],
+  "uniqueness": {
+    "unique_counts": {
+      "record_id": 129,
+      "record_type": 2,
+      "observed_at": 7,
+      "entity_id": 9,
+      "related_entity_id": 0,
+      "entity_name": 9,
+      "category": 3,
+      "subcategory": 2,
+      "status": 3,
+      "stage": 0,
+      "metric_name": 4,
+      "metric_value": 99,
+      "metric_unit": 3,
+      "text_value": 6,
+      "latitude": 0,
+      "longitude": 0,
+      "source_name": 2,
+      "source_record_id": 129,
+      "is_synthetic": 1,
+      "data_version": 1
+    },
+    "duplicate_record_ids": 0,
+    "duplicate_natural_keys(source,entity,metric,observed_at)": 0,
+    "entity_rows_per_entity_metric": "1",
+    "repeated_entity_relationships": 0,
+    "related_entity_id_populated": 0
+  },
+  "numerical": {
+    "Backend synthetic shift generator (main.py, seed 42) :: attendance_rate": {
+      "unit": [
+        "ratio"
+      ],
+      "count": 21,
+      "min": 0.85,
+      "max": 0.98,
+      "mean": 0.9071,
+      "median": 0.9,
+      "std": 0.0404,
+      "invalid": 0,
+      "negative": 0
+    },
+    "Backend synthetic shift generator (main.py, seed 42) :: output_per_hour": {
+      "unit": [
+        "units_per_hour"
+      ],
+      "count": 21,
+      "min": 111.9,
+      "max": 149.5,
+      "mean": 129.6524,
+      "median": 131.0,
+      "std": 13.2277,
+      "invalid": 0,
+      "negative": 0
+    },
+    "Backend synthetic shift generator (main.py, seed 42) :: overtime_hours": {
+      "unit": [
+        "hours"
+      ],
+      "count": 21,
+      "min": 5.7,
+      "max": 38.9,
+      "mean": 20.4381,
+      "median": 17.5,
+      "std": 11.0632,
+      "invalid": 0,
+      "negative": 0
+    },
+    "Frontend mockDatabase (page.tsx) :: kpi_output_per_hour": {
+      "unit": [
+        "units_per_hour"
+      ],
+      "count": 6,
+      "min": 95.2,
+      "max": 142.1,
+      "mean": 121.5833,
+      "median": 123.45,
+      "std": 17.2181,
+      "invalid": 0,
+      "negative": 0
+    },
+    "Frontend mockDatabase (page.tsx) :: output_per_hour": {
+      "unit": [
+        "units_per_hour"
+      ],
+      "count": 30,
+      "min": 85.0,
+      "max": 142.0,
+      "mean": 119.4,
+      "median": 121.0,
+      "std": 15.2125,
+      "invalid": 0,
+      "negative": 0
+    },
+    "Frontend mockDatabase (page.tsx) :: overtime_hours": {
+      "unit": [
+        "hours"
+      ],
+      "count": 30,
+      "min": 5.0,
+      "max": 45.0,
+      "mean": 20.2333,
+      "median": 19.0,
+      "std": 11.5271,
+      "invalid": 0,
+      "negative": 0
+    }
+  },
+  "temporal": {
+    "non_null_dates": 123,
+    "parse_rate_pct": 100.0,
+    "undated_rows": 6,
+    "earliest": "2026-10-24",
+    "latest": "2026-10-30",
+    "unique_dates": 7,
+    "max_share_on_single_date_pct": 17.07,
+    "per_source": {
+      "Backend synthetic shift generator (main.py, seed 42)": {
+        "earliest": "2026-10-24",
+        "latest": "2026-10-30",
+        "unique_dates": 7,
+        "missing_days_in_span": 0,
+        "unique_months": 1,
+        "series_count": 9,
+        "observations_per_series_min": 7,
+        "observations_per_series_max": 7
+      },
+      "Frontend mockDatabase (page.tsx)": {
+        "earliest": "2026-10-24",
+        "latest": "2026-10-28",
+        "unique_dates": 5,
+        "missing_days_in_span": 0,
+        "unique_months": 1,
+        "series_count": 12,
+        "observations_per_series_min": 5,
+        "observations_per_series_max": 5
+      }
+    }
+  },
+  "categorical": {
+    "category": {
+      "distribution": {
+        "evening_crew": 43,
+        "morning_crew": 43,
+        "night_watch": 43
+      },
+      "distinct": 3,
+      "rare_values_lt_5pct": [],
+      "near_constant": false
+    },
+    "subcategory": {
+      "distribution": {
+        "<missing>": 63,
+        "facility_a": 33,
+        "facility_b": 33
+      },
+      "distinct": 3,
+      "rare_values_lt_5pct": [],
+      "near_constant": false
+    },
+    "status": {
+      "distribution": {
+        "optimal": 61,
+        "warning": 48,
+        "critical": 20
+      },
+      "distinct": 3,
+      "rare_values_lt_5pct": [],
+      "near_constant": false
+    },
+    "metric_name": {
+      "distribution": {
+        "output_per_hour": 51,
+        "overtime_hours": 51,
+        "attendance_rate": 21,
+        "kpi_output_per_hour": 6
+      },
+      "distinct": 4,
+      "rare_values_lt_5pct": [
+        "kpi_output_per_hour"
+      ],
+      "near_constant": false
+    },
+    "metric_unit": {
+      "distribution": {
+        "units_per_hour": 57,
+        "hours": 51,
+        "ratio": 21
+      },
+      "distinct": 3,
+      "rare_values_lt_5pct": [],
+      "near_constant": false
+    },
+    "entity_id": {
+      "distribution": {
+        "shift_evening": 21,
+        "shift_morning": 21,
+        "shift_night": 21,
+        "facility_a_evening_crew": 11,
+        "facility_a_morning_crew": 11,
+        "facility_a_night_watch": 11,
+        "facility_b_evening_crew": 11,
+        "facility_b_morning_crew": 11,
+        "facility_b_night_watch": 11
+      },
+      "distinct": 9,
+      "rare_values_lt_5pct": [],
+      "near_constant": false
+    }
+  },
+  "status_stage": {
+    "status_distribution": {
+      "optimal": 61,
+      "warning": 48,
+      "critical": 20
+    },
+    "stage_populated": 0,
+    "stage_note": "No lifecycle stages exist in this case study."
+  },
+  "geographic": {
+    "valid_coordinate_pairs": 0,
+    "populated_latitude": 0,
+    "populated_longitude": 0,
+    "note": "No geography in the source data; the map in the UI is schematic."
+  },
+  "text": {
+    "non_null": 6,
+    "unique": 6,
+    "avg_length": 72.5,
+    "max_length": 82,
+    "possibly_truncated(len==500)": 0
+  },
+  "provenance": {
+    "source_distribution": {
+      "Frontend mockDatabase (page.tsx)": 66,
+      "Backend synthetic shift generator (main.py, seed 42)": 63
+    },
+    "synthetic_true": 129,
+    "synthetic_false": 0
+  }
+}

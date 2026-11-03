@@ -1,0 +1,113 @@
+{
+  "status": "PASS",
+  "data_version": "1.0.0",
+  "post1_validation": {
+    "command": "python scripts/data_pipeline/validate_data.py",
+    "result": "PASS",
+    "summary": "Validation PASS (39/39 checks)"
+  },
+  "dimensions": {
+    "completeness": {
+      "required_fields_complete": true,
+      "measurement_rows_with_metric_name_and_value_pct": 100.0,
+      "measurement_rows_with_date_pct": 100.0,
+      "measurement_rows_with_entity_pct": 100.0,
+      "entity_rows_with_text_pct": 100.0,
+      "fully_empty_optional_fields": [
+        "related_entity_id",
+        "stage",
+        "latitude",
+        "longitude"
+      ]
+    },
+    "uniqueness": {
+      "duplicate_record_ids": 0,
+      "duplicate_natural_keys": 0,
+      "duplicate_source_record_ids": 0
+    },
+    "validity": {
+      "unparseable_dates": 0,
+      "invalid_record_types": 0,
+      "non_numeric_metric_values": 0,
+      "schema_fields": 20,
+      "text_over_500": 0
+    },
+    "consistency": {
+      "metric_units": {
+        "attendance_rate": [
+          "ratio"
+        ],
+        "kpi_output_per_hour": [
+          "units_per_hour"
+        ],
+        "output_per_hour": [
+          "units_per_hour"
+        ],
+        "overtime_hours": [
+          "hours"
+        ]
+      },
+      "mixed_unit_metrics": {},
+      "status_vocabulary": [
+        "critical",
+        "optimal",
+        "warning"
+      ],
+      "snake_case_ids_and_categories": true,
+      "boolean_values": [
+        "true"
+      ],
+      "single_data_version": true
+    },
+    "accuracy": {
+      "measurement_rows_checked": 123,
+      "measurement_mismatches": 0,
+      "entity_rows_checked": 6,
+      "entity_mismatches": 0
+    },
+    "provenance": {
+      "rows_with_source_name": 129,
+      "rows_with_source_record_id": 129,
+      "synthetic_rows": 129,
+      "non_synthetic_rows": 0,
+      "manifest_sources_match": true
+    },
+    "safety": {
+      "personal_data_patterns_found": false,
+      "secret_patterns_found": false,
+      "manifest_contains_personal_data": false
+    },
+    "reproducibility": {
+      "post1_regeneration_check": "PASS",
+      "note": "validate_data.py regenerates canonical CSV and JSON from the source sample and compares bytes."
+    }
+  },
+  "issues": [],
+  "observations": [
+    {
+      "id": "OBS-1",
+      "finding": "Headline KPI is not derivable from the daily series",
+      "detail": "kpi_output_per_hour differs from the latest daily output by up to 4.1 units and from the 5-day mean by up to 5.1; treat KPI as a separate source-stated value."
+    },
+    {
+      "id": "OBS-2",
+      "finding": "Frontend status is monotone in the KPI",
+      "detail": "Statuses ordered by KPI are consistent: True. Thresholds are implicit in the UI code, not documented."
+    },
+    {
+      "id": "OBS-3",
+      "finding": "Backend status is not tied to backend metrics",
+      "detail": "Backend coverage_status is drawn at random (70/20/10) independently of output; mean output by status: {\"critical\": 137.97, \"optimal\": 127.15, \"warning\": 131.18}. It is a label, not an outcome derived from the metrics."
+    },
+    {
+      "id": "OBS-4",
+      "finding": "Different scopes share metric names",
+      "detail": "output_per_hour and overtime_hours exist in both sources (facility-level vs shift-level). Always filter by source_name; do not pool."
+    },
+    {
+      "id": "OBS-5",
+      "finding": "Short, fully synthetic series",
+      "detail": "Frontend series have 5 daily points, backend 7. All rows are synthetic."
+    }
+  ]
+}
