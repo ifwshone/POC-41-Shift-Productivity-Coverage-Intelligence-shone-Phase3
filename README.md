@@ -2,30 +2,35 @@
 
 An enterprise-grade, high-performance telemetry dashboard designed to visualize operational shift metrics, output trends, and workforce coverage. 
 
-Built with a strict UX architecture, this dashboard enforces a **70/30 spatial split**: 70% of the viewport is dedicated to the primary visualization stage, while the remaining 30% acts as a contextual intelligence sidebar.
+An operational map view of shift output and coverage across facilities, with a contextual intelligence panel. All data shown is synthetic.
 
-## 🚀 Key Features
+## Current Application Behaviour
 
-* **Output-Per-Hour Trend:** A temporal visualization mapping real-time output against historical Bureau of Labor Statistics (BLS) baselines.
-* **Overtime Pareto Analysis:** A composed chart tracking overtime hours with a cumulative percentage curve to quickly identify operational bottlenecks.
-* **Coverage Heatmap:** A CSS-grid-based geographical and temporal density map for instant shift coverage recognition.
-* **Shift Matrix Context:** A relational state tracker displaying active scopes, team hierarchy, and real-time status (Optimal, Warning, Critical).
-* **Data Export:** Built-in payload generation to download active bounded datasets as CSV for external reporting.
-* **Strict Brand DNA:** Adheres to a custom dark-mode aesthetic utilizing an Obsidian Black (`#030712`) background with Electric Cyan (`#38BDF8`) and Emerald (`#10B981`) telemetry accents.
+The page is an interactive operational map: six markers (2 facilities x 3 teams) show output-per-hour and a status colour (Optimal / Warning / Critical). Location, Team and Time Horizon selectors drive an Intelligence side panel with an output trend, an overtime chart and an insight text, and a CSV export of the selected view.
+
+* The frontend reads a hard-coded **synthetic** `mockDatabase` in `frontend/app/page.tsx`; it does not call the backend or any external API.
+* "Last 30 Days" and "Year to Date" views are interpolated in the browser from the 5 base data points (display only, not source data).
+* The backend (`backend/main.py`) serves a **synthetic**, seeded (42) shift-level dataset at `/api/v1/intelligence/coverage`.
+* Frontend data is facility/team-level; backend data is shift-level with no facility. They are different synthetic scopes and must **not** be treated as one comparable operational series in later analytics.
+
+## Phase 3 Canonical Data Package
+
+All data is synthetic (no personal or restricted data). The single source of truth is `data/canonical/intelligence_data.csv` (129 records, 20 columns, version 1.0.0), generated from a 51-record source sample (full population retained, no sampling needed). See `data/README.md` and `docs/`. Regenerate and validate with `python scripts/data_pipeline/run_pipeline.py`.
 
 ## 🛠️ Tech Stack
 
 * **Framework:** React / Next.js (App Router)
 * **Styling:** Tailwind CSS
-* **Data Visualization:** Recharts
-* **State Management:** React Hooks (`useState`, `useMemo`, `useEffect`)
+* **Charts:** Recharts
+* **Backend:** FastAPI (synthetic data generator)
+* **Data pipeline:** Python (pandas, numpy)
 
 ## 📦 Installation & Setup
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-org/realrails-dashboard.git
-   cd realrails-dashboard
+   git clone https://github.com/ifwshone/POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2.git
+   cd POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2/frontend
    ```
 
 2. **Install dependencies:**
@@ -47,14 +52,13 @@ Built with a strict UX architecture, this dashboard enforces a **70/30 spatial s
 
 ## 🏗️ Architecture
 
-The UI is built on a responsive grid that guarantees the 70/30 split on desktop environments. 
-
-* `frontend/app/page.tsx`: The main dashboard component containing state logic, the intelligence sidebar, and the visualization grid.
-* `mockDatabase`: A simulated data layer used for frontend validation (ready to be swapped with a Python REST/GraphQL API).
+* `frontend/app/page.tsx`: the page, its state logic, the synthetic `mockDatabase` and the intelligence panel.
+* `backend/main.py`: synthetic shift-level API (not consumed by the UI yet).
+* `data/` and `scripts/data_pipeline/`: Phase 3 canonical data package and its reproducible pipeline (not read by the app at runtime).
 
 ## 🧪 Testing (UAT)
 
-A rigorous User Acceptance Testing (UAT) protocol is established for this project. Please refer to the `uat_cases.md` or the `Shift_Productivity_UAT_Table.xlsx` file in the testing directory to validate:
+A rigorous User Acceptance Testing (UAT) protocol is established for this project. See `UAT_CHECKLIST.md` (note: written for an earlier layout; re-verify against the current map UI):
 * Interactive handshake events between the 70% stage and 30% sidebar.
 * Temporal, risk, and ownership filter logic.
 * Dynamic intelligence rendering based on active data nodes.
