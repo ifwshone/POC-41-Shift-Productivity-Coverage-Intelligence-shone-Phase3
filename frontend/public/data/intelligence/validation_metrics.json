@@ -1,0 +1,12 @@
+{
+  "data_version": "1.0.0",
+  "method_version": "1.0.0",
+  "validation_checks": {
+    "no_leakage_from_backend": true,
+    "minimum_group_size_met": true,
+    "baseline_calculation_accurate": true,
+    "tie_handling_deterministic": true,
+    "all_frontend_nodes_ranked": true
+  },
+  "overall_status": "PASS"
+}

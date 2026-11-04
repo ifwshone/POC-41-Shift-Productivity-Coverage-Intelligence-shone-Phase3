@@ -24,13 +24,18 @@ def export_results(pivot_records, baseline):
             "result_unit": "units_per_hour",
             "result_category": "low" if rec['output_gap_vs_baseline'] < 0 else "high",
             "priority_rank": int(rec['priority_rank']),
-            "finding": f"{rec['entity_id']} averages {round(rec['output_per_hour'], 1)} units/hr ({round(rec['output_gap_vs_baseline'], 1)} vs baseline) with {round(rec['overtime_hours'], 1)} avg overtime hours.",
-            "evidence": [{"factor": "record_count", "value": int(rec['record_count'])}],
+            "finding": f"{rec['entity_id']} ranks {int(rec['priority_rank'])} based strictly on its output gap ({round(rec['output_gap_vs_baseline'], 1)} vs baseline), averaging {round(rec['output_per_hour'], 1)} units/hr. Average overtime ({round(rec['overtime_hours'], 1)} hrs) is supporting context.",
+            "evidence": [
+                {"factor": "record_count", "value": int(rec['record_count'])},
+                {"factor": "avg_output_per_hour", "value": float(round(rec['output_per_hour'], 1))},
+                {"factor": "avg_overtime_hours", "value": float(round(rec['overtime_hours'], 1))},
+                {"factor": "output_gap_vs_baseline", "value": float(round(rec['output_gap_vs_baseline'], 1))}
+            ],
             "method_version": "1.0.0",
             "data_version": "1.0.0",
             "generated_at": generated_at,
             "quality_status": "validated",
-            "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+            "limitation": "Ranking is driven solely by output gap; it is not a combined coverage-risk score. Descriptive 5-day view."
         })
         
     summary = {
@@ -45,11 +50,15 @@ def export_results(pivot_records, baseline):
         "key_findings": [r['finding'] for r in results[:2]],
         "priority_items": [r['entity_id'] for r in results[:2]],
         "validation_result": "PASS",
-        "important_limitations": ["Frontend and backend scopes kept strictly separate.", "Synthetic 5-day view only."],
+        "important_limitations": [
+            "Ranking relies solely on output gaps; overtime is context, not part of a combined risk score.",
+            "Frontend and backend scopes kept strictly separate.",
+            "Synthetic 5-day view only."
+        ],
         "generated_at": generated_at
     }
     
-    # Write files securely using UTF-8 to prevent Windows UnicodeEncodeError
+    # Write files securely using UTF-8
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     (OUTPUTS_DIR / 'intelligence_results.json').write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
     (OUTPUTS_DIR / 'intelligence_summary.json').write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")

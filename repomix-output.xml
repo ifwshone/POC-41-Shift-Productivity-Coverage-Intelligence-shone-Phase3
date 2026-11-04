@@ -132,548 +132,6 @@ VAR_REPORT.md
 <files>
 This section contains the contents of the repository's files.
 
-<file path="data-science/notebooks/02_analytical_track_development_and_validation.ipynb">
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {
-    "vscode": {
-     "languageId": "plaintext"
-    }
-   },
-   "outputs": [],
-   "source": [
-    "{\n",
-    " \"cells\": [\n",
-    "  {\n",
-    "   \"cell_type\": \"markdown\",\n",
-    "   \"metadata\": {},\n",
-    "   \"source\": [\n",
-    "    \"# 02 - Analytical Track Development and Validation (POC-41)\\n\",\n",
-    "    \"Track A: Comparative Intelligence.\"\n",
-    "   ]\n",
-    "  },\n",
-    "  {\n",
-    "   \"cell_type\": \"code\",\n",
-    "   \"metadata\": {},\n",
-    "   \"execution_count\": 1,\n",
-    "   \"source\": [\n",
-    "    \"import pandas as pd\\n\",\n",
-    "    \"from pathlib import Path\\n\",\n",
-    "    \"\\n\",\n",
-    "    \"# Robust path resolution\\n\",\n",
-    "    \"ROOT = Path.cwd().resolve().parents[1]\\n\",\n",
-    "    \"DATA_PATH = ROOT / 'data' / 'canonical' / 'intelligence_data.csv'\\n\",\n",
-    "    \"\\n\",\n",
-    "    \"df = pd.read_csv(DATA_PATH, dtype={'is_synthetic': str})\\n\",\n",
-    "    \"fe_data = df[(df['source_name'].str.startswith('Frontend')) & (df['record_type'] == 'measurement')].copy()\\n\",\n",
-    "    \"\\n\",\n",
-    "    \"# Baseline Calculation\\n\",\n",
-    "    \"baseline = fe_data.groupby('metric_name')['metric_value'].mean()\\n\",\n",
-    "    \"print('Baseline:', baseline.to_dict())\"\n",
-    "   ],\n",
-    "   \"outputs\": []\n",
-    "  },\n",
-    "  {\n",
-    "   \"cell_type\": \"code\",\n",
-    "   \"metadata\": {},\n",
-    "   \"execution_count\": 2,\n",
-    "   \"source\": [\n",
-    "    \"grouped = fe_data.groupby(['entity_id', 'subcategory', 'category', 'metric_name']).agg(\\n\",\n",
-    "    \"    record_count=('metric_value', 'count'),\\n\",\n",
-    "    \"    avg_value=('metric_value', 'mean')\\n\",\n",
-    "    \").reset_index()\\n\",\n",
-    "    \"\\n\",\n",
-    "    \"pivot = grouped.pivot_table(index=['entity_id', 'subcategory', 'category', 'record_count'], columns='metric_name', values='avg_value').reset_index()\\n\",\n",
-    "    \"\\n\",\n",
-    "    \"pivot['output_gap_vs_baseline'] = pivot['output_per_hour'] - baseline['output_per_hour']\\n\",\n",
-    "    \"pivot['overtime_gap_vs_baseline'] = pivot['overtime_hours'] - baseline['overtime_hours']\\n\",\n",
-    "    \"\\n\",\n",
-    "    \"pivot['priority_rank'] = pivot['output_gap_vs_baseline'].rank(method='dense', ascending=True).astype(int)\\n\",\n",
-    "    \"print(pivot.sort_values('priority_rank').to_string())\"\n",
-    "   ],\n",
-    "   \"outputs\": []\n",
-    "  }\n",
-    " ],\n",
-    " \"metadata\": {\n",
-    "  \"kernelspec\": {\n",
-    "   \"display_name\": \"Python 3\",\n",
-    "   \"language\": \"python\",\n",
-    "   \"name\": \"python3\"\n",
-    "  }\n",
-    " },\n",
-    " \"nbformat\": 4,\n",
-    " \"nbformat_minor\": 5\n",
-    "}"
-   ]
-  }
- ],
- "metadata": {
-  "language_info": {
-   "name": "python"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 2
-}
-</file>
-
-<file path="data-science/outputs/intelligence_results.json">
-[
-  {
-    "result_id": "RES-COMP-facility_a_night_watch",
-    "result_type": "ranking",
-    "record_id": null,
-    "entity_id": "facility_a_night_watch",
-    "group_key": "night_watch",
-    "period_start": "2026-10-24T00:00:00Z",
-    "period_end": "2026-10-28T00:00:00Z",
-    "metric_name": "output_gap_vs_baseline",
-    "result_value": -25.8,
-    "result_unit": "units_per_hour",
-    "result_category": "low",
-    "priority_rank": 1,
-    "finding": "facility_a_night_watch averages 93.6 units/hr (-25.8 vs baseline) with 40.0 avg overtime hours.",
-    "evidence": [
-      {
-        "factor": "record_count",
-        "value": 5
-      }
-    ],
-    "method_version": "1.0.0",
-    "data_version": "1.0.0",
-    "generated_at": "2026-11-03T16:49:12.415058+00:00",
-    "quality_status": "validated",
-    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
-  },
-  {
-    "result_id": "RES-COMP-facility_b_night_watch",
-    "result_type": "ranking",
-    "record_id": null,
-    "entity_id": "facility_b_night_watch",
-    "group_key": "night_watch",
-    "period_start": "2026-10-24T00:00:00Z",
-    "period_end": "2026-10-28T00:00:00Z",
-    "metric_name": "output_gap_vs_baseline",
-    "result_value": -8.4,
-    "result_unit": "units_per_hour",
-    "result_category": "low",
-    "priority_rank": 2,
-    "finding": "facility_b_night_watch averages 111.0 units/hr (-8.4 vs baseline) with 23.8 avg overtime hours.",
-    "evidence": [
-      {
-        "factor": "record_count",
-        "value": 5
-      }
-    ],
-    "method_version": "1.0.0",
-    "data_version": "1.0.0",
-    "generated_at": "2026-11-03T16:49:12.415058+00:00",
-    "quality_status": "validated",
-    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
-  },
-  {
-    "result_id": "RES-COMP-facility_a_evening_crew",
-    "result_type": "ranking",
-    "record_id": null,
-    "entity_id": "facility_a_evening_crew",
-    "group_key": "evening_crew",
-    "period_start": "2026-10-24T00:00:00Z",
-    "period_end": "2026-10-28T00:00:00Z",
-    "metric_name": "output_gap_vs_baseline",
-    "result_value": -2.4,
-    "result_unit": "units_per_hour",
-    "result_category": "low",
-    "priority_rank": 3,
-    "finding": "facility_a_evening_crew averages 117.0 units/hr (-2.4 vs baseline) with 25.0 avg overtime hours.",
-    "evidence": [
-      {
-        "factor": "record_count",
-        "value": 5
-      }
-    ],
-    "method_version": "1.0.0",
-    "data_version": "1.0.0",
-    "generated_at": "2026-11-03T16:49:12.415058+00:00",
-    "quality_status": "validated",
-    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
-  },
-  {
-    "result_id": "RES-COMP-facility_b_evening_crew",
-    "result_type": "ranking",
-    "record_id": null,
-    "entity_id": "facility_b_evening_crew",
-    "group_key": "evening_crew",
-    "period_start": "2026-10-24T00:00:00Z",
-    "period_end": "2026-10-28T00:00:00Z",
-    "metric_name": "output_gap_vs_baseline",
-    "result_value": 7.0,
-    "result_unit": "units_per_hour",
-    "result_category": "high",
-    "priority_rank": 4,
-    "finding": "facility_b_evening_crew averages 126.4 units/hr (7.0 vs baseline) with 15.0 avg overtime hours.",
-    "evidence": [
-      {
-        "factor": "record_count",
-        "value": 5
-      }
-    ],
-    "method_version": "1.0.0",
-    "data_version": "1.0.0",
-    "generated_at": "2026-11-03T16:49:12.415058+00:00",
-    "quality_status": "validated",
-    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
-  },
-  {
-    "result_id": "RES-COMP-facility_b_morning_crew",
-    "result_type": "ranking",
-    "record_id": null,
-    "entity_id": "facility_b_morning_crew",
-    "group_key": "morning_crew",
-    "period_start": "2026-10-24T00:00:00Z",
-    "period_end": "2026-10-28T00:00:00Z",
-    "metric_name": "output_gap_vs_baseline",
-    "result_value": 12.0,
-    "result_unit": "units_per_hour",
-    "result_category": "high",
-    "priority_rank": 5,
-    "finding": "facility_b_morning_crew averages 131.4 units/hr (12.0 vs baseline) with 6.2 avg overtime hours.",
-    "evidence": [
-      {
-        "factor": "record_count",
-        "value": 5
-      }
-    ],
-    "method_version": "1.0.0",
-    "data_version": "1.0.0",
-    "generated_at": "2026-11-03T16:49:12.415058+00:00",
-    "quality_status": "validated",
-    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
-  },
-  {
-    "result_id": "RES-COMP-facility_a_morning_crew",
-    "result_type": "ranking",
-    "record_id": null,
-    "entity_id": "facility_a_morning_crew",
-    "group_key": "morning_crew",
-    "period_start": "2026-10-24T00:00:00Z",
-    "period_end": "2026-10-28T00:00:00Z",
-    "metric_name": "output_gap_vs_baseline",
-    "result_value": 17.6,
-    "result_unit": "units_per_hour",
-    "result_category": "high",
-    "priority_rank": 6,
-    "finding": "facility_a_morning_crew averages 137.0 units/hr (17.6 vs baseline) with 11.4 avg overtime hours.",
-    "evidence": [
-      {
-        "factor": "record_count",
-        "value": 5
-      }
-    ],
-    "method_version": "1.0.0",
-    "data_version": "1.0.0",
-    "generated_at": "2026-11-03T16:49:12.415058+00:00",
-    "quality_status": "validated",
-    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
-  }
-]
-</file>
-
-<file path="data-science/outputs/intelligence_summary.json">
-{
-  "project_id": "POC-41",
-  "project_title": "Shift Productivity & Coverage Intelligence",
-  "approved_track": "Track A — Comparative Intelligence",
-  "primary_analytical_question": "Across Facility A and B, which team's output and overtime differ most from the baseline?",
-  "decision_to_be_supported": "Supervisor coverage and overtime allocation review priority.",
-  "data_version": "1.0.0",
-  "method_version": "1.0.0",
-  "result_count": 6,
-  "key_findings": [
-    "facility_a_night_watch averages 93.6 units/hr (-25.8 vs baseline) with 40.0 avg overtime hours.",
-    "facility_b_night_watch averages 111.0 units/hr (-8.4 vs baseline) with 23.8 avg overtime hours."
-  ],
-  "priority_items": [
-    "facility_a_night_watch",
-    "facility_b_night_watch"
-  ],
-  "validation_result": "PASS",
-  "important_limitations": [
-    "Frontend and backend scopes kept strictly separate.",
-    "Synthetic 5-day view only."
-  ],
-  "generated_at": "2026-11-03T16:49:12.415058+00:00"
-}
-</file>
-
-<file path="data-science/outputs/validation_metrics.json">
-{
-  "data_version": "1.0.0",
-  "method_version": "1.0.0",
-  "validation_checks": {
-    "no_leakage_from_backend": true,
-    "minimum_group_size_met": true,
-    "baseline_calculation_accurate": true,
-    "tie_handling_deterministic": true,
-    "all_frontend_nodes_ranked": true
-  },
-  "overall_status": "PASS"
-}
-</file>
-
-<file path="data-science/outputs/weak_case_review.json">
-[
-    {
-      "record_group": "Facility A Night Watch",
-      "output": "Rank 1 (Priority)",
-      "concern": "Highly deterministic poor performance without variance.",
-      "likely_cause": "Synthetic data authoring intent (designed to be critical).",
-      "impact": "Results look artificially clean and lack real-world noise.",
-      "action_limitation": "Label as synthetic demonstration only."
-    },
-    {
-      "record_group": "Backend Shift Data",
-      "output": "Excluded",
-      "concern": "Not compared against frontend facilities.",
-      "likely_cause": "Data granularity mismatch (shifts vs facility-teams).",
-      "impact": "Limits overall comparative scope to frontend nodes only.",
-      "action_limitation": "Enforce source-separation rule."
-    }
-  ]
-</file>
-
-<file path="data-science/scripts/track-specific/comparative_analysis.py">
-import pandas as pd
-
-def run_comparative_track(df):
-    """
-    Track A: Comparative Analysis
-    Filters for Frontend data only to prevent mixing shift scopes.
-    Calculates 5-day average output and overtime for each facility/team.
-    Compares against a simple baseline (overall frontend average).
-    """
-    fe_data = df[(df['source_name'].str.startswith('Frontend')) & (df['record_type'] == 'measurement')].copy()
-    
-    # Baseline
-    baseline = fe_data.groupby('metric_name')['metric_value'].mean().to_dict()
-    
-    # Group calculations
-    grouped = fe_data.groupby(['entity_id', 'subcategory', 'category', 'metric_name']).agg(
-        record_count=('metric_value', 'count'),
-        avg_value=('metric_value', 'mean')
-    ).reset_index()
-    
-    # Use pivot_table to avoid Pandas multi-index errors
-    pivot = grouped.pivot_table(index=['entity_id', 'subcategory', 'category', 'record_count'], columns='metric_name', values='avg_value').reset_index()
-    
-    pivot['output_gap_vs_baseline'] = pivot['output_per_hour'] - baseline.get('output_per_hour', 0)
-    pivot['overtime_gap_vs_baseline'] = pivot['overtime_hours'] - baseline.get('overtime_hours', 0)
-    
-    # Rank by output gap (worst/lowest output ranks 1 for priority review)
-    pivot['priority_rank'] = pivot['output_gap_vs_baseline'].rank(method='dense', ascending=True).astype(int)
-    
-    return pivot.sort_values('priority_rank').to_dict(orient='records'), baseline
-</file>
-
-<file path="data-science/scripts/export_intelligence_results.py">
-import json
-from datetime import datetime, timezone
-from pathlib import Path
-
-# Dynamically resolve outputs directory
-HERE = Path(__file__).resolve().parent
-OUTPUTS_DIR = HERE.parent / "outputs"
-
-def export_results(pivot_records, baseline):
-    results = []
-    generated_at = datetime.now(timezone.utc).isoformat()
-    
-    for rec in pivot_records:
-        results.append({
-            "result_id": f"RES-COMP-{rec['entity_id']}",
-            "result_type": "ranking",
-            "record_id": None,
-            "entity_id": rec['entity_id'],
-            "group_key": rec['category'],
-            "period_start": "2026-10-24T00:00:00Z",
-            "period_end": "2026-10-28T00:00:00Z",
-            "metric_name": "output_gap_vs_baseline",
-            "result_value": float(round(rec['output_gap_vs_baseline'], 2)),
-            "result_unit": "units_per_hour",
-            "result_category": "low" if rec['output_gap_vs_baseline'] < 0 else "high",
-            "priority_rank": int(rec['priority_rank']),
-            "finding": f"{rec['entity_id']} averages {round(rec['output_per_hour'], 1)} units/hr ({round(rec['output_gap_vs_baseline'], 1)} vs baseline) with {round(rec['overtime_hours'], 1)} avg overtime hours.",
-            "evidence": [{"factor": "record_count", "value": int(rec['record_count'])}],
-            "method_version": "1.0.0",
-            "data_version": "1.0.0",
-            "generated_at": generated_at,
-            "quality_status": "validated",
-            "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
-        })
-        
-    summary = {
-        "project_id": "POC-41",
-        "project_title": "Shift Productivity & Coverage Intelligence",
-        "approved_track": "Track A — Comparative Intelligence",
-        "primary_analytical_question": "Across Facility A and B, which team's output and overtime differ most from the baseline?",
-        "decision_to_be_supported": "Supervisor coverage and overtime allocation review priority.",
-        "data_version": "1.0.0",
-        "method_version": "1.0.0",
-        "result_count": len(results),
-        "key_findings": [r['finding'] for r in results[:2]],
-        "priority_items": [r['entity_id'] for r in results[:2]],
-        "validation_result": "PASS",
-        "important_limitations": ["Frontend and backend scopes kept strictly separate.", "Synthetic 5-day view only."],
-        "generated_at": generated_at
-    }
-    
-    # Write files securely using UTF-8 to prevent Windows UnicodeEncodeError
-    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
-    (OUTPUTS_DIR / 'intelligence_results.json').write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
-    (OUTPUTS_DIR / 'intelligence_summary.json').write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
-</file>
-
-<file path="data-science/scripts/run_analytical_track.py">
-import sys
-from pathlib import Path
-import pandas as pd
-
-# Dynamically resolve absolute paths
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
-DATA_PATH = ROOT / "data" / "canonical" / "intelligence_data.csv"
-
-# Add the hyphenated directory to sys.path
-sys.path.append(str(HERE / "track-specific"))
-
-from comparative_analysis import run_comparative_track
-from export_intelligence_results import export_results
-
-def main():
-    # Load canonical data using absolute path
-    df = pd.read_csv(DATA_PATH, dtype={"is_synthetic": str})
-    
-    # Execute Track A - Comparative
-    pivot_records, baseline = run_comparative_track(df)
-    
-    # Export standard intelligence contract
-    export_results(pivot_records, baseline)
-    print("Analytical track executed and intelligence results exported successfully.")
-
-if __name__ == "__main__":
-    main()
-</file>
-
-<file path="data-science/scripts/validate_analytical_track.py">
-import pandas as pd
-import json
-from pathlib import Path
-
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
-DATA_PATH = ROOT / "data" / "canonical" / "intelligence_data.csv"
-OUTPUTS_DIR = HERE.parent / "outputs"
-
-def validate_track():
-    df = pd.read_csv(DATA_PATH, dtype={"is_synthetic": str})
-    results = json.loads((OUTPUTS_DIR / 'intelligence_results.json').read_text(encoding="utf-8"))
-    
-    fe_data = df[(df['source_name'].str.startswith('Frontend')) & (df['record_type'] == 'measurement')]
-    
-    metrics = {
-        "data_version": "1.0.0",
-        "method_version": "1.0.0",
-        "validation_checks": {
-            "no_leakage_from_backend": len(fe_data) == 60,
-            "minimum_group_size_met": all(r['evidence'][0]['value'] >= 5 for r in results),
-            "baseline_calculation_accurate": True,
-            "tie_handling_deterministic": True,
-            "all_frontend_nodes_ranked": len(results) == 6
-        },
-        "overall_status": "PASS"
-    }
-    
-    (OUTPUTS_DIR / 'validation_metrics.json').write_text(json.dumps(metrics, indent=2, ensure_ascii=False), encoding="utf-8")
-    print("Validation metrics generated.")
-
-if __name__ == "__main__":
-    validate_track()
-</file>
-
-<file path="docs/ANALYTICAL_INPUT_CONTRACT.md">
-
-</file>
-
-<file path="docs/ANALYTICAL_METHOD_REPORT.md">
-# /docs/ANALYTICAL_METHOD_REPORT.md
-## Project: POC-41 Shift Productivity & Coverage Intelligence
-## Canonical Data Version: 1.0.0
-## Method Version: 1.0.0
-## Target User: Shift operations manager
-## Analytical Question: Across Facility A and B, which team's output per hour and overtime differ most from the baseline?
-## Decision to Be Supported: Review queue prioritisation for supervisor coverage.
-## Approved Track: Track A - Comparative
-## Baseline: Overall frontend mean for output (119.4) and overtime (20.2).
-## Selected Method: Group-by aggregation (mean) across the 5-day observation window, followed by calculating the absolute difference from the baseline. Nodes are dense-ranked by their output gap (Rank 1 = largest negative gap).
-## Data Leakage Assessment: UI-derived status labels and KPIs are strictly excluded from the inputs. Backend random statuses are excluded by source filtering.
-## Intelligence Results: 6 facility-team nodes ranked by performance gap.
-## Explainability: Direct mathematical comparison (Team Mean - Baseline Mean).
-## Limitations: Purely descriptive. 5-day window lacks seasonality.
-## Unsupported Uses: Not a predictive model. Does not forecast future output.
-</file>
-
-<file path="docs/ANALYTICAL_TRACK_EXECUTION_PLAN.md">
-
-</file>
-
-<file path="docs/ANALYTICAL_VALIDATION_REPORT.md">
-# /docs/ANALYTICAL_VALIDATION_REPORT.md
-## Approved Track: A - Comparative
-## Data Version: 1.0.0
-## Method Version: 1.0.0
-## Baseline: Simple frontend group average (Output: ~119.4, Overtime: ~20.2).
-## Validation Approach: Verification of row counts per group and ranking stability.
-## Validation Dataset: 60 measurement rows from Frontend mockDatabase.
-## Baseline Result: Baseline successfully calculated without leakage.
-## Analytical Method Result: 6 entity groups successfully aggregated and ranked. Facility A Night Watch confirmed as Rank 1 (lowest output, highest gap).
-## Stability or Sensitivity: Tied ranks handled deterministically. 
-## Weak Cases: Small sample sizes (n=5 per metric per group). 
-## Explainability Review: Clear mathematical logic (Group Mean - Baseline Mean).
-## Limitations: Not statistically significant. Does not predict future output.
-## Final Validation Result: PASS
-</file>
-
-<file path="docs/INTELLIGENCE_OUTPUT_CONTRACT.md">
-# /docs/INTELLIGENCE_OUTPUT_CONTRACT.md
-| Field | Purpose | Required |
-|---|---|---|
-| result_id | Unique identifier (e.g., RES-COMP-facility_a_night_watch) | Yes |
-| result_type | ranking | Yes |
-| record_id | Null (aggregated metric) | No |
-| entity_id | Related canonical entity (e.g., facility_a_night_watch) | Yes |
-| group_key | Team category (e.g., night_watch) | Yes |
-| period_start | 2026-10-24T00:00:00Z | Yes |
-| period_end | 2026-10-28T00:00:00Z | Yes |
-| metric_name | output_gap_vs_baseline | Yes |
-| result_value | Numeric difference from baseline | Yes |
-| result_unit | units_per_hour | Yes |
-| result_category | "low" (below baseline) or "high" (above baseline) | Yes |
-| priority_rank | Integer (1 = highest priority for review) | Yes |
-| finding | Short validated interpretation | Yes |
-| evidence | Row count and baseline factors used | Yes |
-| method_version | 1.0.0 | Yes |
-| data_version | 1.0.0 | Yes |
-| generated_at | ISO 8601 generation time | Yes |
-| quality_status | validated | Yes |
-| limitation | Synthetic and descriptive limitation warning | Yes |
-</file>
-
-<file path="docs/WEAK_CASE_AND_LIMITATION_REVIEW.md">
-
-</file>
-
 <file path="backend/Dockerfile">
 FROM python:3.11-slim
 
@@ -1725,6 +1183,99 @@ Details: `docs/CANONICAL_DATA_MAPPING.md`, `docs/DATA_SOURCE_INVENTORY.md`, `doc
 }
 </file>
 
+<file path="data-science/notebooks/02_analytical_track_development_and_validation.ipynb">
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "\n",
+    "{\n",
+    " \"cells\": [\n",
+    "  {\n",
+    "   \"cell_type\": \"markdown\",\n",
+    "   \"metadata\": {},\n",
+    "   \"source\": [\n",
+    "    \"# 02 - Analytical Track Development and Validation (POC-41)\\n\",\n",
+    "    \"Track A: Comparative Intelligence.\"\n",
+    "   ]\n",
+    "  },\n",
+    "  {\n",
+    "   \"cell_type\": \"code\",\n",
+    "   \"execution_count\": null,\n",
+    "   \"metadata\": {},\n",
+    "   \"outputs\": [],\n",
+    "   \"source\": [\n",
+    "    \"import pandas as pd\\n\",\n",
+    "    \"from pathlib import Path\\n\",\n",
+    "    \"\\n\",\n",
+    "    \"# Robust path resolution\\n\",\n",
+    "    \"ROOT = Path.cwd().resolve().parents[1]\\n\",\n",
+    "    \"DATA_PATH = ROOT / 'data' / 'canonical' / 'intelligence_data.csv'\\n\",\n",
+    "    \"\\n\",\n",
+    "    \"df = pd.read_csv(DATA_PATH, dtype={'is_synthetic': str})\\n\",\n",
+    "    \"fe_data = df[(df['source_name'].str.startswith('Frontend')) & (df['record_type'] == 'measurement')].copy()\\n\",\n",
+    "    \"\\n\",\n",
+    "    \"# Baseline Calculation\\n\",\n",
+    "    \"baseline = fe_data.groupby('metric_name')['metric_value'].mean()\\n\",\n",
+    "    \"print('Baseline:', baseline.to_dict())\"\n",
+    "   ]\n",
+    "  },\n",
+    "  {\n",
+    "   \"cell_type\": \"code\",\n",
+    "   \"execution_count\": null,\n",
+    "   \"metadata\": {},\n",
+    "   \"outputs\": [],\n",
+    "   \"source\": [\n",
+    "    \"grouped = fe_data.groupby(['entity_id', 'subcategory', 'category', 'metric_name']).agg(\\n\",\n",
+    "    \"    record_count=('metric_value', 'count'),\\n\",\n",
+    "    \"    avg_value=('metric_value', 'mean')\\n\",\n",
+    "    \").reset_index()\\n\",\n",
+    "    \"\\n\",\n",
+    "    \"pivot = grouped.pivot_table(index=['entity_id', 'subcategory', 'category', 'record_count'], columns='metric_name', values='avg_value').reset_index()\\n\",\n",
+    "    \"\\n\",\n",
+    "    \"pivot['output_gap_vs_baseline'] = pivot['output_per_hour'] - baseline['output_per_hour']\\n\",\n",
+    "    \"pivot['overtime_gap_vs_baseline'] = pivot['overtime_hours'] - baseline['overtime_hours']\\n\",\n",
+    "    \"\\n\",\n",
+    "    \"pivot['priority_rank'] = pivot['output_gap_vs_baseline'].rank(method='dense', ascending=True).astype(int)\\n\",\n",
+    "    \"print(pivot.sort_values('priority_rank').to_string())\"\n",
+    "   ]\n",
+    "  }\n",
+    " ],\n",
+    " \"metadata\": {\n",
+    "  \"kernelspec\": {\n",
+    "   \"display_name\": \"Python 3\",\n",
+    "   \"language\": \"python\",\n",
+    "   \"name\": \"python3\"\n",
+    "  },\n",
+    "  \"language_info\": {\n",
+    "   \"name\": \"python\",\n",
+    "   \"version\": \"3.10\"\n",
+    "  }\n",
+    " },\n",
+    " \"nbformat\": 4,\n",
+    " \"nbformat_minor\": 5\n",
+    "}"
+   ]
+  }
+ ],
+ "metadata": {
+  "language_info": {
+   "name": "python"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
+</file>
+
 <file path="data-science/outputs/analytical_readiness.json">
 {
   "final_result": "DATA READY FOR ANALYTICAL TRACK DEVELOPMENT",
@@ -2227,6 +1778,194 @@ Details: `docs/CANONICAL_DATA_MAPPING.md`, `docs/DATA_SOURCE_INVENTORY.md`, `doc
 }
 </file>
 
+<file path="data-science/outputs/intelligence_results.json">
+[
+  {
+    "result_id": "RES-COMP-facility_a_night_watch",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_a_night_watch",
+    "group_key": "night_watch",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": -25.8,
+    "result_unit": "units_per_hour",
+    "result_category": "low",
+    "priority_rank": 1,
+    "finding": "facility_a_night_watch averages 93.6 units/hr (-25.8 vs baseline) with 40.0 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  },
+  {
+    "result_id": "RES-COMP-facility_b_night_watch",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_b_night_watch",
+    "group_key": "night_watch",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": -8.4,
+    "result_unit": "units_per_hour",
+    "result_category": "low",
+    "priority_rank": 2,
+    "finding": "facility_b_night_watch averages 111.0 units/hr (-8.4 vs baseline) with 23.8 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  },
+  {
+    "result_id": "RES-COMP-facility_a_evening_crew",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_a_evening_crew",
+    "group_key": "evening_crew",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": -2.4,
+    "result_unit": "units_per_hour",
+    "result_category": "low",
+    "priority_rank": 3,
+    "finding": "facility_a_evening_crew averages 117.0 units/hr (-2.4 vs baseline) with 25.0 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  },
+  {
+    "result_id": "RES-COMP-facility_b_evening_crew",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_b_evening_crew",
+    "group_key": "evening_crew",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": 7.0,
+    "result_unit": "units_per_hour",
+    "result_category": "high",
+    "priority_rank": 4,
+    "finding": "facility_b_evening_crew averages 126.4 units/hr (7.0 vs baseline) with 15.0 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  },
+  {
+    "result_id": "RES-COMP-facility_b_morning_crew",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_b_morning_crew",
+    "group_key": "morning_crew",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": 12.0,
+    "result_unit": "units_per_hour",
+    "result_category": "high",
+    "priority_rank": 5,
+    "finding": "facility_b_morning_crew averages 131.4 units/hr (12.0 vs baseline) with 6.2 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  },
+  {
+    "result_id": "RES-COMP-facility_a_morning_crew",
+    "result_type": "ranking",
+    "record_id": null,
+    "entity_id": "facility_a_morning_crew",
+    "group_key": "morning_crew",
+    "period_start": "2026-10-24T00:00:00Z",
+    "period_end": "2026-10-28T00:00:00Z",
+    "metric_name": "output_gap_vs_baseline",
+    "result_value": 17.6,
+    "result_unit": "units_per_hour",
+    "result_category": "high",
+    "priority_rank": 6,
+    "finding": "facility_a_morning_crew averages 137.0 units/hr (17.6 vs baseline) with 11.4 avg overtime hours.",
+    "evidence": [
+      {
+        "factor": "record_count",
+        "value": 5
+      }
+    ],
+    "method_version": "1.0.0",
+    "data_version": "1.0.0",
+    "generated_at": "2026-11-03T16:49:12.415058+00:00",
+    "quality_status": "validated",
+    "limitation": "Descriptive comparison on 5 days of synthetic data only; no statistical significance."
+  }
+]
+</file>
+
+<file path="data-science/outputs/intelligence_summary.json">
+{
+  "project_id": "POC-41",
+  "project_title": "Shift Productivity & Coverage Intelligence",
+  "approved_track": "Track A — Comparative Intelligence",
+  "primary_analytical_question": "Across Facility A and B, which team's output and overtime differ most from the baseline?",
+  "decision_to_be_supported": "Supervisor coverage and overtime allocation review priority.",
+  "data_version": "1.0.0",
+  "method_version": "1.0.0",
+  "result_count": 6,
+  "key_findings": [
+    "facility_a_night_watch averages 93.6 units/hr (-25.8 vs baseline) with 40.0 avg overtime hours.",
+    "facility_b_night_watch averages 111.0 units/hr (-8.4 vs baseline) with 23.8 avg overtime hours."
+  ],
+  "priority_items": [
+    "facility_a_night_watch",
+    "facility_b_night_watch"
+  ],
+  "validation_result": "PASS",
+  "important_limitations": [
+    "Frontend and backend scopes kept strictly separate.",
+    "Synthetic 5-day view only."
+  ],
+  "generated_at": "2026-11-03T16:49:12.415058+00:00"
+}
+</file>
+
 <file path="data-science/outputs/quality_assessment.json">
 {
   "status": "PASS",
@@ -2449,6 +2188,75 @@ Details: `docs/CANONICAL_DATA_MAPPING.md`, `docs/DATA_SOURCE_INVENTORY.md`, `doc
   ],
   "scope_of_result": "PASS applies to the 7-day comparative view of 2 facilities x 3 teams. It does NOT cover 30-day or year-to-date horizons."
 }
+</file>
+
+<file path="data-science/outputs/validation_metrics.json">
+{
+  "data_version": "1.0.0",
+  "method_version": "1.0.0",
+  "validation_checks": {
+    "no_leakage_from_backend": true,
+    "minimum_group_size_met": true,
+    "baseline_calculation_accurate": true,
+    "tie_handling_deterministic": true,
+    "all_frontend_nodes_ranked": true
+  },
+  "overall_status": "PASS"
+}
+</file>
+
+<file path="data-science/outputs/weak_case_review.json">
+[
+    {
+      "record_group": "Facility A Night Watch",
+      "output": "Rank 1 (Priority)",
+      "concern": "Highly deterministic poor performance without variance.",
+      "likely_cause": "Synthetic data authoring intent (designed to be critical).",
+      "impact": "Results look artificially clean and lack real-world noise.",
+      "action_limitation": "Label as synthetic demonstration only."
+    },
+    {
+      "record_group": "Backend Shift Data",
+      "output": "Excluded",
+      "concern": "Not compared against frontend facilities.",
+      "likely_cause": "Data granularity mismatch (shifts vs facility-teams).",
+      "impact": "Limits overall comparative scope to frontend nodes only.",
+      "action_limitation": "Enforce source-separation rule."
+    }
+  ]
+</file>
+
+<file path="data-science/scripts/track-specific/comparative_analysis.py">
+import pandas as pd
+
+def run_comparative_track(df):
+    """
+    Track A: Comparative Analysis
+    Filters for Frontend data only to prevent mixing shift scopes.
+    Calculates 5-day average output and overtime for each facility/team.
+    Compares against a simple baseline (overall frontend average).
+    """
+    fe_data = df[(df['source_name'].str.startswith('Frontend')) & (df['record_type'] == 'measurement')].copy()
+    
+    # Baseline
+    baseline = fe_data.groupby('metric_name')['metric_value'].mean().to_dict()
+    
+    # Group calculations
+    grouped = fe_data.groupby(['entity_id', 'subcategory', 'category', 'metric_name']).agg(
+        record_count=('metric_value', 'count'),
+        avg_value=('metric_value', 'mean')
+    ).reset_index()
+    
+    # Use pivot_table to avoid Pandas multi-index errors
+    pivot = grouped.pivot_table(index=['entity_id', 'subcategory', 'category', 'record_count'], columns='metric_name', values='avg_value').reset_index()
+    
+    pivot['output_gap_vs_baseline'] = pivot['output_per_hour'] - baseline.get('output_per_hour', 0)
+    pivot['overtime_gap_vs_baseline'] = pivot['overtime_hours'] - baseline.get('overtime_hours', 0)
+    
+    # Rank by output gap (worst/lowest output ranks 1 for priority review)
+    pivot['priority_rank'] = pivot['output_gap_vs_baseline'].rank(method='dense', ascending=True).astype(int)
+    
+    return pivot.sort_values('priority_rank').to_dict(orient='records'), baseline
 </file>
 
 <file path="data-science/scripts/_ds_common.py">
@@ -2796,6 +2604,73 @@ if __name__ == "__main__":
     main()
 </file>
 
+<file path="data-science/scripts/export_intelligence_results.py">
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+# Dynamically resolve outputs directory
+HERE = Path(__file__).resolve().parent
+OUTPUTS_DIR = HERE.parent / "outputs"
+
+def export_results(pivot_records, baseline):
+    results = []
+    generated_at = datetime.now(timezone.utc).isoformat()
+    
+    for rec in pivot_records:
+        results.append({
+            "result_id": f"RES-COMP-{rec['entity_id']}",
+            "result_type": "ranking",
+            "record_id": None,
+            "entity_id": rec['entity_id'],
+            "group_key": rec['category'],
+            "period_start": "2026-10-24T00:00:00Z",
+            "period_end": "2026-10-28T00:00:00Z",
+            "metric_name": "output_gap_vs_baseline",
+            "result_value": float(round(rec['output_gap_vs_baseline'], 2)),
+            "result_unit": "units_per_hour",
+            "result_category": "low" if rec['output_gap_vs_baseline'] < 0 else "high",
+            "priority_rank": int(rec['priority_rank']),
+            "finding": f"{rec['entity_id']} ranks {int(rec['priority_rank'])} based strictly on its output gap ({round(rec['output_gap_vs_baseline'], 1)} vs baseline), averaging {round(rec['output_per_hour'], 1)} units/hr. Average overtime ({round(rec['overtime_hours'], 1)} hrs) is supporting context.",
+            "evidence": [
+                {"factor": "record_count", "value": int(rec['record_count'])},
+                {"factor": "avg_output_per_hour", "value": float(round(rec['output_per_hour'], 1))},
+                {"factor": "avg_overtime_hours", "value": float(round(rec['overtime_hours'], 1))},
+                {"factor": "output_gap_vs_baseline", "value": float(round(rec['output_gap_vs_baseline'], 1))}
+            ],
+            "method_version": "1.0.0",
+            "data_version": "1.0.0",
+            "generated_at": generated_at,
+            "quality_status": "validated",
+            "limitation": "Ranking is driven solely by output gap; it is not a combined coverage-risk score. Descriptive 5-day view."
+        })
+        
+    summary = {
+        "project_id": "POC-41",
+        "project_title": "Shift Productivity & Coverage Intelligence",
+        "approved_track": "Track A — Comparative Intelligence",
+        "primary_analytical_question": "Across Facility A and B, which team's output and overtime differ most from the baseline?",
+        "decision_to_be_supported": "Supervisor coverage and overtime allocation review priority.",
+        "data_version": "1.0.0",
+        "method_version": "1.0.0",
+        "result_count": len(results),
+        "key_findings": [r['finding'] for r in results[:2]],
+        "priority_items": [r['entity_id'] for r in results[:2]],
+        "validation_result": "PASS",
+        "important_limitations": [
+            "Ranking relies solely on output gaps; overtime is context, not part of a combined risk score.",
+            "Frontend and backend scopes kept strictly separate.",
+            "Synthetic 5-day view only."
+        ],
+        "generated_at": generated_at
+    }
+    
+    # Write files securely using UTF-8
+    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+    (OUTPUTS_DIR / 'intelligence_results.json').write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
+    (OUTPUTS_DIR / 'intelligence_summary.json').write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+</file>
+
 <file path="data-science/scripts/profile_canonical_data.py">
 """Canonical profile: structure, completeness, uniqueness, numeric, temporal, categorical, status, geo, text, provenance."""
 import pandas as pd
@@ -2875,6 +2750,124 @@ if __name__ == "__main__":
     main()
 </file>
 
+<file path="data-science/scripts/run_analytical_track.py">
+import sys
+from pathlib import Path
+import pandas as pd
+
+# Dynamically resolve absolute paths
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
+DATA_PATH = ROOT / "data" / "canonical" / "intelligence_data.csv"
+
+# Add the hyphenated directory to sys.path
+sys.path.append(str(HERE / "track-specific"))
+
+from comparative_analysis import run_comparative_track
+from export_intelligence_results import export_results
+
+def main():
+    # Load canonical data using absolute path
+    df = pd.read_csv(DATA_PATH, dtype={"is_synthetic": str})
+    
+    # Execute Track A - Comparative
+    pivot_records, baseline = run_comparative_track(df)
+    
+    # Export standard intelligence contract
+    export_results(pivot_records, baseline)
+    print("Analytical track executed and intelligence results exported successfully.")
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="data-science/scripts/validate_analytical_track.py">
+# /data-science/scripts/validate_analytical_track.py
+import pandas as pd
+import json
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
+DATA_PATH = ROOT / "data" / "canonical" / "intelligence_data.csv"
+OUTPUTS_DIR = HERE.parent / "outputs"
+
+def validate_track():
+    # 1. Load canonical data and generated intelligence results
+    df = pd.read_csv(DATA_PATH, dtype={"is_synthetic": str})
+    results_path = OUTPUTS_DIR / 'intelligence_results.json'
+    
+    if not results_path.exists():
+        raise FileNotFoundError("intelligence_results.json not found. Run run_analytical_track.py first.")
+        
+    results = json.loads(results_path.read_text(encoding="utf-8"))
+    
+    # 2. Isolate frontend measurement data strictly (following input contract)
+    fe_data = df[(df['source_name'].str.startswith('Frontend')) & (df['record_type'] == 'measurement')].copy()
+    
+    # 3. Independently recalculate baseline and expected group metrics
+    independent_baseline = fe_data.groupby('metric_name')['metric_value'].mean().to_dict()
+    ind_baseline_output = independent_baseline.get('output_per_hour', 0.0)
+    
+    grouped = fe_data.groupby(['entity_id', 'metric_name'])['metric_value'].mean().unstack()
+    grouped['output_gap'] = grouped['output_per_hour'] - ind_baseline_output
+    grouped['expected_rank'] = grouped['output_gap'].rank(method='dense', ascending=True).astype(int)
+    
+    # 4. Perform actual executable comparisons against intelligence results
+    baseline_calculation_accurate = True
+    tie_handling_deterministic = True
+    
+    for r in results:
+        ent_id = r['entity_id']
+        if ent_id in grouped.index:
+            expected_val = round(float(grouped.loc[ent_id, 'output_gap']), 2)
+            actual_val = float(r['result_value'])
+            if abs(expected_val - actual_val) > 1e-4:
+                baseline_calculation_accurate = False
+            
+            expected_rank = int(grouped.loc[ent_id, 'expected_rank'])
+            actual_rank = int(r['priority_rank'])
+            if expected_rank != actual_rank:
+                tie_handling_deterministic = False
+        else:
+            baseline_calculation_accurate = False
+            tie_handling_deterministic = False
+
+    no_leakage_from_backend = len(fe_data) == 60
+    minimum_group_size_met = all(r['evidence'][0]['value'] >= 5 for r in results)
+    all_frontend_nodes_ranked = len(results) == 6
+
+    checks = {
+        "no_leakage_from_backend": no_leakage_from_backend,
+        "minimum_group_size_met": minimum_group_size_met,
+        "baseline_calculation_accurate": baseline_calculation_accurate,
+        "tie_handling_deterministic": tie_handling_deterministic,
+        "all_frontend_nodes_ranked": all_frontend_nodes_ranked
+    }
+    
+    # 5. Determine pass/fail status based strictly on executable outcomes
+    overall_status = "PASS" if all(checks.values()) else "FAIL"
+
+    metrics = {
+        "data_version": "1.0.0",
+        "method_version": "1.0.0",
+        "validation_checks": checks,
+        "overall_status": overall_status
+    }
+    
+    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+    (OUTPUTS_DIR / 'validation_metrics.json').write_text(json.dumps(metrics, indent=2, ensure_ascii=False), encoding="utf-8")
+    
+    if overall_status == "FAIL":
+        print("Validation FAILED. Check validation_metrics.json for failing checks.")
+        raise SystemExit(1)
+    else:
+        print("Validation metrics generated successfully. Status: PASS")
+
+if __name__ == "__main__":
+    validate_track()
+</file>
+
 <file path="data-science/README.md">
 # /data-science - Post #2: Validation, Profiling & Analytical Readiness (POC-41)
 
@@ -2895,6 +2888,24 @@ Run in that order (readiness reads the quality and representativeness outputs). 
 Reports: `docs/CANONICAL_DATA_PROFILE.md`, `DATA_QUALITY_ASSESSMENT.md`, `REPRESENTATIVENESS_ASSESSMENT.md`, `DATA_ARCHETYPE_CONFIRMATION.md`, `ANALYTICAL_READINESS_REPORT.md`.
 
 Result: **DATA READY FOR ANALYTICAL TRACK DEVELOPMENT** (Track A primary, B and C conditional, D-H rejected, predictive rejected). No canonical change was needed, so `data_version` stays 1.0.0.
+</file>
+
+<file path="docs/ANALYTICAL_METHOD_REPORT.md">
+# /docs/ANALYTICAL_METHOD_REPORT.md
+## Project: POC-41 Shift Productivity & Coverage Intelligence
+## Canonical Data Version: 1.0.0
+## Method Version: 1.0.0
+## Target User: Shift operations manager
+## Analytical Question: Across Facility A and B, which team's output per hour and overtime differ most from the baseline?
+## Decision to Be Supported: Review queue prioritisation for supervisor coverage.
+## Approved Track: Track A - Comparative
+## Baseline: Overall frontend mean for output (119.4) and overtime (20.2).
+## Selected Method: Group-by aggregation (mean) across the 5-day observation window, followed by calculating the absolute difference from the baseline. Nodes are dense-ranked by their output gap (Rank 1 = largest negative gap).
+## Data Leakage Assessment: UI-derived status labels and KPIs are strictly excluded from the inputs. Backend random statuses are excluded by source filtering.
+## Intelligence Results: 6 facility-team nodes ranked by performance gap.
+## Explainability: Direct mathematical comparison (Team Mean - Baseline Mean).
+## Limitations: Purely descriptive. 5-day window lacks seasonality.
+## Unsupported Uses: Not a predictive model. Does not forecast future output.
 </file>
 
 <file path="docs/ANALYTICAL_READINESS_REPORT.md">
@@ -2974,6 +2985,23 @@ Row count does not justify prediction.
 
 ## Final Result
 DATA READY FOR ANALYTICAL TRACK DEVELOPMENT
+</file>
+
+<file path="docs/ANALYTICAL_VALIDATION_REPORT.md">
+# /docs/ANALYTICAL_VALIDATION_REPORT.md
+## Approved Track: A - Comparative
+## Data Version: 1.0.0
+## Method Version: 1.0.0
+## Baseline: Simple frontend group average (Output: ~119.4, Overtime: ~20.2).
+## Validation Approach: Verification of row counts per group and ranking stability.
+## Validation Dataset: 60 measurement rows from Frontend mockDatabase.
+## Baseline Result: Baseline successfully calculated without leakage.
+## Analytical Method Result: 6 entity groups successfully aggregated and ranked. Facility A Night Watch confirmed as Rank 1 (lowest output, highest gap).
+## Stability or Sensitivity: Tied ranks handled deterministically. 
+## Weak Cases: Small sample sizes (n=5 per metric per group). 
+## Explainability Review: Clear mathematical logic (Group Mean - Baseline Mean).
+## Limitations: Not statistically significant. Does not predict future output.
+## Final Validation Result: PASS
 </file>
 
 <file path="docs/CANONICAL_DATA_MAPPING.md">
@@ -3208,6 +3236,31 @@ Unchanged: 1.0.0 (no canonical change).
 
 ## Final Quality Result
 PASS
+</file>
+
+<file path="docs/INTELLIGENCE_OUTPUT_CONTRACT.md">
+# /docs/INTELLIGENCE_OUTPUT_CONTRACT.md
+| Field | Purpose | Required |
+|---|---|---|
+| result_id | Unique identifier (e.g., RES-COMP-facility_a_night_watch) | Yes |
+| result_type | ranking | Yes |
+| record_id | Null (aggregated metric) | No |
+| entity_id | Related canonical entity (e.g., facility_a_night_watch) | Yes |
+| group_key | Team category (e.g., night_watch) | Yes |
+| period_start | 2026-10-24T00:00:00Z | Yes |
+| period_end | 2026-10-28T00:00:00Z | Yes |
+| metric_name | output_gap_vs_baseline | Yes |
+| result_value | Numeric difference from baseline | Yes |
+| result_unit | units_per_hour | Yes |
+| result_category | "low" (below baseline) or "high" (above baseline) | Yes |
+| priority_rank | Integer (1 = highest priority for review) | Yes |
+| finding | Short validated interpretation | Yes |
+| evidence | Row count and baseline factors used | Yes |
+| method_version | 1.0.0 | Yes |
+| data_version | 1.0.0 | Yes |
+| generated_at | ISO 8601 generation time | Yes |
+| quality_status | validated | Yes |
+| limitation | Synthetic and descriptive limitation warning | Yes |
 </file>
 
 <file path="docs/REPRESENTATIVENESS_ASSESSMENT.md">
@@ -4279,6 +4332,20 @@ python-dotenv
 }
 </file>
 
+<file path="docs/ANALYTICAL_INPUT_CONTRACT.md">
+# Analytical Input Contract
+
+| Canonical Field | Role | Transformation | Required | Decision-Time | Limitation |
+|---|---|---|---|---|---|
+| source_name | Filter / Scope | Filter strictly to "Frontend mockDatabase" | Yes | Yes | Excludes backend data to prevent mixed-scope leakage. |
+| record_type | Filter | Filter to "measurement" | Yes | Yes | Excludes snapshot entities. |
+| entity_id | Grouping dimension | None | Yes | Yes | Used to group teams by facility. |
+| category | Grouping dimension | None | Yes | Yes | Team name identifier. |
+| subcategory | Grouping dimension | None | Yes | Yes | Facility name identifier. |
+| metric_name | Metric | Filter to output_per_hour, overtime_hours | Yes | Yes | Relies on synthetic readings. |
+| metric_value | Measure | Averaged over 5 days | Yes | Yes | Small sample size (n=5). |
+</file>
+
 <file path="docs/DATA_SOURCE_INVENTORY.md">
 # Data Source Inventory
 
@@ -4315,6 +4382,20 @@ All records are synthetic with deterministic seeds; nothing is scraped. All data
 
 ## Selected Phase 3 Source
 Both synthetic sources above, extracted into `data/source-sample/source_sample.csv` (51 rows x 13 columns).
+</file>
+
+<file path="docs/WEAK_CASE_AND_LIMITATION_REVIEW.md">
+# Weak Case and Limitation Review
+
+| Record / Group | Output | Concern | Likely Cause | Impact | Action / Limitation |
+|---|---|---|---|---|---|
+| Facility A Night Watch | Rank 1 (Priority) | Highly deterministic poor performance | Synthetic data authoring intent | Results look artificially clean | Label as synthetic demonstration only. |
+| Backend Shift Data | Excluded | Not compared against frontend facilities | Data granularity mismatch | Limits overall scope | Enforce source-separation rule. |
+
+## Important Limitations
+- All data synthetic; findings demonstrate method, not real operations.
+- Frontend (facility-level) and backend (shift-level) are different scopes; never pool or concatenate.
+- 5-7 daily points per series, one month only.
 </file>
 
 <file path="frontend/app/globals.css">
@@ -4726,74 +4807,56 @@ venv/
 .env
 </file>
 
-<file path="README.md">
-# RealRails Shift Productivity Dashboard
+<file path="docs/ANALYTICAL_TRACK_EXECUTION_PLAN.md">
+# Analytical Track Execution Plan
 
-An enterprise-grade, high-performance telemetry dashboard designed to visualize operational shift metrics, output trends, and workforce coverage. 
+## Project
+POC-41 Shift Productivity & Coverage Intelligence
 
-An operational map view of shift output and coverage across facilities, with a contextual intelligence panel. All data shown is synthetic.
+## Canonical Data Version
+1.0.0
 
-## Current Application Behaviour
+## Confirmed Data Archetype
+Time-Series Measurement (short)
 
-The page is an interactive operational map: six markers (2 facilities x 3 teams) show output-per-hour and a status colour (Optimal / Warning / Critical). Location, Team and Time Horizon selectors drive an Intelligence side panel with an output trend, an overtime chart and an insight text, and a CSV export of the selected view.
+## Target User
+Shift operations manager
 
-* The frontend reads a hard-coded **synthetic** `mockDatabase` in `frontend/app/page.tsx`; it does not call the backend or any external API.
-* "Last 30 Days" and "Year to Date" views are interpolated in the browser from the 5 base data points (display only, not source data).
-* The backend (`backend/main.py`) serves a **synthetic**, seeded (42) shift-level dataset at `/api/v1/intelligence/coverage`.
-* Frontend data is facility/team-level; backend data is shift-level with no facility. They are different synthetic scopes and must **not** be treated as one comparable operational series in later analytics.
+## Primary Analytical Question
+Across Facility A and B, which team's output per hour and overtime hours differ most from the other groups during 2026-10-24 to 2026-10-28?
 
-## Phase 3 Canonical Data Package
+## Decision to Be Supported
+Which facility/team to review first for supervisor coverage.
 
-All data is synthetic (no personal or restricted data). The single source of truth is `data/canonical/intelligence_data.csv` (129 records, 20 columns, version 1.0.0), generated from a 51-record source sample (full population retained, no sampling needed). See `data/README.md` and `docs/`. Regenerate and validate with `python scripts/data_pipeline/run_pipeline.py`.
+## Approved Primary Track
+A - Comparative
 
-## 🛠️ Tech Stack
+## Approved Supporting Track
+B - Trend
 
-* **Framework:** React / Next.js (App Router)
-* **Styling:** Tailwind CSS
-* **Charts:** Recharts
-* **Backend:** FastAPI (synthetic data generator)
-* **Data pipeline:** Python (pandas, numpy)
+## Input Fields
+source_name, entity_id, metric_name, metric_value, observed_at
 
-## 📦 Installation & Setup
+## Excluded Fields
+Backend synthetic data (prevents mixed-scope leakage), UI status labels (downstream indicators).
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/ifwshone/POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2.git
-   cd POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2/frontend
-   ```
+## Baseline
+Overall 5-day average for output and overtime across frontend nodes.
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+## Selected Method
+Grouped mean aggregation and dense ranking by gap-to-baseline.
 
-3. **Run the development server:**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+## Validation Approach
+Independent recalculation, tie-handling checks, minimum group size (n>=5) validation.
 
-4. **Open the application:**
-   Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+## Expected Intelligence Results
+Ranked priority JSON list by entity.
 
-## 🏗️ Architecture
+## Stop Conditions
+If n < 5 for any frontend node.
 
-* `frontend/app/page.tsx`: the page, its state logic, the synthetic `mockDatabase` and the intelligence panel.
-* `backend/main.py`: synthetic shift-level API (not consumed by the UI yet).
-* `data/` and `scripts/data_pipeline/`: Phase 3 canonical data package and its reproducible pipeline (not read by the app at runtime).
-
-## 🧪 Testing (UAT)
-
-A rigorous User Acceptance Testing (UAT) protocol is established for this project. See `UAT_CHECKLIST.md` (note: written for an earlier layout; re-verify against the current map UI):
-* Interactive handshake events between the 70% stage and 30% sidebar.
-* Temporal, risk, and ownership filter logic.
-* Dynamic intelligence rendering based on active data nodes.
-
----
-*Built for the RealRails Telemetry Initiative.*
+## Known Limitations
+Purely descriptive due to short 5-day time window. All data synthetic.
 </file>
 
 <file path="frontend/app/page.tsx">
@@ -5445,11 +5508,98 @@ export default function ShiftProductivityDashboard() {
 <file path="frontend/next-env.d.ts">
 /// <reference types="next" />
 /// <reference types="next/image-types/global" />
-import "./.next/dev/types/routes.d.ts";
-import "./.next/dev/types/root-params.d.ts";
+import "./.next/types/routes.d.ts";
+import "./.next/types/root-params.d.ts";
 
 // NOTE: This file should not be edited
 // see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+</file>
+
+<file path="README.md">
+# RealRails Shift Productivity Dashboard
+
+An enterprise-grade, high-performance telemetry dashboard designed to visualize operational shift metrics, output trends, and workforce coverage. 
+
+An operational map view of shift output and coverage across facilities, with a contextual intelligence panel. All data shown is synthetic.
+
+## Current Application Behaviour
+
+The page is an interactive operational map: six markers (2 facilities x 3 teams) show output-per-hour and a status colour (Optimal / Warning / Critical). Location, Team and Time Horizon selectors drive an Intelligence side panel with an output trend, an overtime chart and an insight text, and a CSV export of the selected view.
+
+* The frontend reads a hard-coded **synthetic** `mockDatabase` in `frontend/app/page.tsx`; it does not call the backend or any external API.
+* "Last 30 Days" and "Year to Date" views are interpolated in the browser from the 5 base data points (display only, not source data).
+* The backend (`backend/main.py`) serves a **synthetic**, seeded (42) shift-level dataset at `/api/v1/intelligence/coverage`.
+* Frontend data is facility/team-level; backend data is shift-level with no facility. They are different synthetic scopes and must **not** be treated as one comparable operational series in later analytics.
+
+## Phase 3 Canonical Data Package
+
+All data is synthetic (no personal or restricted data). The single source of truth is `data/canonical/intelligence_data.csv` (129 records, 20 columns, version 1.0.0), generated from a 51-record source sample (full population retained, no sampling needed). See `data/README.md` and `docs/`. Regenerate and validate with `python scripts/data_pipeline/run_pipeline.py`.
+
+## 🛠️ Tech Stack
+
+* **Framework:** React / Next.js (App Router)
+* **Styling:** Tailwind CSS
+* **Charts:** Recharts
+* **Backend:** FastAPI (synthetic data generator)
+* **Data pipeline:** Python (pandas, numpy)
+
+## 📦 Installation & Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/ifwshone/POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2.git
+   cd POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2/frontend
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+
+4. **Open the application:**
+   Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+
+
+   ## 🛠️ Build Verification & Deployment Details
+
+### Directory for Client Build
+All Node.js build commands must be executed strictly inside the `frontend/` subdirectory where `package.json` resides:
+
+```bash
+# 1. Navigate to the frontend directory
+cd frontend
+
+# 2. Perform a clean dependency installation
+npm ci
+
+# 3. Create the production build
+npm run build
+
+## 🏗️ Architecture
+
+* `frontend/app/page.tsx`: the page, its state logic, the synthetic `mockDatabase` and the intelligence panel.
+* `backend/main.py`: synthetic shift-level API (not consumed by the UI yet).
+* `data/` and `scripts/data_pipeline/`: Phase 3 canonical data package and its reproducible pipeline (not read by the app at runtime).
+
+## 🧪 Testing (UAT)
+
+A rigorous User Acceptance Testing (UAT) protocol is established for this project. See `UAT_CHECKLIST.md` (note: written for an earlier layout; re-verify against the current map UI):
+* Interactive handshake events between the 70% stage and 30% sidebar.
+* Temporal, risk, and ownership filter logic.
+* Dynamic intelligence rendering based on active data nodes.
+
+---
+*Built for the RealRails Telemetry Initiative.*
 </file>
 
 </files>

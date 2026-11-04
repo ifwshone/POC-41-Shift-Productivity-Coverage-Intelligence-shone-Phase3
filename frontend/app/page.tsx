@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ComposedChart, Bar } from 'recharts';
 
 // Synthetic database acting as the backend response
@@ -37,7 +38,6 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 // Marker placement on the map, in % of the screen (purely visual).
-// "wide" is for landscape screens, "tall" for phones in portrait.
 const POSITIONS = {
   wide: {
     'Facility A': { hub: [27, 50], crews: { 'Morning Crew': [16, 32], 'Evening Crew': [38, 34], 'Night Watch': [27, 70] } },
@@ -49,7 +49,6 @@ const POSITIONS = {
   },
 } as Record<'wide' | 'tall', Record<Loc, { hub: number[]; crews: Record<Team, number[]> }>>;
 
-/* ---------- decorative terrain (deterministic, no network tiles) ---------- */
 function contour(cx: number, cy: number, r: number, seed: number) {
   const pts: string[] = [];
   const N = 96;
@@ -78,7 +77,6 @@ const TERRAIN = (() => {
   return out;
 })();
 
-/* ---------- tiny inline icon set (no extra dependency) ---------- */
 const ICONS: Record<string, React.ReactNode> = {
   x: <path d="M18 6 6 18M6 6l12 12" />,
   info: <><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></>,
@@ -100,7 +98,6 @@ function Icon({ name, size = 18, className = '' }: { name: string; size?: number
   );
 }
 
-/* ---------- segmented control (replaces the native dropdowns) ---------- */
 function Seg({
   label, accent, value, options, onChange,
 }: {
@@ -124,10 +121,6 @@ function Seg({
   );
 }
 
-/* ---------- Time Horizon: builds the series for the selected range ----------
-   "Last 7 Days" is exactly your original dataset. The longer ranges are
-   synthetic history generated deterministically around the same baseline
-   (same selection = same numbers), ending on your original values. */
 const seeded = (n: number) => {
   const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
   return x - Math.floor(x);
@@ -156,7 +149,6 @@ function buildSeries(node: { trend: number[]; overtime: number[] }, range: strin
     });
   }
 
-  // YTD: one point per month, last point is your original latest value
   return YTD_DATES.map((date, i) =>
     i === YTD_DATES.length - 1 ? { ...base[base.length - 1], date } : { date, ...gen(i, 26, 16) }
   );
@@ -168,7 +160,6 @@ export default function ShiftProductivityDashboard() {
     const [timeRange, setTimeRange] = useState('Last 7 Days');
     const [isClient, setIsClient] = useState(false);
 
-    // UI-only state for the map layout
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [isInfoOpen, setIsInfoOpen] = useState(false);
     const [isTall, setIsTall] = useState(false);
@@ -177,7 +168,6 @@ export default function ShiftProductivityDashboard() {
       setIsClient(true);
     }, []);
 
-    // Phones / portrait screens get their own marker arrangement
     useEffect(() => {
       const mq = window.matchMedia('(max-width: 767px), (orientation: portrait)');
       const apply = () => setIsTall(mq.matches);
@@ -186,7 +176,6 @@ export default function ShiftProductivityDashboard() {
       return () => mq.removeEventListener('change', apply);
     }, []);
 
-    // Esc closes whatever is open
     useEffect(() => {
       const onKey = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
@@ -208,14 +197,11 @@ export default function ShiftProductivityDashboard() {
       };
     }, [activeLocation, activeTeam, timeRange]);
 
-    // Same simulated heatmap as before; just generated once per selection
-    // so it doesn't re-shuffle whenever the map re-renders.
     const heatmapScores = useMemo(
       () => activeData.dataset.slice(-10).map(() => [1, 2, 3].map(() => Math.random())),
       [activeData]
     );
 
-    // INSERT EXPORT FUNCTION HERE
     const triggerExport = () => {
       const headers = ["Date", "Location", "Team", "Output/Hour", "Overtime (Hrs)", "Status"];
       const csvRows = activeData.dataset.map(row =>
@@ -252,9 +238,7 @@ export default function ShiftProductivityDashboard() {
     return (
       <div className="relative h-[100dvh] w-full overflow-hidden bg-deep text-mist font-sans tracking-tight">
 
-        {/* ============ FULL-SCREEN MAP ============ */}
         <div className={`absolute inset-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isPanelOpen ? 'lg:-translate-x-[7vw]' : ''}`}>
-          {/* terrain */}
           <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <defs>
               <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
@@ -280,7 +264,6 @@ export default function ShiftProductivityDashboard() {
           <div className="radar" />
           <div className="vignette" />
 
-          {/* connections */}
           <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             {LOCATIONS.map(loc =>
               TEAMS.map(team => {
@@ -298,7 +281,6 @@ export default function ShiftProductivityDashboard() {
               fill="none" stroke="rgba(217,234,214,0.35)" strokeWidth={1.4} vectorEffect="non-scaling-stroke" className="route" />
           </svg>
 
-          {/* facility hubs */}
           {LOCATIONS.map(loc => (
             <button key={loc} type="button" onClick={() => selectHub(loc)}
               aria-label={`${loc} overview`} aria-pressed={activeLocation === loc}
@@ -311,7 +293,6 @@ export default function ShiftProductivityDashboard() {
             </button>
           ))}
 
-          {/* crew markers (status-coloured, driven by the data) */}
           {LOCATIONS.map(loc =>
             TEAMS.map(team => {
               const node = mockDatabase[loc][team];
@@ -337,7 +318,6 @@ export default function ShiftProductivityDashboard() {
           )}
         </div>
 
-        {/* ============ HEADER + TICKER ============ */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col gap-3 p-4 sm:p-6">
           <header className="flex items-start justify-between gap-3">
             <div className="pointer-events-auto flex min-w-0 items-center gap-3">
@@ -360,6 +340,10 @@ export default function ShiftProductivityDashboard() {
             </div>
 
             <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+              <Link href="/intelligence" className="flex h-11 items-center gap-2 rounded-full border border-line bg-surface px-4 text-xs font-extrabold uppercase tracking-[0.12em] text-mist transition-colors hover:border-sky hover:text-sky">
+                <Icon name="db" size={16} />
+                <span className="hidden sm:inline">Data Intel</span>
+              </Link>
               <button type="button" onClick={() => { setIsInfoOpen(o => !o); }}
                 aria-label="Project information" aria-expanded={isInfoOpen}
                 className={`grid h-11 w-11 place-items-center rounded-full border transition-colors ${isInfoOpen ? 'border-accent bg-accent text-deep' : 'border-line bg-surface text-mist hover:border-accent hover:text-accent'}`}>
@@ -373,7 +357,6 @@ export default function ShiftProductivityDashboard() {
             </div>
           </header>
 
-          {/* Live Alerts Ticker */}
           <div className="pointer-events-auto flex max-w-2xl items-center gap-3 rounded-xl border border-line bg-surface p-2.5 shadow-lg">
             <span className="shrink-0 rounded bg-sky/10 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-sky">Live Exceptions</span>
             <p className="line-clamp-2 flex-1 text-xs text-mist/80 sm:truncate">
@@ -383,7 +366,6 @@ export default function ShiftProductivityDashboard() {
             </p>
           </div>
 
-          {/* legend */}
           <div className="pointer-events-auto flex w-fit items-center gap-4 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-moss">
             {(['Optimal', 'Warning', 'Critical'] as const).map(s => (
               <span key={s} className="flex items-center gap-1.5">
@@ -394,7 +376,6 @@ export default function ShiftProductivityDashboard() {
           </div>
         </div>
 
-        {/* ============ INFO (i) POPOVER: developer signature ============ */}
         {isInfoOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setIsInfoOpen(false)} />
@@ -415,7 +396,6 @@ export default function ShiftProductivityDashboard() {
           </>
         )}
 
-        {/* ============ FILTER DOCK ============ */}
         <div className={`pointer-events-none absolute bottom-0 left-0 right-0 z-30 flex justify-center p-3 transition-[right] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] sm:p-5 ${isPanelOpen ? 'lg:right-[480px] xl:right-[540px]' : ''}`}>
           <div className="pointer-events-auto flex w-full max-w-full flex-col justify-center gap-2.5 rounded-2xl border border-line bg-surface p-3 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.95)] sm:w-auto sm:flex-row sm:flex-wrap sm:items-end sm:gap-x-6 sm:gap-y-3 sm:px-5 sm:py-3.5">
             <Seg label="Location" accent="#b8f23f" value={activeLocation}
@@ -427,7 +407,6 @@ export default function ShiftProductivityDashboard() {
           </div>
         </div>
 
-        {/* ============ INTELLIGENCE PANEL (slide-over) ============ */}
         <div className={`fixed inset-0 z-[55] bg-black/70 transition-opacity duration-300 lg:hidden ${isPanelOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
           onClick={() => setIsPanelOpen(false)} />
 
@@ -435,7 +414,6 @@ export default function ShiftProductivityDashboard() {
           aria-hidden={!isPanelOpen}
           className={`fixed bottom-0 left-0 right-0 z-[60] flex h-[88dvh] flex-col overflow-hidden rounded-t-3xl border-t border-accent/30 bg-surface shadow-[0_-30px_80px_rgba(0,0,0,0.8)] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:bottom-auto lg:left-auto lg:top-0 lg:h-full lg:w-[480px] lg:rounded-none lg:border-l lg:border-t-0 xl:w-[540px] ${isPanelOpen ? 'translate-y-0 lg:translate-x-0' : 'translate-y-full lg:translate-y-0 lg:translate-x-full'}`}
         >
-          {/* panel header */}
           <div className="shrink-0 border-b border-line bg-surface px-5 pb-4 pt-4 sm:px-7">
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line lg:hidden" />
             <div className="flex items-start justify-between gap-3">
@@ -459,11 +437,9 @@ export default function ShiftProductivityDashboard() {
             </div>
           </div>
 
-          {/* panel body */}
           <div className="custom-scrollbar flex-1 overflow-y-auto">
             <div className="flex flex-col gap-6 p-5 sm:p-7">
 
-              {/* Section A: Title & Metric */}
               <div key={`${activeLocation}-${activeTeam}`} className="fade-up">
                 <h3 className="eyebrow !tracking-[0.25em] mb-3">Rail Category: Human Utilization</h3>
                 <div className="mb-3 font-display text-6xl font-extrabold tracking-tighter gradient-text">
@@ -475,7 +451,6 @@ export default function ShiftProductivityDashboard() {
                 </div>
               </div>
 
-              {/* Decision Support Panel */}
               <div className="group relative overflow-hidden rounded-2xl border border-line bg-deep p-5 transition-colors hover:border-sky/50">
                 <div className="absolute bottom-0 left-0 top-0 w-1.5 bg-sky transition-shadow group-hover:shadow-[0_0_12px_#6ec8ff]"></div>
                 <h4 className="mb-3 flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-sky">
@@ -487,7 +462,6 @@ export default function ShiftProductivityDashboard() {
                 </p>
               </div>
 
-              {/* Output-Per-Hour Trend */}
               <section className="rounded-2xl border border-line bg-deep p-4 sm:p-5">
                 <div className="mb-5 flex items-center justify-between gap-2">
                   <h2 className="text-sm font-bold tracking-wide text-accent">Output-Per-Hour Trend</h2>
@@ -518,7 +492,6 @@ export default function ShiftProductivityDashboard() {
                 </div>
               </section>
 
-              {/* Overtime Pareto - with cumulative line */}
               <section className="rounded-2xl border border-line bg-deep p-4 sm:p-5">
                 <h2 className="mb-5 text-sm font-bold tracking-wide text-accent">Overtime Pareto</h2>
                 <div className="h-48 w-full">
@@ -534,21 +507,18 @@ export default function ShiftProductivityDashboard() {
                         labelStyle={{ color: '#d9ead6', fontSize: '12px', marginBottom: '4px' }}
                       />
                       <Bar yAxisId="left" dataKey="overtime_hours" name="Hours" fill="#6ec8ff" radius={[4, 4, 0, 0]} animationDuration={1000} />
-                      {/* Simulated Cumulative Line for Pareto effect */}
                       <Line yAxisId="right" type="monotone" dataKey={(d) => Math.min(100, d.overtime_hours * 3)} name="Cumulative %" stroke="#ffb02e" strokeWidth={2} dot={false} />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
               </section>
 
-              {/* Coverage Heatmap */}
               <section className="rounded-2xl border border-line bg-deep p-4 sm:p-5">
                 <h2 className="mb-5 text-sm font-bold tracking-wide text-accent">Coverage Heatmap</h2>
                 <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(activeData.dataset.length, 10)}, minmax(0, 1fr))` }}>
                   {activeData.dataset.slice(-10).map((d, i) => (
                     <div key={i} className="flex flex-col gap-1.5">
                       <span className="mb-1 text-center text-[9px] text-moss">{timeRange === 'YTD' ? d.date.split('-')[1] : d.date.split('-')[2]}</span>
-                      {/* Simulated shifts per day */}
                       {[1, 2, 3].map((shift, si) => {
                         const coverageScore = heatmapScores[i][si];
                         const bgColor = coverageScore > 0.8 ? 'bg-accent' : coverageScore > 0.4 ? 'bg-warn' : 'bg-crit';
@@ -562,7 +532,6 @@ export default function ShiftProductivityDashboard() {
                 </div>
               </section>
 
-              {/* Shift Matrix Context */}
               <section className="rounded-2xl border border-line bg-deep p-4 sm:p-5">
                 <h2 className="mb-4 text-sm font-bold tracking-wide text-accent">Shift Matrix Context</h2>
                 <div className="group relative flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-xl border border-line bg-surface p-5 transition-colors hover:border-sky/50">
@@ -590,10 +559,8 @@ export default function ShiftProductivityDashboard() {
                 </div>
               </section>
 
-              {/* Context Panels */}
               <div className="space-y-6 border-t border-line pt-6">
 
-                {/* Section B: Why This Matters */}
                 <div className="group cursor-default">
                   <h4 className="eyebrow mb-2 flex items-center gap-2 !text-sky transition-colors group-hover:!text-mist">
                     <Icon name="info" size={12} />
@@ -604,7 +571,6 @@ export default function ShiftProductivityDashboard() {
                   </p>
                 </div>
 
-                {/* Section C: Who Controls the Rail */}
                 <div className="group cursor-default">
                   <h4 className="eyebrow mb-2 flex items-center gap-2 !text-accent transition-colors group-hover:!text-mist">
                     <Icon name="shield" size={12} />
@@ -615,7 +581,6 @@ export default function ShiftProductivityDashboard() {
                   </p>
                 </div>
 
-                {/* Section D: Data Quality Notes */}
                 <div className="group cursor-default">
                   <h4 className="eyebrow mb-2 flex items-center gap-2 transition-colors group-hover:!text-mist">
                     <Icon name="db" size={12} />
@@ -629,7 +594,6 @@ export default function ShiftProductivityDashboard() {
             </div>
           </div>
 
-          {/* Section E: Download Action (always visible) */}
           <div className="shrink-0 border-t border-line bg-surface p-4 sm:px-7 sm:py-5">
             <button type="button" onClick={triggerExport}
               className="group flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-4 text-xs font-extrabold uppercase tracking-widest text-deep shadow-[0_12px_30px_-12px_#b8f23f] transition-all duration-300 hover:-translate-y-0.5 active:scale-95">
