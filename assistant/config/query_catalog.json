@@ -27,5 +27,21 @@
       "query_function": "get_limitations",
       "requires_evidence": true,
       "supported_track": "all"
+    },
+    "get_data_freshness": {
+      "description": "Return data and method versions and generation time.",
+      "source": "intelligence_summary.json",
+      "allowed_parameters": {},
+      "query_function": "get_freshness",
+      "requires_evidence": true,
+      "supported_track": "all"
+    },
+    "explain_method": {
+      "description": "Return method and validation summary.",
+      "source": "intelligence_summary.json",
+      "allowed_parameters": {},
+      "query_function": "get_methodology",
+      "requires_evidence": true,
+      "supported_track": "all"
     }
   }

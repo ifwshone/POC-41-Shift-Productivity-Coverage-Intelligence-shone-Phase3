@@ -1,9 +1,9 @@
-// /frontend/app/intelligence/page.tsx
 'use client'
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import { loadIntelligenceResults, loadIntelligenceSummary } from '../../lib/intelligenceLoader';
-import { isStale } from '../../lib/intelligenceValidator';
+import { validateIntelligenceCollection, checkDataFreshness } from '../../lib/intelligenceValidator';
 import { IntelligenceResult, IntelligenceSummary } from '../../types/intelligence';
 import { AssistantPanel } from '../../components/data-assistant/AssistantPanel';
 
@@ -13,15 +13,16 @@ export default function DataIntelligencePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('All');
-  const [staleWarning, setStaleWarning] = useState(false);
+  const [freshnessStatus, setFreshnessStatus] = useState({ isVersionMismatch: false, isStaleTime: false });
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([loadIntelligenceResults(), loadIntelligenceSummary()])
       .then(([resData, sumData]) => {
+        validateIntelligenceCollection(resData, sumData);
         setResults(resData);
         setSummary(sumData);
-        setStaleWarning(isStale(sumData, resData));
+        setFreshnessStatus(checkDataFreshness(sumData, resData));
         setLoading(false);
       })
       .catch(err => {
@@ -36,6 +37,13 @@ export default function DataIntelligencePage() {
 
   const filteredResults = filterCategory === 'All' ? results : results.filter(r => r.result_category === filterCategory);
 
+  // Data for the Bar Chart
+  const chartData = filteredResults.map(r => ({
+    name: r.entity_id?.replace(/_/g, ' ') || 'Unknown',
+    gap: r.result_value || 0,
+    fill: (r.result_value || 0) < 0 ? 'var(--color-crit)' : 'var(--color-accent)'
+  }));
+
   return (
     <div className="min-h-screen bg-deep text-mist font-sans p-6 lg:p-12">
       {/* Header */}
@@ -43,13 +51,13 @@ export default function DataIntelligencePage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <Link href="/" className="text-sky hover:underline text-sm font-mono">&larr; Back to Operational Map</Link>
-            {staleWarning && <span className="bg-warn/20 text-warn px-2 py-0.5 rounded text-xs font-bold uppercase">Stale Versions Detected</span>}
+            {freshnessStatus.isVersionMismatch && <span className="bg-crit/20 text-crit px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Version Mismatch</span>}
+            {freshnessStatus.isStaleTime && !freshnessStatus.isVersionMismatch && <span className="bg-warn/20 text-warn px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Data Stale (&gt;7 Days)</span>}
           </div>
           <h1 className="text-3xl font-display font-bold gradient-text">Data Intelligence</h1>
           <p className="text-moss text-sm mt-1">{summary.decision_to_be_supported}</p>
         </div>
-        <div className="flex gap-4 text-xs font-mono text-moss bg-surface p-3 rounded-lg border border-line">
-            {/* ASSISTANT TOGGLE BUTTON */}
+        <div className="flex gap-4 text-xs font-mono text-moss bg-surface p-3 rounded-lg border border-line items-center">
           <button 
             onClick={() => setIsAssistantOpen(true)}
             className="flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-deep shadow-[0_4px_14px_0_#b8f23f] transition-transform hover:-translate-y-0.5"
@@ -82,6 +90,31 @@ export default function DataIntelligencePage() {
           </div>
         </div>
       </section>
+
+      {/* Visual Comparison Chart */}
+      {filteredResults.length > 0 && (
+        <section className="mb-10 p-6 bg-surface border border-line rounded-xl">
+          <h2 className="text-lg font-display font-bold text-mist mb-6">Output Gap vs Baseline</h2>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                <XAxis dataKey="name" stroke="#7e9686" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="#7e9686" fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  cursor={{ fill: 'rgba(217,234,214,0.05)' }}
+                  contentStyle={{ backgroundColor: '#0a1812', borderColor: '#334139', color: '#d9ead6', borderRadius: '8px' }}
+                />
+                <ReferenceLine y={0} stroke="#334139" strokeDasharray="3 3" />
+                <Bar dataKey="gap" radius={[4, 4, 4, 4]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+      )}
 
       {/* Filters & Results Table */}
       <section className="mb-10">
@@ -145,6 +178,7 @@ export default function DataIntelligencePage() {
           </ul>
         </div>
       </section>
+      
       {/* Assistant Panel Render */}
       {isAssistantOpen && <AssistantPanel onClose={() => setIsAssistantOpen(false)} />}
     </div>

@@ -28,7 +28,9 @@ def export_results(pivot_records, baseline):
                 {"factor": "record_count", "value": int(rec['record_count'])},
                 {"factor": "avg_output_per_hour", "value": float(round(rec['output_per_hour'], 1))},
                 {"factor": "avg_overtime_hours", "value": float(round(rec['overtime_hours'], 1))},
-                {"factor": "output_gap_vs_baseline", "value": float(round(rec['output_gap_vs_baseline'], 1))}
+                {"factor": "output_gap_vs_baseline", "value": float(round(rec['output_gap_vs_baseline'], 1))},
+                {"factor": "baseline_output_per_hour", "value": float(round(baseline.get('output_per_hour', 0), 1))},
+                {"factor": "baseline_overtime_hours", "value": float(round(baseline.get('overtime_hours', 0), 1))}
             ],
             "method_version": "1.0.0",
             "data_version": "1.0.0",

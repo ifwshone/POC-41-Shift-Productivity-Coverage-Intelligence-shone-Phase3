@@ -1,4 +1,3 @@
-// /frontend/lib/intelligenceValidator.ts
 import { IntelligenceResult, IntelligenceSummary } from "../types/intelligence";
 
 const QUALITY_STATUSES = new Set(["validated", "conditional", "rejected"]);
@@ -14,6 +13,9 @@ export function validateIntelligenceResult(value: unknown): asserts value is Int
       throw new Error(`Invalid required field: ${field}`);
     }
   }
+
+  if (typeof item.result_value !== "number") throw new Error("Invalid required field: result_value must be a number");
+  if (typeof item.priority_rank !== "number") throw new Error("Invalid required field: priority_rank must be a number");
   
   if (!QUALITY_STATUSES.has(String(item.quality_status))) throw new Error("Unsupported quality_status");
   if (!Array.isArray(item.evidence)) throw new Error("evidence must be an array");
@@ -25,8 +27,27 @@ export function validateIntelligenceSummary(value: unknown): asserts value is In
   const item = value as Record<string, unknown>;
   if (typeof item.approved_track !== "string" || !item.approved_track) throw new Error("Invalid summary: missing approved_track");
   if (!Array.isArray(item.key_findings)) throw new Error("Invalid summary: key_findings must be an array");
+  if (typeof item.result_count !== "number") throw new Error("Invalid summary: missing result_count");
 }
 
-export function isStale(summary: IntelligenceSummary, results: IntelligenceResult[]): boolean {
-  return results.some(r => r.data_version !== summary.data_version || r.method_version !== summary.method_version);
+export function validateIntelligenceCollection(results: IntelligenceResult[], summary: IntelligenceSummary) {
+  if (results.length !== summary.result_count) {
+    throw new Error(`Result count mismatch: expected ${summary.result_count}, got ${results.length}`);
+  }
+  const ids = new Set();
+  for (const r of results) {
+    if (ids.has(r.result_id)) throw new Error(`Duplicate result_id detected: ${r.result_id}`);
+    ids.add(r.result_id);
+  }
+}
+
+export function checkDataFreshness(summary: IntelligenceSummary, results: IntelligenceResult[]) {
+  const isVersionMismatch = results.some(r => r.data_version !== summary.data_version || r.method_version !== summary.method_version);
+  
+  const summaryDate = new Date(summary.generated_at).getTime();
+  const now = Date.now();
+  // Flag as stale if older than 7 days
+  const isStaleTime = (now - summaryDate) > 7 * 24 * 60 * 60 * 1000; 
+  
+  return { isVersionMismatch, isStaleTime };
 }

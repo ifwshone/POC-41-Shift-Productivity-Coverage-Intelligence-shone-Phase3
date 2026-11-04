@@ -1,6 +1,7 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
@@ -15,19 +16,17 @@ def test_unsupported_state_renders():
         btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Ask Assistant')]")))
         btn.click()
         
-        # Wait a moment for the sidebar animation to complete
         time.sleep(1)
         
-        # Locate input and send text that is out of scope but NOT a blocked security term
+        # 'space exploration' does not match any keywords in intent_classifier.py
         input_field = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[@placeholder='Ask about shift performance...']")))
         input_field.clear()
-        input_field.send_keys("What is the weather tomorrow?")
+        input_field.send_keys("Tell me about space exploration")
         
-        # Explicitly locate and click the Ask button
         submit_btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[text()='Ask']")))
         submit_btn.click()
         
-        # Verify Out of Scope boundary renders
+        # Wait for the Out of Scope boundary to render
         out_of_scope_header = wait.until(EC.visibility_of_element_located((By.XPATH, "//h3[text()='Out of Scope']")))
         assert out_of_scope_header.is_displayed()
         

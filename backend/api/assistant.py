@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List, Optional
-import google.generativeai as genai
+from google import genai
 
 from assistant.core.scope_guard import evaluate_scope
 from assistant.core.intent_classifier import classify_intent
@@ -12,9 +12,9 @@ from assistant.core.response_composer import compose_response
 from assistant.core.query_router import get_priority_items
 from assistant.queries.result_queries import get_result_explanation, get_limitations
 from assistant.queries.summary_queries import get_data_freshness
+from assistant.core.output_validator import validate_grounded_response
 
 router = APIRouter()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY", ""))
 
 class QueryRequest(BaseModel):
     question: str
@@ -24,6 +24,9 @@ class GroundedResponse(BaseModel):
     status: str
     intent: Optional[str] = None
     answer: str
+    deterministic_finding: str = ""
+    llm_explanation: str = ""
+    llm_status: str = "unavailable"
     evidence_references: List[dict] = []
     key_values: List[dict] = []
     metadata: Optional[dict] = None
@@ -33,7 +36,7 @@ class GroundedResponse(BaseModel):
 @router.post("/query", response_model=GroundedResponse)
 async def query_assistant(req: QueryRequest):
     if evaluate_scope(req.question) == "UNSAFE":
-        return compose_response("unsafe", "Request blocked by security policy.", {}, "unsafe", [])
+        return compose_response("unsafe", "Request blocked by security policy.", {}, "unsafe")
 
     classification = classify_intent(req.question)
     intent = classification["intent"]
@@ -60,13 +63,43 @@ async def query_assistant(req: QueryRequest):
     if data.get("status") == "unavailable":
         return compose_response(intent, "No matching data available.", data, "unavailable")
 
-    try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt_template = Path("assistant/prompts/grounded_explanation_prompt.txt").read_text(encoding="utf-8")
-        prompt = f"{prompt_template}\n\nQuestion: {req.question}\nEvidence: {data['evidence']}\nLimitation: {data.get('limitation')}"
-        answer_text = model.generate_content(prompt).text.strip()
-    except Exception:
-        fallback = data.get('answer_data', {}).get('finding', 'Data retrieved successfully but the LLM is unreachable.')
-        answer_text = f"Based on the evidence: {fallback}"
+    # Extract Deterministic Base
+    deterministic_finding = data.get('answer_data', {}).get('finding', 'Valid data retrieved.')
+    if intent == "list_priority_items":
+        items = data.get('answer_data', {}).get('items', [])
+        deterministic_finding = " ".join([i.get("finding", "") for i in items])
+        
+    api_key = os.getenv("GEMINI_API_KEY")
+    model_name = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+    llm_explanation = ""
+    llm_status = "unavailable (Missing Config)"
 
-    return compose_response(intent, answer_text, data, "answered")
+    if api_key:
+        try:
+            client = genai.Client(api_key=api_key)
+            prompt_template = Path("assistant/prompts/grounded_explanation_prompt.txt").read_text(encoding="utf-8")
+            prompt = f"{prompt_template}\n\nQuestion: {req.question}\nEvidence: {data['evidence']}\nLimitation: {data.get('limitation')}\nDeterministic Finding: {deterministic_finding}"
+            
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt
+            )
+            raw_llm = response.text.strip()
+            
+            if validate_grounded_response(raw_llm, data):
+                llm_explanation = raw_llm
+                llm_status = "success"
+            else:
+                llm_status = "rejected_by_validator (Hallucination Detected)"
+        except Exception as e:
+            llm_status = "error (Provider or Network Failure)"
+
+    return compose_response(
+        intent=intent,
+        answer="Request processed.",
+        evidence_package=data,
+        status="answered",
+        deterministic_finding=deterministic_finding,
+        llm_explanation=llm_explanation,
+        llm_status=llm_status
+    )

@@ -21,11 +21,12 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
   const handleAsk = async (question: string) => {
     setStatus('retrieving');
     try {
-      const res = await fetch('http://localhost:8000/api/assistant/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
-      });
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${apiUrl}/api/assistant/query`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question }),
+        });
       const data = await res.json();
       setResponse(data);
       setStatus('answered');
