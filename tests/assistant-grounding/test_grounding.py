@@ -20,18 +20,9 @@ def test_numeric_fidelity():
         "evidence": [{"factor": "avg_output_per_hour", "value": 93.6}],
         "limitation": "Descriptive 5-day view."
     }
-    valid_response = {
-        "answer_id": "ANS-01", "status": "answered", "intent": "explain_result",
-        "answer": "Output is 93.6", "evidence_references": [], "metadata": {},
-        "limitation": "Descriptive 5-day view.", "suggested_follow_ups": [],
-        "key_values": [{"name": "output", "value": 93.6}]
-    }
     
-    # Should pass
-    validate_grounded_response(valid_response, evidence_package)
+    # Should pass (93.6 is in the evidence)
+    assert validate_grounded_response("Output is 93.6", evidence_package) is True
     
-    # Should fail due to hallucination
-    invalid_response = dict(valid_response)
-    invalid_response["key_values"] = [{"name": "output", "value": 100.0}]
-    with pytest.raises(ValueError, match="Numeric hallucination detected"):
-        validate_grounded_response(invalid_response, evidence_package)
+    # Should fail due to hallucination (100.0 is not in the evidence)
+    assert validate_grounded_response("Output is 100.0", evidence_package) is False
