@@ -1,0 +1,25 @@
+{
+    "limits": {
+      "max_returned_results": 10,
+      "max_evidence_references": 5,
+      "max_suggested_follow_ups": 3,
+      "max_question_length": 500,
+      "max_text_excerpt": 300,
+      "max_llm_conversation_turns": 0
+    },
+    "memory": {
+      "persistent_memory_enabled": false
+    },
+    "security": {
+      "blocked_terms": [
+        "system prompt",
+        "environment variable",
+        "secret",
+        "ignore instructions",
+        "run sql",
+        "execute code",
+        "predict",
+        "forecast"
+      ]
+    }
+  }

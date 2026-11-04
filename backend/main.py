@@ -1,4 +1,3 @@
-# backend/main.py
 import os
 import json
 from fastapi import FastAPI, HTTPException
@@ -6,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import numpy as np
 from dotenv import load_dotenv
+from backend.api.assistant import router as assistant_router
 
 # Security Guardrail: Never hardcode credentials
 load_dotenv()
@@ -19,6 +19,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount the Grounded Data Assistant Router
+app.include_router(assistant_router, prefix="/api/assistant", tags=["assistant"])
 
 def generate_synthetic_shift_data():
     # Fallback to mock data if synthetic generation fails
@@ -46,7 +49,7 @@ def generate_synthetic_shift_data():
 @app.get("/api/v1/intelligence/coverage")
 async def get_coverage_intelligence():
     data = generate_synthetic_shift_data()
-    # Transform raw data into insights[cite: 1]
+    # Transform raw data into insights
     df = pd.DataFrame(data)
     avg_output = df["output_per_hour"].mean()
     

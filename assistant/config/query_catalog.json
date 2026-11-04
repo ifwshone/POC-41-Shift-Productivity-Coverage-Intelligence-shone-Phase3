@@ -1,0 +1,31 @@
+{
+    "list_priority_items": {
+      "description": "Return validated priority results.",
+      "source": "intelligence_results.json",
+      "allowed_parameters": {
+        "limit": { "type": "integer", "minimum": 1, "maximum": 25, "default": 10 },
+        "result_category": { "type": "string", "allowed_values": ["high", "low"] }
+      },
+      "query_function": "get_priority_items",
+      "requires_evidence": true,
+      "supported_track": "comparative"
+    },
+    "explain_result": {
+      "description": "Explain one approved result using evidence.",
+      "source": "intelligence_results.json",
+      "allowed_parameters": {
+        "entity_id": { "type": "string", "required": true }
+      },
+      "query_function": "get_result_explanation",
+      "requires_evidence": true,
+      "supported_track": "comparative"
+    },
+    "explain_limitation": {
+      "description": "Return approved limitations.",
+      "source": "intelligence_summary.json",
+      "allowed_parameters": {},
+      "query_function": "get_limitations",
+      "requires_evidence": true,
+      "supported_track": "all"
+    }
+  }

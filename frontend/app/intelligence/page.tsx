@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { loadIntelligenceResults, loadIntelligenceSummary } from '../../lib/intelligenceLoader';
 import { isStale } from '../../lib/intelligenceValidator';
 import { IntelligenceResult, IntelligenceSummary } from '../../types/intelligence';
+import { AssistantPanel } from '../../components/data-assistant/AssistantPanel';
 
 export default function DataIntelligencePage() {
   const [results, setResults] = useState<IntelligenceResult[]>([]);
@@ -13,6 +14,7 @@ export default function DataIntelligencePage() {
   const [error, setError] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('All');
   const [staleWarning, setStaleWarning] = useState(false);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([loadIntelligenceResults(), loadIntelligenceSummary()])
@@ -47,6 +49,13 @@ export default function DataIntelligencePage() {
           <p className="text-moss text-sm mt-1">{summary.decision_to_be_supported}</p>
         </div>
         <div className="flex gap-4 text-xs font-mono text-moss bg-surface p-3 rounded-lg border border-line">
+            {/* ASSISTANT TOGGLE BUTTON */}
+          <button 
+            onClick={() => setIsAssistantOpen(true)}
+            className="flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-deep shadow-[0_4px_14px_0_#b8f23f] transition-transform hover:-translate-y-0.5"
+          >
+            Ask Assistant
+          </button>
           <div><span className="block text-mist">Track</span> {summary.approved_track.split(' ')[1]}</div>
           <div><span className="block text-mist">Method</span> v{summary.method_version}</div>
           <div><span className="block text-mist">Data</span> v{summary.data_version}</div>
@@ -136,6 +145,8 @@ export default function DataIntelligencePage() {
           </ul>
         </div>
       </section>
+      {/* Assistant Panel Render */}
+      {isAssistantOpen && <AssistantPanel onClose={() => setIsAssistantOpen(false)} />}
     </div>
   );
 }

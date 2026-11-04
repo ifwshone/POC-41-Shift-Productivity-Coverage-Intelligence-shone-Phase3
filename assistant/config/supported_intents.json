@@ -1,0 +1,28 @@
+{
+    "list_priority_items": {
+      "description": "Return validated priority results ranked by output gap",
+      "required_parameters": [],
+      "optional_parameters": ["limit", "result_category"]
+    },
+    "explain_result": {
+      "description": "Explain one approved result using evidence",
+      "required_parameters": ["entity_id"],
+      "optional_parameters": []
+    },
+    "explain_limitation": {
+      "description": "Return approved limitations of the dataset or track",
+      "required_parameters": [],
+      "optional_parameters": []
+    },
+    "explain_method": {
+      "description": "Return method and validation summary",
+      "required_parameters": [],
+      "optional_parameters": []
+    },
+    "get_data_freshness": {
+      "description": "Return data and method versions and generation time",
+      "required_parameters": [],
+      "optional_parameters": []
+    }
+  }
+  
