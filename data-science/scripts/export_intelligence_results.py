@@ -2,7 +2,6 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Dynamically resolve outputs directory
 HERE = Path(__file__).resolve().parent
 OUTPUTS_DIR = HERE.parent / "outputs"
 
@@ -58,7 +57,6 @@ def export_results(pivot_records, baseline):
         "generated_at": generated_at
     }
     
-    # Write files securely using UTF-8
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     (OUTPUTS_DIR / 'intelligence_results.json').write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
     (OUTPUTS_DIR / 'intelligence_summary.json').write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
