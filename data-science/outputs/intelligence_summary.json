@@ -8,8 +8,8 @@
   "method_version": "1.0.0",
   "result_count": 6,
   "key_findings": [
-    "facility_a_night_watch averages 93.6 units/hr (-25.8 vs baseline) with 40.0 avg overtime hours.",
-    "facility_b_night_watch averages 111.0 units/hr (-8.4 vs baseline) with 23.8 avg overtime hours."
+    "facility_a_night_watch ranks 1 based strictly on its output gap (-25.8 vs baseline), averaging 93.6 units/hr. Average overtime (40.0 hrs) is supporting context.",
+    "facility_b_night_watch ranks 2 based strictly on its output gap (-8.4 vs baseline), averaging 111.0 units/hr. Average overtime (23.8 hrs) is supporting context."
   ],
   "priority_items": [
     "facility_a_night_watch",
@@ -17,8 +17,9 @@
   ],
   "validation_result": "PASS",
   "important_limitations": [
+    "Ranking relies solely on output gaps; overtime is context, not part of a combined risk score.",
     "Frontend and backend scopes kept strictly separate.",
     "Synthetic 5-day view only."
   ],
-  "generated_at": "2026-11-03T16:49:12.415058+00:00"
+  "generated_at": "2026-11-04T07:49:38.902557+00:00"
 }
