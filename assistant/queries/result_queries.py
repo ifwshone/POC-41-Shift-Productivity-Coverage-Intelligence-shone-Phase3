@@ -42,3 +42,20 @@ def get_limitations():
         },
         "limitation": "Limitations are descriptive and bound to synthetic data."
     }
+
+def get_methodology():
+    summary = json.loads(SUMMARY_PATH.read_text(encoding="utf-8"))
+    return {
+        "intent": "explain_method",
+        "answer_data": {
+            "question": summary["primary_analytical_question"],
+            "method": summary["approved_track"]
+        },
+        "evidence": [{"factor": "validation_result", "value": summary["validation_result"]}],
+        "metadata": {
+            "data_version": summary["data_version"],
+            "method_version": summary["method_version"],
+            "quality_status": summary["validation_result"]
+        },
+        "limitation": summary["important_limitations"][0] if summary["important_limitations"] else "Synthetic data."
+    }
