@@ -1,5 +1,6 @@
 'use client';
-import React from 'react';
+
+import React, { useState } from 'react';
 import { EvidenceReferences } from './EvidenceReferences';
 import { LimitationNotice } from './LimitationNotice';
 import { SuggestedQuestions } from './SuggestedQuestions';

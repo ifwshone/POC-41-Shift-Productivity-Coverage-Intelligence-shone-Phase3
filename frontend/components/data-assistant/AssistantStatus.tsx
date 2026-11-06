@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { AnswerCard } from './AnswerCard';
 import { UnsupportedQuestionState } from './UnsupportedQuestionState';
 
