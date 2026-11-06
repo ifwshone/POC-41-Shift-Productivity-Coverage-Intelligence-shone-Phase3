@@ -60,24 +60,20 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
   };
 
   return (
-    // Responsive Wrapper: Fixed right-side panel on desktop, full screen overlay on mobile
-    <div className="fixed inset-y-0 right-0 z-50 flex flex-col w-full h-full bg-[#0a0a0a] border-l border-line/50 p-4 sm:w-96 shadow-2xl transition-transform duration-300">
-      
-      {/* Header with Close Button */}
+    <div className="flex flex-col h-full w-full bg-[#0a0a0a] border-l border-line/50 p-4">
       <div className="flex items-center justify-between mb-4 pb-4 border-b border-line/50 shrink-0">
-        <h2 className="text-sm font-bold text-mist uppercase tracking-wider">
+        <h2 className="text-lg font-bold text-white tracking-wide">
           Data Assistant
         </h2>
         <button 
           onClick={onClose}
-          className="p-2 text-xs uppercase tracking-wider text-moss hover:text-white transition-colors"
+          className="text-sm tracking-wider text-gray-400 hover:text-white transition-colors"
           aria-label="Close Assistant"
         >
           Close
         </button>
       </div>
       
-      {/* Scrollable Chat Area */}
       <div className="flex-1 overflow-y-auto mb-4 custom-scrollbar pr-2">
         <AssistantStatus 
           response={status.response} 
@@ -86,8 +82,7 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
         />
       </div>
 
-      {/* Fixed Input at Bottom */}
-      <div className="shrink-0 mt-auto pb-safe">
+      <div className="shrink-0 mt-auto">
         <QuestionInput 
           onAsk={handleAsk} 
           disabled={status.isLoading} 

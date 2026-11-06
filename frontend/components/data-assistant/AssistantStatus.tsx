@@ -1,7 +1,6 @@
 import React from 'react';
 import { EvidenceReferences } from './EvidenceReferences';
 
-// Type definitions matching your GROUNDED_RESPONSE_CONTRACT.md
 export interface AssistantResponse {
   answer_id: string;
   status: string;
@@ -24,7 +23,7 @@ interface AssistantStatusProps {
 export function AssistantStatus({ response, isLoading, onFollowUpClick }: AssistantStatusProps) {
   if (isLoading) {
     return (
-      <div className="p-4 rounded-lg bg-surface border border-line/50 animate-pulse text-sm text-gray-400">
+      <div className="p-4 rounded-lg bg-[#111111] border border-line/50 animate-pulse text-sm text-gray-400">
         Processing data context and querying assistant...
       </div>
     );
@@ -37,10 +36,10 @@ export function AssistantStatus({ response, isLoading, onFollowUpClick }: Assist
   const isGemini = response.llm_status === 'success';
 
   return (
-    <div className="flex flex-col gap-4 p-4 rounded-lg border border-line/50 bg-[#0a0a0a] text-gray-200">
+    <div className="flex flex-col gap-4 p-4 rounded-lg border border-line/50 bg-[#111111] text-gray-200">
       
       <div className="flex items-center justify-between border-b border-line/50 pb-2">
-        <span className="text-[10px] uppercase tracking-wider text-moss font-mono">
+        <span className="text-[10px] uppercase tracking-wider text-gray-400 font-mono">
           Intent: {response.intent}
         </span>
         <span className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded font-mono ${
@@ -67,7 +66,7 @@ export function AssistantStatus({ response, isLoading, onFollowUpClick }: Assist
 
       {response.suggested_follow_ups && response.suggested_follow_ups.length > 0 && (
         <div className="mt-4 pt-4 border-t border-line/50">
-          <h4 className="text-[10px] uppercase tracking-wider text-moss mb-3 font-mono">
+          <h4 className="text-[10px] uppercase tracking-wider text-gray-400 mb-3 font-mono">
             Suggested Follow-Ups
           </h4>
           <div className="flex flex-col gap-2">
@@ -75,7 +74,7 @@ export function AssistantStatus({ response, isLoading, onFollowUpClick }: Assist
               <button
                 key={index}
                 onClick={() => onFollowUpClick(question)}
-                className="text-left text-xs text-gray-400 hover:text-[#c4f135] hover:border-[#c4f135]/50 bg-white/5 px-3 py-2 rounded border border-white/10 transition-all duration-200"
+                className="text-left text-xs text-gray-300 hover:text-[#c4f135] hover:border-[#c4f135]/50 bg-white/5 px-3 py-2 rounded border border-white/10 transition-all duration-200"
               >
                 {question}
               </button>

@@ -17,7 +17,7 @@ export function QuestionInput({ onAsk, disabled }: QuestionInputProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-2 flex gap-2">
+    <form onSubmit={handleSubmit} className="flex gap-2">
       <input
         type="text"
         value={input}
@@ -25,12 +25,12 @@ export function QuestionInput({ onAsk, disabled }: QuestionInputProps) {
         disabled={disabled}
         placeholder="Ask about shift performance..."
         maxLength={500}
-        className="flex-1 bg-surface border border-line rounded-lg px-3 py-2 text-sm text-mist focus:border-accent focus:outline-none disabled:opacity-50"
+        className="flex-1 bg-[#111111] border border-line/50 rounded-lg px-3 py-2 text-sm text-gray-200 focus:border-[#c4f135] focus:outline-none disabled:opacity-50 transition-colors"
       />
       <button
         type="submit"
         disabled={disabled || !input.trim()}
-        className="bg-accent text-deep px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider disabled:opacity-50 hover:bg-accent/80 transition-colors"
+        className="bg-[#c4f135] text-black px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider disabled:opacity-50 hover:bg-[#a3c92b] transition-colors"
       >
         Ask
       </button>
