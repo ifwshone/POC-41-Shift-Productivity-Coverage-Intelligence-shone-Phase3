@@ -3,7 +3,7 @@
   "checks_total": 39,
   "checks_failed": 0,
   "errors": [],
-  "total_data_size_mb_excluding_validation_report": 0.1208,
+  "total_data_size_mb_excluding_validation_report": 0.1209,
   "canonical_rows": 129,
   "canonical_columns": 20,
   "sha256_canonical_csv": "4c1dde605e022631df25283657c71b21e2b75f500dbd57069653cc65725fe9f1",
@@ -17,7 +17,7 @@
     {
       "check": "total_data_size_le_10mb",
       "status": "PASS",
-      "detail": "0.1208 MB"
+      "detail": "0.1209 MB"
     },
     {
       "check": "each_file_le_5mb",

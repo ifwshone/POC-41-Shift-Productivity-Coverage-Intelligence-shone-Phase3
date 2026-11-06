@@ -1,84 +1,48 @@
-# RealRails Shift Productivity Dashboard
+# POC-41 Shift Productivity & Coverage Intelligence
 
-An enterprise-grade, high-performance telemetry dashboard designed to visualize operational shift metrics, output trends, and workforce coverage. 
+Operational shift-productivity map (Phase 2) extended in Phase 3 with a reproducible canonical dataset, a comparative analytical track, a Data Intelligence page and a bounded data assistant. **All data is synthetic.**
 
-An operational map view of shift output and coverage across facilities, with a contextual intelligence panel. All data shown is synthetic.
+> **Release status: Phase 3 certification review result — FINAL CHANGES REQUIRED** (2026-11-06). Not yet tagged. See `docs/PHASE3_CERTIFICATION_FINDINGS.md`. Live URL: *not yet validated*.
 
-## Current Application Behaviour
+## Phase 2 capability (unchanged)
+`/` — interactive radar map: six markers (Facility A/B × Morning/Evening/Night Watch) showing output per hour with Optimal / Warning / Critical status; Location, Team and Time Horizon selectors drive an intelligence sidebar (output trend, overtime chart, insight text) and a CSV export. Data comes from an in-file synthetic `mockDatabase`; the 30-day and year-to-date views are interpolated in the browser for display only.
 
-The page is an interactive operational map: six markers (2 facilities x 3 teams) show output-per-hour and a status colour (Optimal / Warning / Critical). Location, Team and Time Horizon selectors drive an Intelligence side panel with an output trend, an overtime chart and an insight text, and a CSV export of the selected view.
+## Phase 3 capability
+- **Canonical data** `data/canonical/intelligence_data.csv` — 129 rows × 20 columns, **data version 1.0.0**, rebuilt from a 51-row source sample by `scripts/data_pipeline/run_pipeline.py` (39 validation checks, byte-reproducible).
+- **Analytical track** Track A — Comparative Intelligence, **method version 1.0.0**: gap of each facility/team's average output and overtime versus the overall baseline (119.4 units/hr, 20.2 overtime hrs); ranked by output gap.
+- **Data Intelligence page** `/intelligence` — summary, gap chart, ranking table with category filter, methodology and limitations, loading/error/empty/stale states, contract validation.
+- **Assistant** Mode B (deterministic + optional LLM explanation). Answers only five bounded questions about approved results; refuses everything else. Works without an API key (deterministic only).
 
-* The frontend reads a hard-coded **synthetic** `mockDatabase` in `frontend/app/page.tsx`; it does not call the backend or any external API.
-* "Last 30 Days" and "Year to Date" views are interpolated in the browser from the 5 base data points (display only, not source data).
-* The backend (`backend/main.py`) serves a **synthetic**, seeded (42) shift-level dataset at `/api/v1/intelligence/coverage`.
-* Frontend data is facility/team-level; backend data is shift-level with no facility. They are different synthetic scopes and must **not** be treated as one comparable operational series in later analytics.
+## Architecture summary
+Source (frontend mock + backend generator) → pipeline → canonical CSV → Track A scripts → `intelligence_*.json` → copied to `frontend/public/data/intelligence/` → Data Intelligence page. The assistant (FastAPI router + `assistant/`) reads the same outputs. Details: `docs/PHASE3_FINAL_ARCHITECTURE.md`.
 
-## Phase 3 Canonical Data Package
+## Technology stack
+Next.js (App Router), React, Tailwind CSS, Recharts · FastAPI, pandas, numpy · Python data pipeline · pytest, Selenium, Jest · Docker.
 
-All data is synthetic (no personal or restricted data). The single source of truth is `data/canonical/intelligence_data.csv` (129 records, 20 columns, version 1.0.0), generated from a 51-record source sample (full population retained, no sampling needed). See `data/README.md` and `docs/`. Regenerate and validate with `python scripts/data_pipeline/run_pipeline.py`.
+## Routes
+`/` operational · `/intelligence` Data Intelligence · `POST /api/assistant/query` · `GET /api/v1/intelligence/coverage`.
 
-## 🛠️ Tech Stack
-
-* **Framework:** React / Next.js (App Router)
-* **Styling:** Tailwind CSS
-* **Charts:** Recharts
-* **Backend:** FastAPI (synthetic data generator)
-* **Data pipeline:** Python (pandas, numpy)
-
-## 📦 Installation & Setup
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/ifwshone/POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2.git
-   cd POC-41-Shift-Productivity-Coverage-Intelligence-shone-Phase2/frontend
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Run the development server:**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-
-4. **Open the application:**
-   Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
-
-
-   ## 🛠️ Build Verification & Deployment Details
-
-### Directory for Client Build
-All Node.js build commands must be executed strictly inside the `frontend/` subdirectory where `package.json` resides:
-
+## Setup, validation and tests
 ```bash
-# 1. Navigate to the frontend directory
-cd frontend
+# data and analytics (verified)
+python scripts/data_pipeline/run_pipeline.py
+python data-science/scripts/run_analytical_track.py
+python data-science/scripts/validate_analytical_track.py
+python scripts/copy_intelligence.py
+python scripts/certification/run_phase3_checks.py --regen
 
-# 2. Perform a clean dependency installation
-npm ci
+# application (confirm in a networked environment)
+cd frontend && npm ci && npm run build && npm start     # http://localhost:3000
+```
+Full test sequence: `docs/FINAL_AUTOMATED_TEST_REPORT.md`. Environment variables: `GEMINI_API_KEY` (optional), `GEMINI_MODEL`, `NEXT_PUBLIC_API_URL` — see `docs/PHASE3_HANDOVER_GUIDE.md`. Do not commit `.env`.
 
-# 3. Create the production build
-npm run build
+## Build and deployment
+`docker compose build && docker compose up` — **currently not working for the backend** (finding B2). No deployment target or live URL has been validated yet.
 
-## 🏗️ Architecture
+## Documentation index
+Release manifest · clean-clone report · final analytical revalidation · build/environment validation · final operational regression · final Data Intelligence validation · final assistant validation · automated test report · final UAT · deployment validation · final architecture · completion report · handover guide · findings register — all under `docs/` (`PHASE3_*`, `FINAL_*`, `*_VALIDATION_REPORT.md`). Earlier Post #1–#5 documents remain in `docs/`. Evidence: `final-evidence/`.
 
-* `frontend/app/page.tsx`: the page, its state logic, the synthetic `mockDatabase` and the intelligence panel.
-* `backend/main.py`: synthetic shift-level API (not consumed by the UI yet).
-* `data/` and `scripts/data_pipeline/`: Phase 3 canonical data package and its reproducible pipeline (not read by the app at runtime).
+## Limitations and safety
+Synthetic data only; frontend (facility-team) and backend (shift) data are different scopes and are never combined; ranking uses output gap only (overtime is context, not a risk score); descriptive 5-day view, no statistical significance; no forecasting or prediction; not for real staffing or payroll decisions. The assistant refuses out-of-scope, predictive and unsafe questions and is designed to reject LLM text containing numbers not in the approved evidence; the current numeric check has a known gap (finding B1) that must be fixed before this claim can be relied on.
 
-## 🧪 Testing (UAT)
-
-A rigorous User Acceptance Testing (UAT) protocol is established for this project. See `UAT_CHECKLIST.md` (note: written for an earlier layout; re-verify against the current map UI):
-* Interactive handshake events between the 70% stage and 30% sidebar.
-* Temporal, risk, and ownership filter logic.
-* Dynamic intelligence rendering based on active data nodes.
-
----
-*Built for the RealRails Telemetry Initiative.*
+`UAT_CHECKLIST.md` and `VAR_REPORT.md` predate the current layout and are retained for history only.

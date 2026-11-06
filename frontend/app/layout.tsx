@@ -2,19 +2,16 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque, DM_Sans, DM_Mono } from 'next/font/google';
 
-// Characterful display face for headings and big numbers
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
   variable: '--font-bricolage',
 });
 
-// Clean, friendly body face
 const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-dm-sans',
 });
 
-// Mono for labels and telemetry
 const dmMono = DM_Mono({
   subsets: ['latin'],
   weight: ['400', '500'],
@@ -38,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${bricolage.variable} ${dmSans.variable} ${dmMono.variable}`}>
-      <body className="font-sans">{children}</body>
+    <html lang="en" className={`${bricolage.variable} ${dmSans.variable} ${dmMono.variable}`} style={{maxWidth:'100vw',overflowX:'hidden'}}>
+      <body className="font-sans overflow-x-hidden" style={{maxWidth:'100vw',overflowX:'hidden'}}>{children}</body>
     </html>
   )
 }

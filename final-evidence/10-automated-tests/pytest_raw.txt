@@ -1,0 +1,66 @@
+=== assistant-unit
+..                                                                       [100%]
+2 passed in 0.01s
+=== assistant-grounding
+...                                                                      [100%]
+3 passed in 0.01s
+=== assistant-safety
+...                                                                      [100%]
+3 passed in 0.01s
+=== intelligence-contract
+..                                                                       [100%]
+2 passed in 0.01s
+=== assistant-api
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/assistant-api/test_api.py:1: in <module>
+    from fastapi.testclient import TestClient
+E   ModuleNotFoundError: No module named 'fastapi'
+=========================== short test summary info ============================
+ERROR tests/assistant-api/test_api.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.10s
+=== intelligence-api
+
+During handling of the above exception, another exception occurred:
+E   AssertionError: Frontend server is not running or file is not in public directory
+    assert False
+tests/intelligence-api/test_static_loader.py:14: AssertionError: Frontend server is not running or file is not in public directory
+=========================== short test summary info ============================
+FAILED tests/intelligence-api/test_static_loader.py::test_static_json_delivery
+1 failed in 0.03s
+=== intelligence-ui
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/intelligence-ui/test_page_render.py:1: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+=========================== short test summary info ============================
+ERROR tests/intelligence-ui/test_page_render.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.08s
+=== regression
+tests/regression/test_operational_page.py:1: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+=========================== short test summary info ============================
+ERROR tests/regression/test_assistant_regression.py
+ERROR tests/regression/test_operational_page.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
+2 errors in 0.09s
+=== assistant-ui
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/assistant-ui/test_assistant_ui_components.py:2: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+=========================== short test summary info ============================
+ERROR tests/assistant-ui/test_assistant_ui_components.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.07s
+=== selenium
+tests/selenium/test_intelligence_journey.py:1: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+=========================== short test summary info ============================
+ERROR tests/selenium/test_assistant_journey.py
+ERROR tests/selenium/test_intelligence_journey.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
+2 errors in 0.08s

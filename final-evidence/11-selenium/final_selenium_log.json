@@ -1,0 +1,71 @@
+{
+  "base_url": "http://localhost:3000",
+  "steps": [
+    {
+      "step": "1-2 open operational view",
+      "status": "PASS",
+      "detail": "http://localhost:3000/",
+      "t": "2026-11-06T18:38:29"
+    },
+    {
+      "step": "3 primary visual",
+      "status": "PASS",
+      "detail": "6 markers",
+      "t": "2026-11-06T18:38:31"
+    },
+    {
+      "step": "4 operational interaction",
+      "status": "PASS",
+      "detail": "",
+      "t": "2026-11-06T18:38:33"
+    },
+    {
+      "step": "5 navigate to Data Intelligence",
+      "status": "PASS",
+      "detail": "",
+      "t": "2026-11-06T18:38:34"
+    },
+    {
+      "step": "6 track and versions",
+      "status": "PASS",
+      "detail": "data v1.0.0 method v1.0.0",
+      "t": "2026-11-06T18:38:35"
+    },
+    {
+      "step": "7 filter",
+      "status": "PASS",
+      "detail": "low=3 high=3",
+      "t": "2026-11-06T18:38:35"
+    },
+    {
+      "step": "8 result + evidence",
+      "status": "PASS",
+      "detail": "1 facility_a_night_watch -25.8 units facility_a_night_watch ranks 1 based strictly on its output gap (-25.8 vs baseline)",
+      "t": "2026-11-06T18:38:35"
+    },
+    {
+      "step": "9 methodology and limitations",
+      "status": "PASS",
+      "detail": "",
+      "t": "2026-11-06T18:38:36"
+    },
+    {
+      "step": "10 assistant answer with limitation",
+      "status": "PASS",
+      "detail": "",
+      "t": "2026-11-06T18:38:36"
+    },
+    {
+      "step": "11-12 return and re-verify interaction",
+      "status": "PASS",
+      "detail": "",
+      "t": "2026-11-06T18:38:40"
+    },
+    {
+      "step": "mobile",
+      "status": "PASS",
+      "detail": "scrollWidth=390",
+      "t": "2026-11-06T18:38:54"
+    }
+  ]
+}

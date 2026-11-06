@@ -236,8 +236,7 @@ export default function ShiftProductivityDashboard() {
     const routeCtrl = isTall ? [A[0] + 18, (A[1] + B[1]) / 2] : [(A[0] + B[0]) / 2, Math.min(A[1], B[1]) - 16];
 
     return (
-      <div className="relative h-[100dvh] w-full overflow-hidden bg-deep text-mist font-sans tracking-tight">
-
+      <div className="relative h-[100dvh] w-full overflow-hidden bg-deep text-mist font-sans tracking-tight" style={{maxWidth:"100vw",overflowX:"hidden"}}>
         <div className={`absolute inset-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isPanelOpen ? 'lg:-translate-x-[7vw]' : ''}`}>
           <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <defs>
@@ -412,7 +411,7 @@ export default function ShiftProductivityDashboard() {
 
         <aside
           aria-hidden={!isPanelOpen}
-          className={`fixed bottom-0 left-0 right-0 z-[60] flex h-[88dvh] flex-col overflow-hidden rounded-t-3xl border-t border-accent/30 bg-surface shadow-[0_-30px_80px_rgba(0,0,0,0.8)] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:bottom-auto lg:left-auto lg:top-0 lg:h-full lg:w-[480px] lg:rounded-none lg:border-l lg:border-t-0 xl:w-[540px] ${isPanelOpen ? 'translate-y-0 lg:translate-x-0' : 'translate-y-full lg:translate-y-0 lg:translate-x-full'}`}
+          className={`fixed bottom-0 left-0 right-0 z-[60] flex h-[88dvh] flex-col overflow-hidden rounded-t-3xl border-t border-accent/30 bg-surface shadow-[0_-30px_80px_rgba(0,0,0,0.8)] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:bottom-auto lg:left-auto lg:top-0 lg:h-full lg:w-[480px] lg:max-w-full lg:rounded-none lg:border-l lg:border-t-0 xl:w-[540px] max-w-full ${isPanelOpen ? 'translate-y-0 lg:translate-x-0' : 'translate-y-full lg:translate-y-0 lg:translate-x-full'}`}
         >
           <div className="shrink-0 border-b border-line bg-surface px-5 pb-4 pt-4 sm:px-7">
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line lg:hidden" />

@@ -1,0 +1,169 @@
+{
+  "status": "PASS",
+  "checks_total": 39,
+  "checks_failed": 0,
+  "errors": [],
+  "total_data_size_mb_excluding_validation_report": 0.1208,
+  "canonical_rows": 129,
+  "canonical_columns": 20,
+  "sha256_canonical_csv": "4c1dde605e022631df25283657c71b21e2b75f500dbd57069653cc65725fe9f1",
+  "sha256_published_json": "239a1b31bda1482161781c93e1014ea4f762caa35035780c00b2ee2d6e9d1e60",
+  "checks": [
+    {
+      "check": "required_paths",
+      "status": "PASS"
+    },
+    {
+      "check": "total_data_size_le_10mb",
+      "status": "PASS"
+    },
+    {
+      "check": "each_file_le_5mb",
+      "status": "PASS"
+    },
+    {
+      "check": "allowed_file_types_only",
+      "status": "PASS"
+    },
+    {
+      "check": "row_count_le_10000",
+      "status": "PASS"
+    },
+    {
+      "check": "column_count_le_50",
+      "status": "PASS"
+    },
+    {
+      "check": "source_sample_rows_le_10000",
+      "status": "PASS"
+    },
+    {
+      "check": "canonical_columns_in_order",
+      "status": "PASS"
+    },
+    {
+      "check": "columns_snake_case",
+      "status": "PASS"
+    },
+    {
+      "check": "schema_keys_match_columns",
+      "status": "PASS"
+    },
+    {
+      "check": "record_id_non_null_unique",
+      "status": "PASS"
+    },
+    {
+      "check": "entity_id_clean_slug",
+      "status": "PASS"
+    },
+    {
+      "check": "record_type_allowed",
+      "status": "PASS"
+    },
+    {
+      "check": "record_type_not_null",
+      "status": "PASS"
+    },
+    {
+      "check": "source_name_not_null",
+      "status": "PASS"
+    },
+    {
+      "check": "is_synthetic_not_null",
+      "status": "PASS"
+    },
+    {
+      "check": "data_version_not_null",
+      "status": "PASS"
+    },
+    {
+      "check": "is_synthetic_boolean",
+      "status": "PASS"
+    },
+    {
+      "check": "observed_at_iso8601_parses",
+      "status": "PASS"
+    },
+    {
+      "check": "metric_value_numeric",
+      "status": "PASS"
+    },
+    {
+      "check": "latitude_numeric_in_range",
+      "status": "PASS"
+    },
+    {
+      "check": "longitude_numeric_in_range",
+      "status": "PASS"
+    },
+    {
+      "check": "text_value_le_500",
+      "status": "PASS"
+    },
+    {
+      "check": "utf8_no_bom",
+      "status": "PASS"
+    },
+    {
+      "check": "no_personal_data_patterns",
+      "status": "PASS"
+    },
+    {
+      "check": "no_secrets_patterns",
+      "status": "PASS"
+    },
+    {
+      "check": "no_absolute_paths",
+      "status": "PASS"
+    },
+    {
+      "check": "manifest_contains_personal_data_false",
+      "status": "PASS"
+    },
+    {
+      "check": "manifest_data_version_matches",
+      "status": "PASS"
+    },
+    {
+      "check": "manifest_record_counts",
+      "status": "PASS"
+    },
+    {
+      "check": "manifest_column_count",
+      "status": "PASS"
+    },
+    {
+      "check": "manifest_sizes_match",
+      "status": "PASS"
+    },
+    {
+      "check": "manifest_synthetic_flag",
+      "status": "PASS"
+    },
+    {
+      "check": "manifest_paths_exist",
+      "status": "PASS"
+    },
+    {
+      "check": "manifest_source_names_match",
+      "status": "PASS"
+    },
+    {
+      "check": "published_json_matches_csv",
+      "status": "PASS"
+    },
+    {
+      "check": "published_json_le_5mb",
+      "status": "PASS"
+    },
+    {
+      "check": "reproducible_canonical_csv",
+      "status": "PASS"
+    },
+    {
+      "check": "reproducible_published_json",
+      "status": "PASS"
+    }
+  ]
+}

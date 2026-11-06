@@ -1,0 +1,2 @@
+# 09 Assistant (Mode B — not a skip)
+`harness/` stubs fastapi/pydantic/google.genai and calls `backend.api.assistant.query_assistant` offline (a dummy placeholder key is set only inside the process to enter the LLM branch; no real key was used or stored). `assistant_harness_nokey.txt`: deterministic path, 17 questions. `assistant_harness_llm.txt`: LLM validator cases — invented numbers 7 and 28 were accepted (finding B1). Run from the repo root: `python final-evidence/09-assistant-or-skip/harness/assistant_harness.py`.

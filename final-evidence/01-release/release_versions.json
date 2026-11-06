@@ -1,0 +1,17 @@
+{
+  "data_version": "1.0.0",
+  "method_version": "1.0.0",
+  "application_version": null,
+  "sha256_canonical_csv": "4c1dde605e022631df25283657c71b21e2b75f500dbd57069653cc65725fe9f1",
+  "sha256_published_json": "239a1b31bda1482161781c93e1014ea4f762caa35035780c00b2ee2d6e9d1e60",
+  "pre_certification_repomix": {
+    "file": "8a876eac-repomix-output.xml",
+    "bytes": 450478,
+    "lines": 8118,
+    "files": 136,
+    "sha256": "d6257bfcd7c6c865cd8fc1834a77d91ea3b8e074084c00e28bb02f8b04edbd68"
+  },
+  "certified_commit_sha": null,
+  "release_tag": "phase3-v1.0.0 (not created)",
+  "live_url": null
+}

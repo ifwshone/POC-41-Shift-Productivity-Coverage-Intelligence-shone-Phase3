@@ -29,11 +29,19 @@
       {
         "factor": "output_gap_vs_baseline",
         "value": -25.8
+      },
+      {
+        "factor": "baseline_output_per_hour",
+        "value": 119.4
+      },
+      {
+        "factor": "baseline_overtime_hours",
+        "value": 20.2
       }
     ],
     "method_version": "1.0.0",
     "data_version": "1.0.0",
-    "generated_at": "2026-11-04T07:49:38.902557+00:00",
+    "generated_at": "2026-11-06T10:22:29.492808+00:00",
     "quality_status": "validated",
     "limitation": "Ranking is driven solely by output gap; it is not a combined coverage-risk score. Descriptive 5-day view."
   },
@@ -67,11 +75,19 @@
       {
         "factor": "output_gap_vs_baseline",
         "value": -8.4
+      },
+      {
+        "factor": "baseline_output_per_hour",
+        "value": 119.4
+      },
+      {
+        "factor": "baseline_overtime_hours",
+        "value": 20.2
       }
     ],
     "method_version": "1.0.0",
     "data_version": "1.0.0",
-    "generated_at": "2026-11-04T07:49:38.902557+00:00",
+    "generated_at": "2026-11-06T10:22:29.492808+00:00",
     "quality_status": "validated",
     "limitation": "Ranking is driven solely by output gap; it is not a combined coverage-risk score. Descriptive 5-day view."
   },
@@ -105,11 +121,19 @@
       {
         "factor": "output_gap_vs_baseline",
         "value": -2.4
+      },
+      {
+        "factor": "baseline_output_per_hour",
+        "value": 119.4
+      },
+      {
+        "factor": "baseline_overtime_hours",
+        "value": 20.2
       }
     ],
     "method_version": "1.0.0",
     "data_version": "1.0.0",
-    "generated_at": "2026-11-04T07:49:38.902557+00:00",
+    "generated_at": "2026-11-06T10:22:29.492808+00:00",
     "quality_status": "validated",
     "limitation": "Ranking is driven solely by output gap; it is not a combined coverage-risk score. Descriptive 5-day view."
   },
@@ -143,11 +167,19 @@
       {
         "factor": "output_gap_vs_baseline",
         "value": 7.0
+      },
+      {
+        "factor": "baseline_output_per_hour",
+        "value": 119.4
+      },
+      {
+        "factor": "baseline_overtime_hours",
+        "value": 20.2
       }
     ],
     "method_version": "1.0.0",
     "data_version": "1.0.0",
-    "generated_at": "2026-11-04T07:49:38.902557+00:00",
+    "generated_at": "2026-11-06T10:22:29.492808+00:00",
     "quality_status": "validated",
     "limitation": "Ranking is driven solely by output gap; it is not a combined coverage-risk score. Descriptive 5-day view."
   },
@@ -181,11 +213,19 @@
       {
         "factor": "output_gap_vs_baseline",
         "value": 12.0
+      },
+      {
+        "factor": "baseline_output_per_hour",
+        "value": 119.4
+      },
+      {
+        "factor": "baseline_overtime_hours",
+        "value": 20.2
       }
     ],
     "method_version": "1.0.0",
     "data_version": "1.0.0",
-    "generated_at": "2026-11-04T07:49:38.902557+00:00",
+    "generated_at": "2026-11-06T10:22:29.492808+00:00",
     "quality_status": "validated",
     "limitation": "Ranking is driven solely by output gap; it is not a combined coverage-risk score. Descriptive 5-day view."
   },
@@ -219,11 +259,19 @@
       {
         "factor": "output_gap_vs_baseline",
         "value": 17.6
+      },
+      {
+        "factor": "baseline_output_per_hour",
+        "value": 119.4
+      },
+      {
+        "factor": "baseline_overtime_hours",
+        "value": 20.2
       }
     ],
     "method_version": "1.0.0",
     "data_version": "1.0.0",
-    "generated_at": "2026-11-04T07:49:38.902557+00:00",
+    "generated_at": "2026-11-06T10:22:29.492808+00:00",
     "quality_status": "validated",
     "limitation": "Ranking is driven solely by output gap; it is not a combined coverage-risk score. Descriptive 5-day view."
   }

@@ -43,6 +43,8 @@
 html,
 body {
   height: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 html {
@@ -301,4 +303,13 @@ body {
   .blink {
     animation: none;
   }
+}
+
+/* ---------- Fix for mobile table overflow ---------- */
+table {
+  display: block;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }

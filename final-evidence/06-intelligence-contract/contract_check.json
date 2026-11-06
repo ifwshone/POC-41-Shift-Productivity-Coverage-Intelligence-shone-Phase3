@@ -1,0 +1,222 @@
+{
+  "status": "FAIL",
+  "checks_total": 43,
+  "checks_failed": 4,
+  "checks": [
+    {
+      "check": "ver_csv_data_version_eq_manifest",
+      "status": "PASS",
+      "detail": "['1.0.0']"
+    },
+    {
+      "check": "ver_results_data_version",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "ver_results_method_version_single",
+      "status": "PASS",
+      "detail": "{'1.0.0'}"
+    },
+    {
+      "check": "ver_summary_versions",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "ver_metrics_versions",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "ver_public_copy_versions",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "ver_application_version_defined",
+      "status": "FAIL",
+      "detail": "frontend/package.json has no 'version' field"
+    },
+    {
+      "check": "outputs_is_nonempty_list",
+      "status": "PASS",
+      "detail": "6"
+    },
+    {
+      "check": "outputs_required_fields",
+      "status": "PASS",
+      "detail": "all present"
+    },
+    {
+      "check": "outputs_unique_ids",
+      "status": "PASS",
+      "detail": "6"
+    },
+    {
+      "check": "outputs_quality_status_allowed",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "outputs_no_rejected_in_approved_set",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "outputs_evidence_structure",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "outputs_limitation_present",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "outputs_generated_at_iso",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "outputs_summary_count_matches",
+      "status": "PASS",
+      "detail": "6 vs 6"
+    },
+    {
+      "check": "outputs_summary_priority_items_in_results",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "public_is_nonempty_list",
+      "status": "PASS",
+      "detail": "6"
+    },
+    {
+      "check": "public_required_fields",
+      "status": "PASS",
+      "detail": "all present"
+    },
+    {
+      "check": "public_unique_ids",
+      "status": "PASS",
+      "detail": "6"
+    },
+    {
+      "check": "public_quality_status_allowed",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "public_no_rejected_in_approved_set",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "public_evidence_structure",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "public_limitation_present",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "public_generated_at_iso",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "public_summary_count_matches",
+      "status": "PASS",
+      "detail": "6 vs 6"
+    },
+    {
+      "check": "public_summary_priority_items_in_results",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "public_copy_identical:intelligence_results.json",
+      "status": "FAIL",
+      "detail": "frontend/public copy differs from data-science/outputs (stale copy)"
+    },
+    {
+      "check": "public_copy_identical:intelligence_summary.json",
+      "status": "FAIL",
+      "detail": "frontend/public copy differs from data-science/outputs (stale copy)"
+    },
+    {
+      "check": "public_copy_identical:validation_metrics.json",
+      "status": "PASS",
+      "detail": "identical"
+    },
+    {
+      "check": "scan_no_secrets",
+      "status": "PASS",
+      "detail": "none found"
+    },
+    {
+      "check": "scan_no_local_absolute_paths",
+      "status": "PASS",
+      "detail": "none found"
+    },
+    {
+      "check": "scan_no_email_addresses",
+      "status": "PASS",
+      "detail": "none found"
+    },
+    {
+      "check": "regen_exec:scripts/data_pipeline/run_pipeline.py",
+      "status": "PASS",
+      "detail": "== validate_data"
+    },
+    {
+      "check": "regen_exec:data-science/scripts/run_analytical_track.py",
+      "status": "PASS",
+      "detail": "Analytical track executed and intelligence results exported successfully."
+    },
+    {
+      "check": "regen_exec:data-science/scripts/validate_analytical_track.py",
+      "status": "PASS",
+      "detail": "Validation metrics generated successfully. Status: PASS"
+    },
+    {
+      "check": "regen_identical:data/canonical/intelligence_data.csv",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "regen_identical:data/published/intelligence_data.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "regen_identical:data/schema.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "regen_identical:data/manifest.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "regen_equivalent_ignoring_generated_at:intelligence_results.json",
+      "status": "FAIL",
+      "detail": "committed output differs from regenerated output (stale or manually edited)"
+    },
+    {
+      "check": "regen_equivalent_ignoring_generated_at:intelligence_summary.json",
+      "status": "PASS",
+      "detail": "equivalent"
+    },
+    {
+      "check": "regen_equivalent_ignoring_generated_at:validation_metrics.json",
+      "status": "PASS",
+      "detail": "equivalent"
+    }
+  ]
+}

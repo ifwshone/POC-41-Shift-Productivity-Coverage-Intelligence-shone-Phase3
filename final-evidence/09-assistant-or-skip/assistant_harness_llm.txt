@@ -1,0 +1,7 @@
+{"case": "grounded", "status": "answered", "llm_status": "success", "llm_shown": true}
+{"case": "invented number 7", "status": "answered", "llm_status": "success", "llm_shown": true}
+{"case": "invented number 28", "status": "answered", "llm_status": "success", "llm_shown": true}
+{"case": "invented 119.9", "status": "answered", "llm_status": "rejected_by_validator (Hallucination Detected)", "llm_shown": false}
+{"case": "wrong rank", "status": "answered", "llm_status": "rejected_by_validator (Hallucination Detected)", "llm_shown": false}
+{"case": "prediction", "status": "answered", "llm_status": "rejected_by_validator (Hallucination Detected)", "llm_shown": false}
+{"case": "RAISE", "status": "answered", "llm_status": "error (Provider or Network Failure)", "llm_shown": false}

@@ -1,0 +1,2 @@
+# 02 Clean clone
+A git clone was not possible (no repository URL or history supplied). The Repomix (136 files) was unpacked into an empty directory and the documented data pipeline was run there: `Validation PASS (39/39 checks)`, canonical CSV byte-identical to the committed file. Frontend install/build, backend startup and container build were NOT executed (no network, no Docker daemon). See `docs/CLEAN_CLONE_VALIDATION_REPORT.md` (result FAIL).

@@ -1,0 +1,2 @@
+# 05 Analytical validation
+`validation_metrics.json` (copy of the committed file): all 5 checks true, overall PASS. Regeneration run in a temp copy produced identical validation_metrics and an equivalent summary, but `intelligence_results.json` differs from the committed file (committed file lacks two baseline evidence factors per result) — see `../06-intelligence-contract/contract_check.json` and finding B3.
