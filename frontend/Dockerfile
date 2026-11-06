@@ -2,10 +2,12 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# explicitly accept the URL from Render's environment at build time
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-# Use install instead of ci to safely regenerate the tree from package.json
+# Copy package files and install dependencies
+COPY package*.json ./
 RUN npm install
 
 # Copy the rest of the frontend source code
