@@ -7,6 +7,20 @@ import numpy as np
 from dotenv import load_dotenv
 from backend.api.assistant import router as assistant_router
 
+import sys
+
+# Dynamically add parent directory and current directory to sys.path
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+for path in [CURRENT_DIR, PARENT_DIR]:
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+# Fallback-safe import
+try:
+    from backend.api.assistant import router as assistant_router
+except ModuleNotFoundError:
+    from api.assistant import router as assistant_router
 # Security Guardrail: Never hardcode credentials
 load_dotenv()
 
