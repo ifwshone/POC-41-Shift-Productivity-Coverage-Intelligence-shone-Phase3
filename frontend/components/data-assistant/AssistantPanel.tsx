@@ -9,12 +9,10 @@ interface AssistantState {
   isLoading: boolean;
 }
 
-// 1. CRITICAL FIX: Declare the props so TypeScript knows it can accept onClose
 interface AssistantPanelProps {
-  onClose?: () => void;
+  onClose: () => void;
 }
 
-// 2. Accept the onClose prop in the component signature
 export function AssistantPanel({ onClose }: AssistantPanelProps) {
   const [status, setStatus] = useState<AssistantState>({
     response: null,
@@ -39,12 +37,10 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
       }
 
       const data: AssistantResponse = await res.json();
-      
       setStatus({ response: data, isLoading: false });
       
     } catch (error: any) {
       console.error(error);
-      
       setStatus({
         response: {
           answer_id: `ERR-${Math.random().toString(36).substring(2, 8)}`,
@@ -64,33 +60,34 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0a] border-l border-line/50 p-4 w-80 lg:w-96">
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-line/50">
+    // Responsive Wrapper: Fixed right-side panel on desktop, full screen overlay on mobile
+    <div className="fixed inset-y-0 right-0 z-50 flex flex-col w-full h-full bg-[#0a0a0a] border-l border-line/50 p-4 sm:w-96 shadow-2xl transition-transform duration-300">
+      
+      {/* Header with Close Button */}
+      <div className="flex items-center justify-between mb-4 pb-4 border-b border-line/50 shrink-0">
         <h2 className="text-sm font-bold text-mist uppercase tracking-wider">
           Data Assistant
         </h2>
-        {/* 3. Render the Close button if the prop is passed */}
-        {onClose && (
-          <button 
-            onClick={onClose}
-            className="text-[11px] uppercase tracking-wider text-moss hover:text-white transition-colors"
-          >
-            Close
-          </button>
-        )}
+        <button 
+          onClick={onClose}
+          className="p-2 text-xs uppercase tracking-wider text-moss hover:text-white transition-colors"
+          aria-label="Close Assistant"
+        >
+          Close
+        </button>
       </div>
       
+      {/* Scrollable Chat Area */}
       <div className="flex-1 overflow-y-auto mb-4 custom-scrollbar pr-2">
         <AssistantStatus 
           response={status.response} 
           isLoading={status.isLoading}
-          onFollowUpClick={(followUpQuestion) => {
-            handleAsk(followUpQuestion);
-          }}
+          onFollowUpClick={handleAsk}
         />
       </div>
 
-      <div className="shrink-0 mt-auto">
+      {/* Fixed Input at Bottom */}
+      <div className="shrink-0 mt-auto pb-safe">
         <QuestionInput 
           onAsk={handleAsk} 
           disabled={status.isLoading} 
