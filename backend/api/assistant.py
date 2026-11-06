@@ -12,7 +12,7 @@ except ImportError:
 from assistant.core.scope_guard import evaluate_scope
 from assistant.core.intent_classifier import classify_intent
 from assistant.core.output_validator import validate_numeric_fidelity
-from assistant.queries.query_router import get_priority_items
+from assistant.core.query_router import get_priority_items
 from assistant.queries.result_queries import get_result_explanation, get_limitations, get_methodology
 from assistant.queries.summary_queries import get_data_freshness
 
