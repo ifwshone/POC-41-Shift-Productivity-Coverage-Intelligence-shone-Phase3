@@ -35,7 +35,13 @@ def classify_intent(question: str) -> dict:
         return {"intent": "AMBIGUOUS", "parameters": {}}
 
     if any(kw in question_lower for kw in ["rank", "highest", "lowest", "priority", "worst", "best"]):
-        cat = "high" if any(k in question_lower for k in ["best", "highest", "above"]) else "low"
+        # Fix: 'highest priority' or 'highest for review' targets worst performers (low category)
+        if "highest for review" in question_lower or "highest priority" in question_lower:
+            cat = "low"
+        elif any(k in question_lower for k in ["best", "highest", "above"]):
+            cat = "high"
+        else:
+            cat = "low"
         return {"intent": "list_priority_items", "parameters": {"limit": 3, "result_category": cat}}
 
     return {"intent": "OUT_OF_SCOPE", "parameters": {}}
