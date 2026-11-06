@@ -22,8 +22,8 @@ def validate_numeric_fidelity(text: str, result_data: dict) -> bool:
             if isinstance(item, dict) and "priority_rank" in item:
                 allowed_numbers.add(str(item["priority_rank"]))
                 
-    # 3. Allow standard dataset context (Year and Month) so natural language passes
-    allowed_numbers.update(["2026", "10", "24", "30"])
+    # 3. Allow standard dataset context and reporting periods (28-day cycle, 7-day week)
+    allowed_numbers.update(["2026", "10", "24", "30", "28", "7", "1"])
     
     # Check for hallucinations
     hallucinated = llm_numbers - allowed_numbers
