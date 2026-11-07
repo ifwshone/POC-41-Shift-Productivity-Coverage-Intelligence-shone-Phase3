@@ -150,6 +150,7 @@ docs/
   PHASE3_FINAL_UAT.md
   PHASE3_HANDOVER_GUIDE.md
   PHASE3_RELEASE_MANIFEST.md
+  POST6_EVIDENCE_CHECKLIST.md
   REPRESENTATIVENESS_ASSESSMENT.md
   SAMPLING_AND_REDUCTION_REPORT.md
   SUPPORTED_QUESTION_CATALOG.md
@@ -230,6 +231,7 @@ frontend/
   public/
     data/
       intelligence/
+        canonical_observations.json
         intelligence_results.json
         intelligence_summary.json
         validation_metrics.json
@@ -243,6 +245,21 @@ frontend/
   postcss.config.mjs
   tailwind.config.js
   tsconfig.json
+patch/
+  assistant/
+    core/
+      output_validator.py
+  docs/
+    POST6_EVIDENCE_CHECKLIST.md
+  frontend/
+    app/
+      intelligence/
+        page.tsx
+  tests/
+    assistant-grounding/
+      test_validator_no_allowances.py
+  .env.example
+  apply_patch.py
 scripts/
   certification/
     run_phase3_checks.py
@@ -261,6 +278,7 @@ tests/
     test_api.py
   assistant-grounding/
     test_grounding.py
+    test_validator_no_allowances.py
   assistant-safety/
     test_safety.py
   assistant-ui/
@@ -280,8 +298,10 @@ tests/
     test_assistant_journey.py
     test_final_journey.py
     test_intelligence_journey.py
+.env.example
 .gitignore
 390)
+apply_patch.py
 docker-compose.yml
 el.tagName
 package.json
@@ -292,10 +312,6 @@ VAR_REPORT.md
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="frontend/.env.local">
-NEXT_PUBLIC_API_URL=http://localhost:8000
-</file>
 
 <file path="assistant/config/assistant_policy.json">
 {
@@ -4213,6 +4229,30 @@ See `PHASE3_COMPLETION_REPORT.md`: synthetic data, separate scopes, output-gap r
 - Known Limitations: all data synthetic; frontend (facility-team, 5 daily points) and backend (shift-level, 7 days) are separate scopes and are never pooled; Track A ranks by output gap only (overtime is context, not a combined risk score); no statistical significance; no forecasting or prediction; 30-day/YTD operational views are interpolated display values, not source data; Mode B assistant explanations are bounded to approved results.
 </file>
 
+<file path="docs/POST6_EVIDENCE_CHECKLIST.md">
+# Post #6 Evidence Reconciliation Checklist
+
+Fill each item with an OBSERVED result only. Do not copy expected values.
+Date verified: ____  Verified by: ____
+
+| # | Item | Code change (in patch) | Observed result (fill in) |
+|---|------|------------------------|---------------------------|
+| 1 | Validator has no hard-coded numeric allowances | assistant/core/output_validator.py | pytest tests/assistant-grounding output: ____ |
+| 2 | Invented values (7, 28, 2026, 119.9, 100.0) rejected | test_validator_no_allowances.py | ____ |
+| 3 | Backend Docker build from repo root | docker-compose.yml (context ., dockerfile backend/Dockerfile) | `docker compose build` log: ____ |
+| 4 | Backend packages present (google-genai etc.) | check backend/requirements.txt | `pip check` / container import: ____ |
+| 5 | Real Gemini success | GEMINI_API_KEY set | response with llm_status=____, timestamp ____ |
+| 6 | Deterministic fallback | unset key / force failure | response with llm_status=____ |
+| 7 | Intelligence page: KPI strip, selectable bars, detail panel, five observations | frontend/app/intelligence/page.tsx | screenshot: ____ |
+| 8 | Selected finding opens assistant with scoped question | AssistantPanel initialQuestion | screenshot/video: ____ |
+| 9 | Synthetic wording on operations page | frontend/app/page.tsx | screenshot: ____ |
+| 10 | Deployed URL and commit SHA | n/a | URL ____ SHA ____ |
+| 11 | Frontend + backend + certification tests | run_phase3_checks.py --regen | counts: ____ |
+| 12 | Fresh Repomix | `npx repomix` | file/date: ____ |
+
+After filling: update release manifest, UAT, deployment evidence, completion report and stale B1/B2 findings to match this table.
+</file>
+
 <file path="docs/REPRESENTATIVENESS_ASSESSMENT.md">
 # Representativeness Assessment
 
@@ -4988,80 +5028,6 @@ ERROR tests/selenium/test_intelligence_journey.py
 2 errors in 0.08s
 </file>
 
-<file path="final-evidence/11-selenium/final_selenium_log.json">
-{
-  "base_url": "http://localhost:3000",
-  "steps": [
-    {
-      "step": "1-2 open operational view",
-      "status": "PASS",
-      "detail": "http://localhost:3000/",
-      "t": "2026-11-07T11:34:11"
-    },
-    {
-      "step": "3 primary visual",
-      "status": "PASS",
-      "detail": "6 markers",
-      "t": "2026-11-07T11:34:13"
-    },
-    {
-      "step": "4 operational interaction",
-      "status": "PASS",
-      "detail": "",
-      "t": "2026-11-07T11:34:15"
-    },
-    {
-      "step": "5 navigate to Data Intelligence",
-      "status": "PASS",
-      "detail": "",
-      "t": "2026-11-07T11:34:16"
-    },
-    {
-      "step": "6 track and versions",
-      "status": "PASS",
-      "detail": "data v1.0.0 method v1.0.0",
-      "t": "2026-11-07T11:34:17"
-    },
-    {
-      "step": "7 filter",
-      "status": "PASS",
-      "detail": "low=3 high=3",
-      "t": "2026-11-07T11:34:18"
-    },
-    {
-      "step": "8 result + evidence",
-      "status": "PASS",
-      "detail": "1 facility_a_night_watch -25.8 units facility_a_night_watch ranks 1 based strictly on its output gap (-25.8 vs baseline)",
-      "t": "2026-11-07T11:34:18"
-    },
-    {
-      "step": "9 methodology and limitations",
-      "status": "PASS",
-      "detail": "",
-      "t": "2026-11-07T11:34:18"
-    },
-    {
-      "step": "10 assistant answer with limitation",
-      "status": "PASS",
-      "detail": "",
-      "t": "2026-11-07T11:34:19"
-    },
-    {
-      "step": "11-12 return and re-verify interaction",
-      "status": "PASS",
-      "detail": "",
-      "t": "2026-11-07T11:34:25"
-    },
-    {
-      "step": "mobile",
-      "status": "PASS",
-      "detail": "scrollWidth=390",
-      "t": "2026-11-07T11:34:41"
-    }
-  ]
-}
-</file>
-
 <file path="final-evidence/11-selenium/README.md">
 # 11 Selenium
 Final journey written at `tests/selenium/test_final_journey.py` (guide section 20; desktop + mobile, headless, `BASE_URL` aware). **Not executed** — selenium/Chrome driver bindings not installable here and no frontend or live URL available. The execution log `final_selenium_log.json` is written here by the test when run. Existing Selenium tests are unchanged (not run).
@@ -5288,6 +5254,10 @@ export function UnsupportedQuestionState({
 }
 </file>
 
+<file path="frontend/public/data/intelligence/canonical_observations.json">
+[{"record_id":"REC-00001","record_type":"entity","observed_at":null,"entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"kpi_output_per_hour","metric_value":118.4,"metric_unit":"units_per_hour","text_value":"Evening shift shows a 15% drop in output. Recommend reviewing supervisor coverage.","latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|kpi","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00002","record_type":"entity","observed_at":null,"entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"kpi_output_per_hour","metric_value":142.1,"metric_unit":"units_per_hour","text_value":"Morning crew is operating at peak efficiency with minimal overtime.","latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|kpi","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00003","record_type":"entity","observed_at":null,"entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"kpi_output_per_hour","metric_value":95.2,"metric_unit":"units_per_hour","text_value":"Night shift coverage is critically strained. Investigate staffing reallocation.","latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|kpi","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00004","record_type":"entity","observed_at":null,"entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"kpi_output_per_hour","metric_value":128.5,"metric_unit":"units_per_hour","text_value":"Minor fluctuations in Evening output due to supply chain delays on line 2.","latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|kpi","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00005","record_type":"entity","observed_at":null,"entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"kpi_output_per_hour","metric_value":135.0,"metric_unit":"units_per_hour","text_value":"Facility B Morning operations are stable. Baseline performance achieved.","latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|kpi","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00006","record_type":"entity","observed_at":null,"entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"kpi_output_per_hour","metric_value":110.3,"metric_unit":"units_per_hour","text_value":"Equipment maintenance is disrupting Night Watch productivity.","latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|kpi","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00007","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":120.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|2026-10-24|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00008","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":20.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|2026-10-24|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00009","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":115.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|2026-10-25|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00010","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":25.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|2026-10-25|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00011","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":110.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|2026-10-26|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00012","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":22.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|2026-10-26|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00013","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":118.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|2026-10-27|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00014","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":30.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|2026-10-27|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00015","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":122.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|2026-10-28|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00016","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_a_evening_crew","related_entity_id":null,"entity_name":"Facility A - Evening Crew","category":"evening_crew","subcategory":"facility_a","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":28.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Evening Crew|2026-10-28|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00017","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":130.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|2026-10-24|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00018","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":10.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|2026-10-24|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00019","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":135.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|2026-10-25|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00020","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":12.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|2026-10-25|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00021","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":140.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|2026-10-26|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00022","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":9.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|2026-10-26|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00023","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":142.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|2026-10-27|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00024","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":15.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|2026-10-27|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00025","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":138.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|2026-10-28|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00026","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_a_morning_crew","related_entity_id":null,"entity_name":"Facility A - Morning Crew","category":"morning_crew","subcategory":"facility_a","status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":11.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Morning Crew|2026-10-28|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00027","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"output_per_hour","metric_value":100.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|2026-10-24|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00028","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"overtime_hours","metric_value":35.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|2026-10-24|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00029","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"output_per_hour","metric_value":95.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|2026-10-25|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00030","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"overtime_hours","metric_value":40.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|2026-10-25|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00031","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"output_per_hour","metric_value":90.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|2026-10-26|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00032","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"overtime_hours","metric_value":38.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|2026-10-26|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00033","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"output_per_hour","metric_value":85.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|2026-10-27|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00034","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"overtime_hours","metric_value":45.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|2026-10-27|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00035","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"output_per_hour","metric_value":98.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|2026-10-28|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00036","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_a_night_watch","related_entity_id":null,"entity_name":"Facility A - Night Watch","category":"night_watch","subcategory":"facility_a","status":"critical","stage":null,"metric_name":"overtime_hours","metric_value":42.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility A|Night Watch|2026-10-28|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00037","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":125.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|2026-10-24|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00038","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":15.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|2026-10-24|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00039","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":128.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|2026-10-25|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00040","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":12.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|2026-10-25|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00041","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":120.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|2026-10-26|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00042","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":18.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|2026-10-26|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00043","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":130.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|2026-10-27|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00044","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":14.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|2026-10-27|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00045","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":129.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|2026-10-28|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00046","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_b_evening_crew","related_entity_id":null,"entity_name":"Facility B - Evening Crew","category":"evening_crew","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":16.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Evening Crew|2026-10-28|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00047","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":125.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|2026-10-24|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00048","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":5.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|2026-10-24|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00049","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":130.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|2026-10-25|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00050","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":8.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|2026-10-25|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00051","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":135.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|2026-10-26|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00052","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":6.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|2026-10-26|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00053","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":132.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|2026-10-27|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00054","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":7.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|2026-10-27|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00055","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":135.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|2026-10-28|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00056","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_b_morning_crew","related_entity_id":null,"entity_name":"Facility B - Morning Crew","category":"morning_crew","subcategory":"facility_b","status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":5.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Morning Crew|2026-10-28|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00057","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":115.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|2026-10-24|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00058","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":25.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|2026-10-24|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00059","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":110.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|2026-10-25|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00060","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":20.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|2026-10-25|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00061","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":108.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|2026-10-26|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00062","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":22.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|2026-10-26|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00063","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":112.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|2026-10-27|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00064","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":28.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|2026-10-27|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00065","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":110.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|2026-10-28|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00066","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"facility_b_night_watch","related_entity_id":null,"entity_name":"Facility B - Night Watch","category":"night_watch","subcategory":"facility_b","status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":24.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Frontend mockDatabase (page.tsx)","source_record_id":"FE|Facility B|Night Watch|2026-10-28|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00067","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"attendance_rate","metric_value":0.87,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-24|Evening|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00068","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":116.2,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-24|Evening|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00069","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":7.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-24|Evening|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00070","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.89,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-25|Evening|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00071","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":131.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-25|Evening|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00072","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":20.1,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-25|Evening|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00073","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.93,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-26|Evening|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00074","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":111.9,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-26|Evening|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00075","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":26.3,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-26|Evening|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00076","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"critical","stage":null,"metric_name":"attendance_rate","metric_value":0.87,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-27|Evening|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00077","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"critical","stage":null,"metric_name":"output_per_hour","metric_value":129.8,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-27|Evening|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00078","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"critical","stage":null,"metric_name":"overtime_hours","metric_value":6.2,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-27|Evening|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00079","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"critical","stage":null,"metric_name":"attendance_rate","metric_value":0.98,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-28|Evening|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00080","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"critical","stage":null,"metric_name":"output_per_hour","metric_value":145.8,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-28|Evening|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00081","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"critical","stage":null,"metric_name":"overtime_hours","metric_value":25.9,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-28|Evening|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00082","record_type":"measurement","observed_at":"2026-10-29T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"attendance_rate","metric_value":0.89,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-29|Evening|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00083","record_type":"measurement","observed_at":"2026-10-29T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":131.7,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-29|Evening|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00084","record_type":"measurement","observed_at":"2026-10-29T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":9.9,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-29|Evening|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00085","record_type":"measurement","observed_at":"2026-10-30T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.96,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-30|Evening|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00086","record_type":"measurement","observed_at":"2026-10-30T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":113.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-30|Evening|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00087","record_type":"measurement","observed_at":"2026-10-30T00:00:00Z","entity_id":"shift_evening","related_entity_id":null,"entity_name":"Evening Crew (all facilities)","category":"evening_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":17.5,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-30|Evening|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00088","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.9,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-24|Morning|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00089","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":148.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-24|Morning|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00090","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":30.6,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-24|Morning|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00091","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.97,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-25|Morning|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00092","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":118.5,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-25|Morning|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00093","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":11.4,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-25|Morning|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00094","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.91,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-26|Morning|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00095","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":141.4,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-26|Morning|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00096","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":12.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-26|Morning|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00097","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.89,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-27|Morning|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00098","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":113.9,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-27|Morning|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00099","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":28.9,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-27|Morning|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00100","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"attendance_rate","metric_value":0.93,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-28|Morning|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00101","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":117.4,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-28|Morning|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00102","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":38.9,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-28|Morning|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00103","record_type":"measurement","observed_at":"2026-10-29T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.9,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-29|Morning|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00104","record_type":"measurement","observed_at":"2026-10-29T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":120.9,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-29|Morning|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00105","record_type":"measurement","observed_at":"2026-10-29T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":34.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-29|Morning|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00106","record_type":"measurement","observed_at":"2026-10-30T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"attendance_rate","metric_value":0.85,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-30|Morning|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00107","record_type":"measurement","observed_at":"2026-10-30T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":142.6,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-30|Morning|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00108","record_type":"measurement","observed_at":"2026-10-30T00:00:00Z","entity_id":"shift_morning","related_entity_id":null,"entity_name":"Morning Crew (all facilities)","category":"morning_crew","subcategory":null,"status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":29.7,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-30|Morning|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00109","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"critical","stage":null,"metric_name":"attendance_rate","metric_value":0.93,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-24|Night|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00110","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"critical","stage":null,"metric_name":"output_per_hour","metric_value":138.3,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-24|Night|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00111","record_type":"measurement","observed_at":"2026-10-24T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"critical","stage":null,"metric_name":"overtime_hours","metric_value":5.7,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-24|Night|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00112","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.94,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-25|Night|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00113","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":115.6,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-25|Night|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00114","record_type":"measurement","observed_at":"2026-10-25T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":15.2,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-25|Night|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00115","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"warning","stage":null,"metric_name":"attendance_rate","metric_value":0.86,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-26|Night|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00116","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"warning","stage":null,"metric_name":"output_per_hour","metric_value":148.0,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-26|Night|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00117","record_type":"measurement","observed_at":"2026-10-26T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"warning","stage":null,"metric_name":"overtime_hours","metric_value":38.8,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-26|Night|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00118","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.89,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-27|Night|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00119","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":136.5,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-27|Night|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00120","record_type":"measurement","observed_at":"2026-10-27T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":15.9,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-27|Night|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00121","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.86,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-28|Night|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00122","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":117.8,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-28|Night|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00123","record_type":"measurement","observed_at":"2026-10-28T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":6.6,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-28|Night|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00124","record_type":"measurement","observed_at":"2026-10-29T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.86,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-29|Night|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00125","record_type":"measurement","observed_at":"2026-10-29T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":149.5,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-29|Night|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00126","record_type":"measurement","observed_at":"2026-10-29T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":32.0,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-29|Night|overtime_hours","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00127","record_type":"measurement","observed_at":"2026-10-30T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"attendance_rate","metric_value":0.97,"metric_unit":"ratio","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-30|Night|attendance_rate","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00128","record_type":"measurement","observed_at":"2026-10-30T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"output_per_hour","metric_value":134.9,"metric_unit":"units_per_hour","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-30|Night|output_per_hour","is_synthetic":true,"data_version":"1.0.0"},{"record_id":"REC-00129","record_type":"measurement","observed_at":"2026-10-30T00:00:00Z","entity_id":"shift_night","related_entity_id":null,"entity_name":"Night Watch (all facilities)","category":"night_watch","subcategory":null,"status":"optimal","stage":null,"metric_name":"overtime_hours","metric_value":16.6,"metric_unit":"hours","text_value":null,"latitude":null,"longitude":null,"source_name":"Backend synthetic shift generator (main.py, seed 42)","source_record_id":"BE|2026-10-30|Night|overtime_hours","is_synthetic":true,"data_version":"1.0.0"}]
+</file>
+
 <file path="frontend/public/data/intelligence/validation_metrics.json">
 {
   "data_version": "1.0.0",
@@ -5349,6 +5319,10 @@ export interface IntelligenceEvidence {
     important_limitations: string[];
     generated_at: string;
   }
+</file>
+
+<file path="frontend/.env.local">
+NEXT_PUBLIC_API_URL=http://localhost:8000
 </file>
 
 <file path="frontend/next.config.mjs">
@@ -5414,6 +5388,345 @@ const config = {
     "node_modules"
   ]
 }
+</file>
+
+<file path="patch/assistant/core/output_validator.py">
+import re
+import json
+
+NUM = re.compile(r'\b\d+(?:\.\d+)?\b')
+
+
+def _allowed_numbers(package: dict) -> set:
+    """Numbers permitted in an LLM answer: only those present in the approved
+    evidence package (values, ranks, versions). No hard-coded allowances."""
+    allowed = set(NUM.findall(json.dumps(package)))
+    # normalise 40 vs 40.0 so formatting differences are not rejected
+    for n in list(allowed):
+        f = float(n)
+        allowed.add(str(f))
+        if f == int(f):
+            allowed.add(str(int(f)))
+    return allowed
+
+
+def _check(text: str, package: dict) -> bool:
+    if not text:
+        return False
+    bad = set(NUM.findall(text)) - _allowed_numbers(package)
+    if bad:
+        print(f"[validator] rejected, numbers not in evidence: {sorted(bad)}")
+        return False
+    return True
+
+
+def validate_numeric_fidelity(text: str, result_data: dict) -> bool:
+    return _check(text, result_data)
+
+
+def validate_grounded_response(text: str, evidence_package: dict) -> bool:
+    return _check(text, evidence_package)
+</file>
+
+<file path="patch/docs/POST6_EVIDENCE_CHECKLIST.md">
+# Post #6 Evidence Reconciliation Checklist
+
+Fill each item with an OBSERVED result only. Do not copy expected values.
+Date verified: ____  Verified by: ____
+
+| # | Item | Code change (in patch) | Observed result (fill in) |
+|---|------|------------------------|---------------------------|
+| 1 | Validator has no hard-coded numeric allowances | assistant/core/output_validator.py | pytest tests/assistant-grounding output: ____ |
+| 2 | Invented values (7, 28, 2026, 119.9, 100.0) rejected | test_validator_no_allowances.py | ____ |
+| 3 | Backend Docker build from repo root | docker-compose.yml (context ., dockerfile backend/Dockerfile) | `docker compose build` log: ____ |
+| 4 | Backend packages present (google-genai etc.) | check backend/requirements.txt | `pip check` / container import: ____ |
+| 5 | Real Gemini success | GEMINI_API_KEY set | response with llm_status=____, timestamp ____ |
+| 6 | Deterministic fallback | unset key / force failure | response with llm_status=____ |
+| 7 | Intelligence page: KPI strip, selectable bars, detail panel, five observations | frontend/app/intelligence/page.tsx | screenshot: ____ |
+| 8 | Selected finding opens assistant with scoped question | AssistantPanel initialQuestion | screenshot/video: ____ |
+| 9 | Synthetic wording on operations page | frontend/app/page.tsx | screenshot: ____ |
+| 10 | Deployed URL and commit SHA | n/a | URL ____ SHA ____ |
+| 11 | Frontend + backend + certification tests | run_phase3_checks.py --regen | counts: ____ |
+| 12 | Fresh Repomix | `npx repomix` | file/date: ____ |
+
+After filling: update release manifest, UAT, deployment evidence, completion report and stale B1/B2 findings to match this table.
+</file>
+
+<file path="patch/frontend/app/intelligence/page.tsx">
+'use client'
+import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { loadIntelligenceResults, loadIntelligenceSummary } from '../../lib/intelligenceLoader';
+import { validateIntelligenceCollection, checkDataFreshness } from '../../lib/intelligenceValidator';
+import { IntelligenceResult, IntelligenceSummary } from '../../types/intelligence';
+import { AssistantPanel } from '../../components/data-assistant/AssistantPanel';
+
+const TEAM: Record<string, string> = { morning_crew: 'Morning Crew', evening_crew: 'Evening Crew', night_watch: 'Night Watch' };
+const label = (id: string | null) => {
+  const m = /^facility_([ab])_(.+)$/.exec(id || '');
+  return m ? `Facility ${m[1].toUpperCase()} · ${TEAM[m[2]] || m[2]}` : id || 'Unknown';
+};
+const signed = (v: number) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1);
+const ev = (r: IntelligenceResult, f: string) => r.evidence.find(e => e.factor === f)?.value as number | undefined;
+
+type Obs = { entity_id: string; observed_at: string; metric_name: string; metric_value: number; source_record_id: string; record_id: string; source_name: string };
+
+export default function DataIntelligencePage() {
+  const [results, setResults] = useState<IntelligenceResult[]>([]);
+  const [summary, setSummary] = useState<IntelligenceSummary | null>(null);
+  const [obs, setObs] = useState<Obs[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [facility, setFacility] = useState('all');
+  const [cmp, setCmp] = useState('all');
+  const [selected, setSelected] = useState<string>('');
+  const [fresh, setFresh] = useState({ isVersionMismatch: false, isStaleTime: false });
+  const [assistant, setAssistant] = useState<string | null>(null);
+  const [showRef, setShowRef] = useState(false);
+
+  useEffect(() => {
+    Promise.all([loadIntelligenceResults(), loadIntelligenceSummary(), fetch('/data/intelligence/canonical_observations.json').then(r => (r.ok ? r.json() : [])).catch(() => [])])
+      .then(([res, sum, canon]) => {
+        validateIntelligenceCollection(res, sum);
+        setResults(res); setSummary(sum); setFresh(checkDataFreshness(sum, res));
+        setObs((canon as Obs[]).filter(o => o.source_name?.startsWith('Frontend') && o.observed_at));
+        setSelected(res[0]?.entity_id || '');
+        setLoading(false);
+      })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, []);
+
+  const visible = useMemo(() => results.filter(r =>
+    (facility === 'all' || (r.entity_id || '').startsWith(`facility_${facility}`)) &&
+    (cmp === 'all' || r.result_category === (cmp === 'below' ? 'low' : 'high'))), [results, facility, cmp]);
+  const active = visible.find(r => r.entity_id === selected) || visible[0];
+
+  if (loading) return <div className="flex h-screen items-center justify-center bg-deep text-mist">Validating contract &amp; loading intelligence…</div>;
+  if (error) return <div className="flex h-screen flex-col items-center justify-center bg-deep p-6 text-crit"><h1 className="text-2xl font-bold">Integration Blocked</h1><p className="mt-2">{error}</p></div>;
+  if (!summary) return null;
+
+  const baseline = ev(results[0], 'baseline_output_per_hour');
+  const below = visible.filter(r => (r.result_value ?? 0) < 0);
+  const worst = visible.length ? Math.min(...visible.map(r => r.result_value ?? 0)) : null;
+  const maxAbs = Math.max(1, ...results.map(r => Math.abs(r.result_value ?? 0)));
+  const daily = active ? obs.filter(o => o.entity_id === active.entity_id) : [];
+  const days = Array.from(new Set(daily.map(o => o.observed_at.slice(0, 10)))).sort();
+  const val = (d: string, m: string) => daily.find(o => o.observed_at.startsWith(d) && o.metric_name === m);
+  const sel = 'rounded-lg border border-line bg-surface px-3 py-2 text-xs text-mist';
+
+  return (
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-deep p-4 font-sans text-mist md:p-6 lg:p-10">
+      <header className="mb-6 flex flex-col gap-3 border-b border-line pb-5 md:flex-row md:items-end md:justify-between">
+        <div className="min-w-0">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <Link href="/" className="font-mono text-sm text-sky hover:underline">&larr; Back to Operations View</Link>
+            {fresh.isVersionMismatch && <span className="rounded bg-crit/20 px-2 py-0.5 text-xs font-bold uppercase text-crit">Version Mismatch</span>}
+            {fresh.isStaleTime && !fresh.isVersionMismatch && <span className="rounded bg-warn/20 px-2 py-0.5 text-xs font-bold uppercase text-warn">Snapshot older than 7 days</span>}
+          </div>
+          <h1 className="gradient-text font-display text-2xl font-bold md:text-3xl">Shift Performance Review</h1>
+          <p className="mt-1 text-sm text-moss">Compare observed team output against the validated {baseline?.toFixed(1)} units/hour baseline.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface p-3 font-mono text-xs text-moss">
+          <span className="rounded border border-warn/40 bg-warn/10 px-2 py-1 text-warn">Synthetic dataset · Oct 24–28, 2026</span>
+          <span>Track A · Method v{summary.method_version} · Data v{summary.data_version}</span>
+          <button onClick={() => active && setAssistant(`Explain the result for ${active.entity_id}`)} className="rounded-full bg-accent px-3 py-2 font-extrabold uppercase text-deep">Explain selection</button>
+        </div>
+      </header>
+
+      <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[
+          ['Observed groups', String(visible.length), '2 facilities · 3 teams each', ''],
+          ['Comparison baseline', baseline?.toFixed(1) ?? '—', 'Units per hour · fixed Track A', ''],
+          ['Below baseline', String(below.length), 'Groups needing closer review', 'text-crit'],
+          ['Largest gap', worst === null ? '—' : signed(worst), 'Units/hour · observed, not forecast', 'text-crit'],
+        ].map(([l, v, m, c]) => (
+          <div key={l} className="min-w-0 rounded-xl border border-line bg-surface p-4">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-moss">{l}</div>
+            <div className={`font-display text-2xl font-extrabold ${c}`}>{v}</div>
+            <div className="text-[11px] text-moss">{m}</div>
+          </div>
+        ))}
+      </section>
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        <select className={sel} aria-label="Facility filter" value={facility} onChange={e => setFacility(e.target.value)}>
+          <option value="all">All facilities</option><option value="a">Facility A</option><option value="b">Facility B</option>
+        </select>
+        <select className={sel} aria-label="Baseline comparison filter" value={cmp} onChange={e => setCmp(e.target.value)}>
+          <option value="all">All comparisons</option><option value="below">Below baseline</option><option value="above">Above baseline</option>
+        </select>
+        <button className={sel} onClick={() => { setFacility('all'); setCmp('all'); }}>Reset</button>
+      </div>
+
+      {visible.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-line p-8 text-center text-moss">No groups match these filters.</div>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <div className="min-w-0 space-y-4">
+            <article className="rounded-xl border border-line bg-surface p-4">
+              <div className="mb-3 flex items-center justify-between"><h2 className="font-display text-sm font-bold">Output gap vs comparison baseline</h2><span className="text-[10px] text-moss">Click a bar · units/hour</span></div>
+              {visible.map(r => {
+                const v = r.result_value ?? 0; const w = (Math.abs(v) / maxAbs) * 100; const on = r.entity_id === active?.entity_id;
+                return (
+                  <button key={r.result_id} aria-pressed={on} onClick={() => setSelected(r.entity_id || '')}
+                    className={`grid w-full grid-cols-[110px_1fr_52px] items-center gap-2 rounded-lg px-2 py-1.5 text-left sm:grid-cols-[170px_1fr_60px] ${on ? 'bg-surface-2 ring-1 ring-sky/50' : 'hover:bg-surface-2'}`}>
+                    <span className="truncate text-[11px] font-semibold">#{r.priority_rank} {label(r.entity_id)}</span>
+                    <span className="relative grid h-5 grid-cols-2 rounded bg-deep/60">
+                      <span className="flex justify-end">{v < 0 && <span className="rounded bg-crit" style={{ width: `${w}%` }} />}</span>
+                      <span className="flex border-l border-moss/60">{v >= 0 && <span className="rounded bg-accent" style={{ width: `${w}%` }} />}</span>
+                    </span>
+                    <span className={`text-right text-[11px] font-bold ${v < 0 ? 'text-crit' : 'text-accent'}`}>{signed(v)}</span>
+                  </button>
+                );
+              })}
+              <p className="mt-3 text-[10px] text-moss">Negative values are below the baseline. Rank is based on output gap only; overtime is supporting context.</p>
+            </article>
+            <article className="rounded-xl border border-line bg-surface p-4">
+              <h2 className="mb-3 font-display text-sm font-bold">Findings worth investigating</h2>
+              {below.length === 0 ? <p className="text-xs text-moss">No below-baseline findings in this selection.</p> : below.slice(0, 3).map(r => (
+                <button key={r.result_id} onClick={() => setSelected(r.entity_id || '')} className="mb-2 w-full rounded-lg border border-line p-3 text-left hover:border-sky/50">
+                  <div className="text-[10px] font-bold uppercase text-crit">Review priority #{r.priority_rank} · gap {signed(r.result_value ?? 0)} units/hr</div>
+                  <div className="mt-1 text-sm font-semibold">{label(r.entity_id)}</div>
+                  <p className="text-[11px] text-moss">Observed average {ev(r, 'avg_output_per_hour')?.toFixed(1)} units/hr. Overtime {ev(r, 'avg_overtime_hours')?.toFixed(1)} hours is context, not a risk score.</p>
+                </button>
+              ))}
+            </article>
+          </div>
+
+          {active && (
+            <article className="min-w-0 self-start rounded-xl border border-line bg-surface p-4">
+              <div className="mb-1 text-[10px] uppercase tracking-wider text-moss">Data intelligence → <span className="text-sky">selected group</span> → evidence</div>
+              <div className="flex items-center justify-between gap-2"><h2 className="font-display text-lg font-bold">{label(active.entity_id)}</h2><span className="rounded-full bg-accent/15 px-2 py-1 text-[10px] font-bold uppercase text-accent">{active.quality_status}</span></div>
+              <div className="text-xs text-moss">Priority rank {active.priority_rank} / {results.length} · n={ev(active, 'record_count')} observed days</div>
+              <div className="my-3 grid grid-cols-3 gap-2">
+                {[['Output / hr', ev(active, 'avg_output_per_hour')?.toFixed(1)], ['Gap / hr', signed(active.result_value ?? 0)], ['Avg. OT hours', ev(active, 'avg_overtime_hours')?.toFixed(1)]].map(([l, v]) => (
+                  <div key={l} className="rounded-lg border border-line bg-deep/50 p-2"><div className="font-display text-lg font-bold">{v}</div><div className="text-[10px] text-moss">{l}</div></div>
+                ))}
+              </div>
+              <h3 className="mb-2 text-xs font-bold">Observed daily measurements</h3>
+              <div className="block w-full overflow-x-auto">
+                <table className="w-full min-w-[260px] text-left text-[11px]">
+                  <thead className="text-moss"><tr><th className="p-1.5">Date</th><th className="p-1.5">Output / hr</th><th className="p-1.5">OT hours</th></tr></thead>
+                  <tbody className="divide-y divide-line">
+                    {days.length === 0 ? <tr><td colSpan={3} className="p-2 text-moss">Daily observations unavailable (canonical_observations.json not found).</td></tr> :
+                      days.map(d => <tr key={d}><td className="p-1.5">{d}</td><td className="p-1.5">{val(d, 'output_per_hour')?.metric_value.toFixed(1)}</td><td className="p-1.5">{val(d, 'overtime_hours')?.metric_value.toFixed(1)}</td></tr>)}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-3 rounded-lg border border-warn/30 bg-warn/10 p-3 text-[11px] text-warn"><b>Interpretation limit:</b> {active.limitation} Overtime supports investigation but does not establish a coverage-risk score, cause or prediction.</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button onClick={() => setShowRef(s => !s)} className="rounded-lg border border-line px-3 py-2 text-[11px] font-bold">{showRef ? 'Hide' : 'Show'} evidence reference</button>
+                <button onClick={() => setAssistant(`Explain the result for ${active.entity_id}`)} className="rounded-lg bg-accent px-3 py-2 text-[11px] font-extrabold text-deep">Ask grounded assistant</button>
+              </div>
+              {showRef && <div className="mt-2 break-all rounded-lg border border-line bg-deep/50 p-2 font-mono text-[10px] text-moss">
+                {active.result_id} · data v{active.data_version} · method v{active.method_version} · period {active.period_start?.slice(0, 10)}→{active.period_end?.slice(0, 10)} · source records: {daily.map(o => o.record_id).join(', ') || 'n/a'}</div>}
+            </article>
+          )}
+        </div>
+      )}
+
+      <section className="mt-8 grid gap-6 border-t border-line pt-6 text-xs md:grid-cols-2">
+        <div><h4 className="mb-2 font-bold uppercase tracking-widest text-moss">Methodology</h4><p className="text-mist/70">{summary.primary_analytical_question}</p>
+          <p className="mt-2 text-mist/70">Group mean output minus the overall frontend baseline ({baseline?.toFixed(1)} units/hr), dense-ranked ascending. Not recalculated in the browser.</p>
+          <span className="mt-2 inline-block rounded bg-accent/10 px-2 py-1 text-accent">Validation: {summary.validation_result}</span></div>
+        <div><h4 className="mb-2 font-bold uppercase tracking-widest text-moss">Limitations &amp; unsupported uses</h4>
+          <ul className="list-disc space-y-1 pl-4 text-mist/70">{summary.important_limitations.map((l, i) => <li key={i}>{l}</li>)}<li>Not a staffing, payroll or coverage-risk decision tool; no forecasting.</li></ul></div>
+      </section>
+
+      {assistant && <AssistantPanel onClose={() => setAssistant(null)} initialQuestion={assistant} />}
+    </div>
+  );
+}
+</file>
+
+<file path="patch/tests/assistant-grounding/test_validator_no_allowances.py">
+from assistant.core.output_validator import validate_grounded_response
+
+PKG = {"answer_data": {"avg": 93.6, "gap": -25.8, "overtime": 40, "rank": 1, "n": 5}, "metadata": {"data_version": "1.0.0"}}
+
+
+def test_accepts_evidence_numbers():
+    assert validate_grounded_response("Average 93.6, gap -25.8, overtime 40 hours, rank 1, n=5.", PKG)
+
+
+def test_accepts_int_float_format_difference():
+    assert validate_grounded_response("Overtime was 40.0 hours.", PKG)
+
+
+def test_rejects_invented_values():
+    for bad in ["Output was 119.9.", "Overtime was 28 hours.", "Across 7 days.", "In 2026 the gap was 100.0."]:
+        assert not validate_grounded_response(bad, PKG), bad
+
+
+def test_rejects_empty():
+    assert not validate_grounded_response("", PKG)
+</file>
+
+<file path="patch/.env.example">
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.5-flash
+NEXT_PUBLIC_API_URL=http://localhost:8000
+</file>
+
+<file path="patch/apply_patch.py">
+"""Apply the Post #6 / presentation patch to the repo root:  python patch/apply_patch.py
+Idempotent string edits for existing files; new/rewritten files are copied from patch/."""
+import re, shutil, sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+P = Path(__file__).resolve().parent
+
+
+def sub(rel, pairs):
+    f = ROOT / rel
+    t = f.read_text("utf-8")
+    for old, new in pairs:
+        if old in t:
+            t = t.replace(old, new)
+        elif new not in t:
+            sys.exit(f"pattern not found in {rel}: {old[:60]!r}")
+    f.write_text(t, "utf-8")
+    print("edited", rel)
+
+
+# 1. copy rewritten files
+for rel in ["assistant/core/output_validator.py", "frontend/app/intelligence/page.tsx"]:
+    shutil.copy(P / rel, ROOT / rel); print("replaced", rel)
+
+# 2. B2: backend image must build from repo root (Dockerfile already copies the whole context)
+sub("docker-compose.yml", [("context: ./backend\n      dockerfile: Dockerfile", "context: .\n      dockerfile: backend/Dockerfile")])
+
+# 3. assistant entity bug: explicit entity must not be overridden by text scan
+sub("backend/api/assistant.py", [
+    ('entity = intent_params.get("entity_id", "facility_a_night_watch")\n                if not entity or "facility_b" in question.lower():\n                    entity = "facility_b_night_watch"',
+     'entity = intent_params.get("entity_id") or "facility_a_night_watch"')])
+
+# 4. AssistantPanel: auto-ask the selected-finding question
+sub("frontend/components/data-assistant/AssistantPanel.tsx", [
+    ("interface AssistantPanelProps {\n  onClose: () => void;\n}", "interface AssistantPanelProps {\n  onClose: () => void;\n  initialQuestion?: string;\n}"),
+    ("export function AssistantPanel({ onClose }: AssistantPanelProps) {", "export function AssistantPanel({ onClose, initialQuestion }: AssistantPanelProps) {"),
+    ("  const showInitialPrompt =", "  useEffect(() => {\n    if (initialQuestion) handleAsk(initialQuestion);\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [initialQuestion]);\n\n  const showInitialPrompt ="),
+])
+
+# 5. Operations page wording + KPI strip (map untouched)
+sub("frontend/app/page.tsx", [
+    ("Real-Time Operational Intelligence", "Synthetic Operations Demonstration"),
+    (">Live Exceptions<", ">Demonstration Insight<"),
+    ("CRITICAL ALERT:", "OBSERVED CRITICAL:"),
+    ("SYSTEM WARNING:", "OBSERVED WARNING:"),
+    ("{ value: 'Last 30 Days', label: 'Last 30 Days' }", "{ value: 'Last 30 Days', label: 'Last 30 Days (simulated)' }"),
+    ("{ value: 'YTD', label: 'Year to Date' }", "{ value: 'YTD', label: 'Year to Date (simulated)' }"),
+    ('<div className="pointer-events-auto flex w-fit items-center gap-4 rounded-full',
+     '<div className="pointer-events-auto grid max-w-2xl grid-cols-2 gap-2 sm:grid-cols-4">\n            {[["Facilities","2"],["Shift groups","6"],["Baseline","119.4 u/hr"],["Priority review","A / Night −25.8"]].map(([l,v]) => (\n              <div key={l} className="rounded-lg border border-line bg-surface px-3 py-2"><div className="eyebrow !text-[9px]">{l}</div><div className="font-display text-sm font-bold text-mist">{v}</div></div>\n            ))}\n          </div>\n          <div className="pointer-events-auto flex w-fit items-center gap-4 rounded-full'),
+])
+
+# 6. publish canonical observations next to intelligence JSON
+sub("scripts/copy_intelligence.py", [
+    ("if __name__", "def copy_canonical():\n    root = Path(__file__).resolve().parents[1]\n    dest = root / 'frontend' / 'public' / 'data' / 'intelligence'\n    dest.mkdir(parents=True, exist_ok=True)\n    shutil.copy(root / 'data' / 'published' / 'intelligence_data.json', dest / 'canonical_observations.json')\n    print('Copied canonical observations.')\n\n\nif __name__"),
+    ("    main()", "    main()\n    copy_canonical()"),
+])
+print("done. Now: python scripts/copy_intelligence.py && cd frontend && npm run build")
 </file>
 
 <file path="scripts/certification/run_phase3_checks.py">
@@ -6148,30 +6461,6 @@ if __name__ == "__main__":
     main()
 </file>
 
-<file path="scripts/copy_intelligence.py">
-# /scripts/copy_intelligence.py
-import shutil
-from pathlib import Path
-
-def main():
-    root = Path(__file__).resolve().parents[1]
-    src_dir = root / "data-science" / "outputs"
-    dest_dir = root / "frontend" / "public" / "data" / "intelligence"
-    
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    
-    for filename in ["intelligence_results.json", "intelligence_summary.json", "validation_metrics.json"]:
-        src_file = src_dir / filename
-        if src_file.exists():
-            shutil.copy(src_file, dest_dir / filename)
-            print(f"Copied {filename} to public directory.")
-        else:
-            print(f"Warning: {filename} not found in outputs.")
-
-if __name__ == "__main__":
-    main()
-</file>
-
 <file path="tests/assistant-api/test_api.py">
 from fastapi.testclient import TestClient
 from backend.api.assistant import router
@@ -6200,6 +6489,29 @@ def test_query_supported():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] in ["answered", "unavailable"]
+</file>
+
+<file path="tests/assistant-grounding/test_validator_no_allowances.py">
+from assistant.core.output_validator import validate_grounded_response
+
+PKG = {"answer_data": {"avg": 93.6, "gap": -25.8, "overtime": 40, "rank": 1, "n": 5}, "metadata": {"data_version": "1.0.0"}}
+
+
+def test_accepts_evidence_numbers():
+    assert validate_grounded_response("Average 93.6, gap -25.8, overtime 40 hours, rank 1, n=5.", PKG)
+
+
+def test_accepts_int_float_format_difference():
+    assert validate_grounded_response("Overtime was 40.0 hours.", PKG)
+
+
+def test_rejects_invented_values():
+    for bad in ["Output was 119.9.", "Overtime was 28 hours.", "Across 7 days.", "In 2026 the gap was 100.0."]:
+        assert not validate_grounded_response(bad, PKG), bad
+
+
+def test_rejects_empty():
+    assert not validate_grounded_response("", PKG)
 </file>
 
 <file path="tests/assistant-safety/test_safety.py">
@@ -6404,53 +6716,6 @@ def test_operational_regression():
         driver.quit()
 </file>
 
-<file path="tests/selenium/test_assistant_journey.py">
-import pytest
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
-def test_intelligence_journey():
-    driver = webdriver.Chrome()
-    
-    # Increased wait time to 30s to allow Next.js dev server to compile on first load
-    wait = WebDriverWait(driver, 30)
-    
-    try:
-        driver.get("http://localhost:3000")
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "radar")))
-        
-        # Wait for the link to exist in the DOM
-        intel_link = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/intelligence')]")))
-        
-        # Force click via JavaScript to bypass any CSS overlay interferences
-        driver.execute_script("arguments[0].click();", intel_link)
-        
-        wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, "h1"), "Data Intelligence"))
-        
-        wait.until(EC.presence_of_element_located((By.TAG_NAME, "table")))
-        
-        filter_dropdown = driver.find_element(By.TAG_NAME, "select")
-        filter_dropdown.click()
-        filter_dropdown.find_element(By.XPATH, "//option[@value='low']").click()
-        
-        assert "n=5" in driver.page_source
-        assert "Descriptive 5-day view." in driver.page_source
-        
-        back_link = driver.find_element(By.XPATH, "//a[contains(text(), 'Back to Operational Map')]")
-        driver.execute_script("arguments[0].click();", back_link)
-        
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "radar")))
-        
-        print("E2E Journey: PASS")
-    finally:
-        driver.quit()
-
-if __name__ == "__main__":
-    test_intelligence_journey()
-</file>
-
 <file path="tests/selenium/test_final_journey.py">
 """Phase 3 Post #6 - Final Selenium journey (guide section 20).
 
@@ -6628,79 +6893,75 @@ def test_final_journey_mobile():
         d.quit()
 </file>
 
-<file path="tests/selenium/test_intelligence_journey.py">
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
-def test_intelligence_journey():
-    driver = webdriver.Chrome()
-    
-    # Increased wait time to 30s to allow Next.js dev server to compile on first load
-    wait = WebDriverWait(driver, 30)
-    
-    try:
-        driver.get("http://localhost:3000")
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "radar")))
-        
-        # Wait for the link to exist in the DOM
-        intel_link = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/intelligence')]")))
-        
-        # Force click via JavaScript to bypass any CSS overlay interferences
-        driver.execute_script("arguments[0].click();", intel_link)
-        
-        wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, "h1"), "Data Intelligence"))
-        
-        wait.until(EC.presence_of_element_located((By.TAG_NAME, "table")))
-        
-        filter_dropdown = driver.find_element(By.TAG_NAME, "select")
-        filter_dropdown.click()
-        filter_dropdown.find_element(By.XPATH, "//option[@value='low']").click()
-        
-        assert "n=5" in driver.page_source
-        assert "Descriptive 5-day view." in driver.page_source
-        
-        back_link = driver.find_element(By.XPATH, "//a[contains(text(), 'Back to Operational Map')]")
-        driver.execute_script("arguments[0].click();", back_link)
-        
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "radar")))
-        
-        print("E2E Journey: PASS")
-    finally:
-        driver.quit()
-
-if __name__ == "__main__":
-    test_intelligence_journey()
+<file path=".env.example">
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.5-flash
+NEXT_PUBLIC_API_URL=http://localhost:8000
 </file>
 
 <file path="390)">
 
 </file>
 
-<file path="docker-compose.yml">
-services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    depends_on:
-      - backend
-    restart: unless-stopped
+<file path="apply_patch.py">
+"""Apply the Post #6 / presentation patch to the repo root:  python patch/apply_patch.py
+Idempotent string edits for existing files; new/rewritten files are copied from patch/."""
+import re, shutil, sys
+from pathlib import Path
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    restart: unless-stopped
+ROOT = Path(__file__).resolve().parents[1]
+P = Path(__file__).resolve().parent
+
+
+def sub(rel, pairs):
+    f = ROOT / rel
+    t = f.read_text("utf-8")
+    for old, new in pairs:
+        if old in t:
+            t = t.replace(old, new)
+        elif new not in t:
+            sys.exit(f"pattern not found in {rel}: {old[:60]!r}")
+    f.write_text(t, "utf-8")
+    print("edited", rel)
+
+
+# 1. copy rewritten files
+for rel in ["assistant/core/output_validator.py", "frontend/app/intelligence/page.tsx"]:
+    shutil.copy(P / rel, ROOT / rel); print("replaced", rel)
+
+# 2. B2: backend image must build from repo root (Dockerfile already copies the whole context)
+sub("docker-compose.yml", [("context: ./backend\n      dockerfile: Dockerfile", "context: .\n      dockerfile: backend/Dockerfile")])
+
+# 3. assistant entity bug: explicit entity must not be overridden by text scan
+sub("backend/api/assistant.py", [
+    ('entity = intent_params.get("entity_id", "facility_a_night_watch")\n                if not entity or "facility_b" in question.lower():\n                    entity = "facility_b_night_watch"',
+     'entity = intent_params.get("entity_id") or "facility_a_night_watch"')])
+
+# 4. AssistantPanel: auto-ask the selected-finding question
+sub("frontend/components/data-assistant/AssistantPanel.tsx", [
+    ("interface AssistantPanelProps {\n  onClose: () => void;\n}", "interface AssistantPanelProps {\n  onClose: () => void;\n  initialQuestion?: string;\n}"),
+    ("export function AssistantPanel({ onClose }: AssistantPanelProps) {", "export function AssistantPanel({ onClose, initialQuestion }: AssistantPanelProps) {"),
+    ("  const showInitialPrompt =", "  useEffect(() => {\n    if (initialQuestion) handleAsk(initialQuestion);\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [initialQuestion]);\n\n  const showInitialPrompt ="),
+])
+
+# 5. Operations page wording + KPI strip (map untouched)
+sub("frontend/app/page.tsx", [
+    ("Real-Time Operational Intelligence", "Synthetic Operations Demonstration"),
+    (">Live Exceptions<", ">Demonstration Insight<"),
+    ("CRITICAL ALERT:", "OBSERVED CRITICAL:"),
+    ("SYSTEM WARNING:", "OBSERVED WARNING:"),
+    ("{ value: 'Last 30 Days', label: 'Last 30 Days' }", "{ value: 'Last 30 Days', label: 'Last 30 Days (simulated)' }"),
+    ("{ value: 'YTD', label: 'Year to Date' }", "{ value: 'YTD', label: 'Year to Date (simulated)' }"),
+    ('<div className="pointer-events-auto flex w-fit items-center gap-4 rounded-full',
+     '<div className="pointer-events-auto grid max-w-2xl grid-cols-2 gap-2 sm:grid-cols-4">\n            {[["Facilities","2"],["Shift groups","6"],["Baseline","119.4 u/hr"],["Priority review","A / Night −25.8"]].map(([l,v]) => (\n              <div key={l} className="rounded-lg border border-line bg-surface px-3 py-2"><div className="eyebrow !text-[9px]">{l}</div><div className="font-display text-sm font-bold text-mist">{v}</div></div>\n            ))}\n          </div>\n          <div className="pointer-events-auto flex w-fit items-center gap-4 rounded-full'),
+])
+
+# 6. publish canonical observations next to intelligence JSON
+sub("scripts/copy_intelligence.py", [
+    ("if __name__", "def copy_canonical():\n    root = Path(__file__).resolve().parents[1]\n    dest = root / 'frontend' / 'public' / 'data' / 'intelligence'\n    dest.mkdir(parents=True, exist_ok=True)\n    shutil.copy(root / 'data' / 'published' / 'intelligence_data.json', dest / 'canonical_observations.json')\n    print('Copied canonical observations.')\n\n\nif __name__"),
+    ("    main()", "    main()\n    copy_canonical()"),
+])
+print("done. Now: python scripts/copy_intelligence.py && cd frontend && npm run build")
 </file>
 
 <file path="el.tagName">
@@ -7180,6 +7441,80 @@ Both synthetic sources above, extracted into `data/source-sample/source_sample.c
 - 5-7 daily points per series, one month only.
 </file>
 
+<file path="final-evidence/11-selenium/final_selenium_log.json">
+{
+  "base_url": "http://localhost:3000",
+  "steps": [
+    {
+      "step": "1-2 open operational view",
+      "status": "PASS",
+      "detail": "http://localhost:3000/",
+      "t": "2026-11-07T11:34:11"
+    },
+    {
+      "step": "3 primary visual",
+      "status": "PASS",
+      "detail": "6 markers",
+      "t": "2026-11-07T11:34:13"
+    },
+    {
+      "step": "4 operational interaction",
+      "status": "PASS",
+      "detail": "",
+      "t": "2026-11-07T11:34:15"
+    },
+    {
+      "step": "5 navigate to Data Intelligence",
+      "status": "PASS",
+      "detail": "",
+      "t": "2026-11-07T11:34:16"
+    },
+    {
+      "step": "6 track and versions",
+      "status": "PASS",
+      "detail": "data v1.0.0 method v1.0.0",
+      "t": "2026-11-07T11:34:17"
+    },
+    {
+      "step": "7 filter",
+      "status": "PASS",
+      "detail": "low=3 high=3",
+      "t": "2026-11-07T11:34:18"
+    },
+    {
+      "step": "8 result + evidence",
+      "status": "PASS",
+      "detail": "1 facility_a_night_watch -25.8 units facility_a_night_watch ranks 1 based strictly on its output gap (-25.8 vs baseline)",
+      "t": "2026-11-07T11:34:18"
+    },
+    {
+      "step": "9 methodology and limitations",
+      "status": "PASS",
+      "detail": "",
+      "t": "2026-11-07T11:34:18"
+    },
+    {
+      "step": "10 assistant answer with limitation",
+      "status": "PASS",
+      "detail": "",
+      "t": "2026-11-07T11:34:19"
+    },
+    {
+      "step": "11-12 return and re-verify interaction",
+      "status": "PASS",
+      "detail": "",
+      "t": "2026-11-07T11:34:25"
+    },
+    {
+      "step": "mobile",
+      "status": "PASS",
+      "detail": "scrollWidth=390",
+      "t": "2026-11-07T11:34:41"
+    }
+  ]
+}
+</file>
+
 <file path="frontend/__tests__/intelligenceValidator.test.ts">
 // /frontend/__tests__/intelligenceValidator.test.ts
 import { validateIntelligenceResult, validateIntelligenceSummary, validateIntelligenceCollection, checkDataFreshness } from '../lib/intelligenceValidator';
@@ -7425,6 +7760,39 @@ module.exports = {
 }
 </file>
 
+<file path="scripts/copy_intelligence.py">
+# /scripts/copy_intelligence.py
+import shutil
+from pathlib import Path
+
+def main():
+    root = Path(__file__).resolve().parents[1]
+    src_dir = root / "data-science" / "outputs"
+    dest_dir = root / "frontend" / "public" / "data" / "intelligence"
+    
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    
+    for filename in ["intelligence_results.json", "intelligence_summary.json", "validation_metrics.json"]:
+        src_file = src_dir / filename
+        if src_file.exists():
+            shutil.copy(src_file, dest_dir / filename)
+            print(f"Copied {filename} to public directory.")
+        else:
+            print(f"Warning: {filename} not found in outputs.")
+
+def copy_canonical():
+    root = Path(__file__).resolve().parents[1]
+    dest = root / 'frontend' / 'public' / 'data' / 'intelligence'
+    dest.mkdir(parents=True, exist_ok=True)
+    shutil.copy(root / 'data' / 'published' / 'intelligence_data.json', dest / 'canonical_observations.json')
+    print('Copied canonical observations.')
+
+
+if __name__ == "__main__":
+    main()
+    copy_canonical()
+</file>
+
 <file path="tests/assistant-grounding/test_grounding.py">
 import pytest
 from assistant.core.intent_classifier import classify_intent
@@ -7493,6 +7861,99 @@ def test_unsupported_state_renders():
         driver.quit()
 </file>
 
+<file path="tests/selenium/test_assistant_journey.py">
+import pytest
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+def test_intelligence_journey():
+    driver = webdriver.Chrome()
+    
+    # Increased wait time to 30s to allow Next.js dev server to compile on first load
+    wait = WebDriverWait(driver, 30)
+    
+    try:
+        driver.get("http://localhost:3000")
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "radar")))
+        
+        # Wait for the link to exist in the DOM
+        intel_link = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/intelligence')]")))
+        
+        # Force click via JavaScript to bypass any CSS overlay interferences
+        driver.execute_script("arguments[0].click();", intel_link)
+        
+        wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, "h1"), "Data Intelligence"))
+        
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, "table")))
+        
+        filter_dropdown = driver.find_element(By.TAG_NAME, "select")
+        filter_dropdown.click()
+        filter_dropdown.find_element(By.XPATH, "//option[@value='low']").click()
+        
+        assert "n=5" in driver.page_source
+        assert "Descriptive 5-day view." in driver.page_source
+        
+        back_link = driver.find_element(By.XPATH, "//a[contains(text(), 'Back to Operational Map')]")
+        driver.execute_script("arguments[0].click();", back_link)
+        
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "radar")))
+        
+        print("E2E Journey: PASS")
+    finally:
+        driver.quit()
+
+if __name__ == "__main__":
+    test_intelligence_journey()
+</file>
+
+<file path="tests/selenium/test_intelligence_journey.py">
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+def test_intelligence_journey():
+    driver = webdriver.Chrome()
+    
+    # Increased wait time to 30s to allow Next.js dev server to compile on first load
+    wait = WebDriverWait(driver, 30)
+    
+    try:
+        driver.get("http://localhost:3000")
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "radar")))
+        
+        # Wait for the link to exist in the DOM
+        intel_link = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/intelligence')]")))
+        
+        # Force click via JavaScript to bypass any CSS overlay interferences
+        driver.execute_script("arguments[0].click();", intel_link)
+        
+        wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, "h1"), "Data Intelligence"))
+        
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, "table")))
+        
+        filter_dropdown = driver.find_element(By.TAG_NAME, "select")
+        filter_dropdown.click()
+        filter_dropdown.find_element(By.XPATH, "//option[@value='low']").click()
+        
+        assert "n=5" in driver.page_source
+        assert "Descriptive 5-day view." in driver.page_source
+        
+        back_link = driver.find_element(By.XPATH, "//a[contains(text(), 'Back to Operational Map')]")
+        driver.execute_script("arguments[0].click();", back_link)
+        
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "radar")))
+        
+        print("E2E Journey: PASS")
+    finally:
+        driver.quit()
+
+if __name__ == "__main__":
+    test_intelligence_journey()
+</file>
+
 <file path=".gitignore">
 # Frontend
 frontend/node_modules/
@@ -7509,6 +7970,31 @@ venv/
 
 # Security (Never push API keys)
 .env
+</file>
+
+<file path="docker-compose.yml">
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: unless-stopped
 </file>
 
 <file path="package.json">
@@ -7536,85 +8022,6 @@ EXPOSE 8000
 
 # Run the app
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
-</file>
-
-<file path="backend/main.py">
-import os
-import sys
-import json
-
-# 1. Inject Python path BEFORE local imports
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PARENT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
-for path in [CURRENT_DIR, PARENT_DIR]:
-    if path not in sys.path:
-        sys.path.insert(0, path)
-
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
-import numpy as np
-from dotenv import load_dotenv
-
-# 2. Safely import the assistant router
-try:
-    from backend.api.assistant import router as assistant_router
-except ModuleNotFoundError:
-    from api.assistant import router as assistant_router
-
-load_dotenv()
-
-app = FastAPI(title="Shift Productivity & Coverage Intelligence API")
-
-# 3. Valid, permissive CORS configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False, # Must be False when origins is "*"
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.include_router(assistant_router, prefix="/api/assistant", tags=["assistant"])
-
-def generate_synthetic_shift_data():
-    try:
-        np.random.seed(42)
-        dates = pd.date_range(start="2026-10-24", periods=7, freq="D")
-        shifts = ["Morning", "Evening", "Night"]
-        
-        data = []
-        for d in dates:
-            for s in shifts:
-                data.append({
-                    "date": d.strftime("%Y-%m-%d"),
-                    "shift": s,
-                    "attendance_rate": round(np.random.uniform(0.85, 0.99), 2),
-                    "output_per_hour": round(np.random.uniform(110, 150), 1),
-                    "overtime_hours": round(np.random.uniform(5, 40), 1),
-                    "coverage_status": np.random.choice(["Optimal", "Strained", "Critical"], p=[0.7, 0.2, 0.1])
-                })
-        return pd.DataFrame(data).to_dict(orient="records")
-    except Exception as e:
-        with open("mock_data.json", "r") as f:
-            return json.load(f)
-
-@app.get("/api/v1/intelligence/coverage")
-async def get_coverage_intelligence():
-    data = generate_synthetic_shift_data()
-    df = pd.DataFrame(data)
-    avg_output = df["output_per_hour"].mean()
-    
-    insights = {
-        "status": "success",
-        "kpi": {
-            "title": "Avg Output / Hour",
-            "value": f"{avg_output:.1f} Units",
-            "context": f"{((avg_output - 120) / 120 * 100):.1f}% above regional baseline"
-        },
-        "dataset": data
-    }
-    return insights
 </file>
 
 <file path="backend/requirements.txt">
@@ -8689,6 +9096,85 @@ EXPOSE 3000
 CMD ["npm", "start"]
 </file>
 
+<file path="backend/main.py">
+import os
+import sys
+import json
+
+# 1. Inject Python path BEFORE local imports
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+for path in [CURRENT_DIR, PARENT_DIR]:
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+import pandas as pd
+import numpy as np
+from dotenv import load_dotenv
+
+# 2. Safely import the assistant router
+try:
+    from backend.api.assistant import router as assistant_router
+except ModuleNotFoundError:
+    from api.assistant import router as assistant_router
+
+load_dotenv()
+
+app = FastAPI(title="Shift Productivity & Coverage Intelligence API")
+
+# 3. Valid, permissive CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False, # Must be False when origins is "*"
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(assistant_router, prefix="/api/assistant", tags=["assistant"])
+
+def generate_synthetic_shift_data():
+    try:
+        np.random.seed(42)
+        dates = pd.date_range(start="2026-10-24", periods=7, freq="D")
+        shifts = ["Morning", "Evening", "Night"]
+        
+        data = []
+        for d in dates:
+            for s in shifts:
+                data.append({
+                    "date": d.strftime("%Y-%m-%d"),
+                    "shift": s,
+                    "attendance_rate": round(np.random.uniform(0.85, 0.99), 2),
+                    "output_per_hour": round(np.random.uniform(110, 150), 1),
+                    "overtime_hours": round(np.random.uniform(5, 40), 1),
+                    "coverage_status": np.random.choice(["Optimal", "Strained", "Critical"], p=[0.7, 0.2, 0.1])
+                })
+        return pd.DataFrame(data).to_dict(orient="records")
+    except Exception as e:
+        with open("mock_data.json", "r") as f:
+            return json.load(f)
+
+@app.get("/api/v1/intelligence/coverage")
+async def get_coverage_intelligence():
+    data = generate_synthetic_shift_data()
+    df = pd.DataFrame(data)
+    avg_output = df["output_per_hour"].mean()
+    
+    insights = {
+        "status": "success",
+        "kpi": {
+            "title": "Avg Output / Hour",
+            "value": f"{avg_output:.1f} Units",
+            "context": f"{((avg_output - 120) / 120 * 100):.1f}% above regional baseline"
+        },
+        "dataset": data
+    }
+    return insights
+</file>
+
 <file path="data-science/scripts/export_intelligence_results.py">
 import json
 from datetime import datetime, timezone
@@ -8754,373 +9240,6 @@ def export_results(pivot_records, baseline):
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     (OUTPUTS_DIR / 'intelligence_results.json').write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
     (OUTPUTS_DIR / 'intelligence_summary.json').write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
-</file>
-
-<file path="frontend/app/intelligence/page.tsx">
-'use client'
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
-import { loadIntelligenceResults, loadIntelligenceSummary } from '../../lib/intelligenceLoader';
-import { validateIntelligenceCollection, checkDataFreshness } from '../../lib/intelligenceValidator';
-import { IntelligenceResult, IntelligenceSummary } from '../../types/intelligence';
-import { AssistantPanel } from '../../components/data-assistant/AssistantPanel';
-
-export default function DataIntelligencePage() {
-  const [results, setResults] = useState<IntelligenceResult[]>([]);
-  const [summary, setSummary] = useState<IntelligenceSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filterCategory, setFilterCategory] = useState<string>('All');
-  const [freshnessStatus, setFreshnessStatus] = useState({ isVersionMismatch: false, isStaleTime: false });
-  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
-
-  useEffect(() => {
-    Promise.all([loadIntelligenceResults(), loadIntelligenceSummary()])
-      .then(([resData, sumData]) => {
-        validateIntelligenceCollection(resData, sumData);
-        setResults(resData);
-        setSummary(sumData);
-        setFreshnessStatus(checkDataFreshness(sumData, resData));
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return <div className="flex h-screen items-center justify-center bg-deep text-mist">Validating Contract & Loading Intelligence...</div>;
-  if (error) return <div className="flex h-screen flex-col items-center justify-center bg-deep text-crit p-6"><h1 className="text-2xl font-bold">Integration Blocked</h1><p className="mt-2">{error}</p></div>;
-  if (!summary) return null;
-
-  const filteredResults = filterCategory === 'All' ? results : results.filter(r => r.result_category === filterCategory);
-
-  const chartData = filteredResults.map(r => ({
-    name: r.entity_id?.replace(/_/g, ' ') || 'Unknown',
-    gap: r.result_value || 0,
-    fill: (r.result_value || 0) < 0 ? 'var(--color-crit)' : 'var(--color-accent)'
-  }));
-
-  return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-deep text-mist font-sans p-4 md:p-6 lg:p-12">
-      {/* Header */}
-      <header className="mb-8 flex flex-col gap-4 border-b border-line pb-6 md:flex-row md:items-end md:justify-between">
-        <div className="min-w-0 overflow-hidden">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <Link href="/" className="text-sky hover:underline text-sm font-mono">&larr; Back to Operational Map</Link>
-            {freshnessStatus.isVersionMismatch && <span className="bg-crit/20 text-crit px-2 py-0.5 rounded text-xs font-bold uppercase">Version Mismatch</span>}
-            {freshnessStatus.isStaleTime && !freshnessStatus.isVersionMismatch && <span className="bg-warn/20 text-warn px-2 py-0.5 rounded text-xs font-bold uppercase">Data Stale</span>}
-          </div>
-          <h1 className="text-2xl md:text-3xl font-display font-bold gradient-text">Data Intelligence</h1>
-          <p className="text-moss text-sm mt-1 break-words">{summary.decision_to_be_supported}</p>
-        </div>
-        <div className="flex flex-wrap gap-3 text-xs font-mono text-moss bg-surface p-3 rounded-lg border border-line items-center max-w-full">
-          <button
-            onClick={() => setIsAssistantOpen(true)}
-            className="rounded-full bg-accent px-3 py-2 text-xs font-extrabold uppercase text-deep shadow-[0_4px_14px_0_#b8f23f]"
-          >
-            Ask Assistant
-          </button>
-          <div><span className="block text-mist">Track</span>{summary.approved_track.split(' ')[1]}</div>
-          <div><span className="block text-mist">Method</span>v{summary.method_version}</div>
-          <div><span className="block text-mist">Data</span>v{summary.data_version}</div>
-          <div><span className="block text-mist">Generated</span>{new Date(summary.generated_at).toLocaleDateString()}</div>
-        </div>
-      </header>
-
-      {/* Executive Summary Cards */}
-      <section className="mb-10 grid gap-4 md:grid-cols-2">
-        <div className="border border-line bg-surface p-4 rounded-xl min-w-0">
-          <h3 className="text-xs uppercase tracking-widest text-sky font-bold mb-3">Key Findings</h3>
-          <ul className="space-y-2 text-sm">
-            {summary.key_findings.map((f, i) => (
-              <li key={i} className="flex gap-2"><span className="text-accent shrink-0">•</span><span className="break-words">{f}</span></li>
-            ))}
-          </ul>
-        </div>
-        <div className="border border-line bg-surface p-4 rounded-xl min-w-0">
-          <h3 className="text-xs uppercase tracking-widest text-warn font-bold mb-3">Priority Review Items</h3>
-          <div className="flex flex-wrap gap-2">
-            {summary.priority_items.map(item => (
-              <span key={item} className="bg-surface-2 border border-line px-2 py-1 rounded text-xs font-mono break-all">{item}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Visual Comparison Chart */}
-      {filteredResults.length > 0 && (
-        <section className="mb-10 p-4 md:p-6 bg-surface border border-line rounded-xl min-w-0">
-          <h2 className="text-lg font-display font-bold text-mist mb-4">Output Gap vs Baseline</h2>
-          <div className="h-56 w-full min-w-0 overflow-hidden">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
-                <XAxis dataKey="name" stroke="#7e9686" fontSize={9} tickLine={false} axisLine={false} />
-                <YAxis stroke="#7e9686" fontSize={9} tickLine={false} axisLine={false} width={30} />
-                <Tooltip
-                  cursor={{ fill: 'rgba(217,234,214,0.05)' }}
-                  contentStyle={{ backgroundColor: '#0a1812', borderColor: '#334139', color: '#d9ead6', borderRadius: '8px' }}
-                />
-                <ReferenceLine y={0} stroke="#334139" strokeDasharray="3 3" />
-                <Bar dataKey="gap" radius={[4, 4, 4, 4]}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-      )}
-
-      {/* Filters & Results Table */}
-      <section className="mb-10 min-w-0">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-          <h2 className="text-xl font-display font-bold text-mist">Comparative Rankings</h2>
-          <select
-            className="bg-surface border border-line text-sm rounded p-2 text-mist max-w-[180px]"
-            value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
-            <option value="All">All Categories</option>
-            <option value="low">Below Baseline (Low)</option>
-            <option value="high">Above Baseline (High)</option>
-          </select>
-        </div>
-
-        {filteredResults.length === 0 ? (
-          <div className="p-8 text-center text-moss border border-line border-dashed rounded-xl">No results match active filters.</div>
-        ) : (
-          <div className="w-full max-w-full overflow-x-auto border border-line rounded-xl block">
-            <table className="min-w-[600px] w-full text-left text-sm table-fixed break-words">
-              <colgroup>
-                <col style={{width:'10%'}} />
-                <col style={{width:'22%'}} />
-                <col style={{width:'15%'}} />
-                <col style={{width:'38%'}} />
-                <col style={{width:'15%'}} />
-              </colgroup>
-              <thead className="bg-surface border-b border-line text-moss font-mono text-xs uppercase">
-                <tr>
-                  <th className="p-2">Rank</th>
-                  <th className="p-2">Entity</th>
-                  <th className="p-2">Output Gap</th>
-                  <th className="p-2">Finding</th>
-                  <th className="p-2">Evidence (n)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {filteredResults.map(r => (
-                  <tr key={r.result_id} className="hover:bg-surface-2 transition-colors">
-                    <td className="p-2 font-bold text-accent">{r.priority_rank}</td>
-                    <td className="p-2 font-mono text-xs break-all">{r.entity_id}</td>
-                    <td className={`p-2 font-bold text-xs ${r.result_value && r.result_value < 0 ? 'text-crit' : 'text-accent'}`}>
-                      {r.result_value! > 0 ? '+' : ''}{r.result_value} {r.result_unit?.split('_')[0]}
-                    </td>
-                    <td className="p-2 text-xs text-mist/80">{r.finding}</td>
-                    <td className="p-2 text-moss text-xs">
-                      n={r.evidence.find(e => e.factor === 'record_count')?.value || 'N/A'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
-      {/* Methodology & Limitations */}
-      <section className="grid gap-6 md:grid-cols-2 text-xs border-t border-line pt-8 min-w-0">
-        <div className="min-w-0">
-          <h4 className="uppercase tracking-widest text-moss font-bold mb-2">Methodology</h4>
-          <p className="text-mist/70 mb-2 break-words">{summary.primary_analytical_question}</p>
-          <span className="inline-block bg-accent/10 text-accent px-2 py-1 rounded">Status: {summary.validation_result}</span>
-        </div>
-        <div className="min-w-0">
-          <h4 className="uppercase tracking-widest text-moss font-bold mb-2">Limitations &amp; Unsupported Uses</h4>
-          <ul className="list-disc pl-4 text-mist/70 space-y-1">
-            {summary.important_limitations.map((lim, i) => <li key={i} className="break-words">{lim}</li>)}
-            <li className="break-words">{results[0]?.limitation}</li>
-          </ul>
-        </div>
-      </section>
-
-      {isAssistantOpen && <AssistantPanel onClose={() => setIsAssistantOpen(false)} />}
-    </div>
-  );
-}
-</file>
-
-<file path="frontend/components/data-assistant/AnswerCard.tsx">
-'use client';
-import React from 'react';
-import { EvidenceReferences } from './EvidenceReferences';
-import { LimitationNotice } from './LimitationNotice';
-import { SuggestedQuestions } from './SuggestedQuestions';
-
-interface AnswerCardProps {
-  response: {
-    answer_id?: string;
-    status: string;
-    answer: string;
-    intent?: string;
-    deterministic_finding?: string;
-    llm_explanation?: string | null;
-    llm_status?: string;
-    evidence?: any[];
-    evidence_references?: any[];
-    metadata?: {
-      data_version?: string;
-      method_version?: string;
-      quality_status?: string;
-    };
-    limitation?: string;
-    suggested_follow_ups?: string[];
-  };
-  onSuggestClick: (q: string) => void;
-}
-
-/** Render a single evidence item safely regardless of its shape */
-function safeEvidenceText(ev: any): string {
-  if (!ev || typeof ev !== 'object') return String(ev ?? '');
-  if (typeof ev.finding === 'string' && ev.finding) return ev.finding;
-  const factor = ev.factor != null ? String(ev.factor) : null;
-  const value  = ev.value  != null ? String(ev.value)  : null;
-  if (factor && value) return `${factor}: ${value}`;
-  if (factor) return factor;
-  // Last resort: stringify but never render an object directly
-  try { return JSON.stringify(ev); } catch { return '[evidence]'; }
-}
-
-export function AnswerCard({ response, onSuggestClick }: AnswerCardProps) {
-  const isError = ['error', 'unavailable'].includes(response.status);
-  const llmAvailable = response.llm_status === 'success';
-
-  // Evidence: prefer evidence_references; fall back to evidence
-  const rawEvidence =
-    response.evidence_references && response.evidence_references.length > 0
-      ? response.evidence_references
-      : response.evidence ?? [];
-
-  // Always a flat array of safe strings — React can never get an object child
-  const evidenceItems: string[] = Array.isArray(rawEvidence)
-    ? rawEvidence.map(safeEvidenceText).filter(Boolean)
-    : [];
-
-  // The primary text to show in the deterministic section
-  const deterministicText =
-    response.deterministic_finding || response.answer || '';
-
-  return (
-    <div
-      className={`p-4 mb-4 rounded-xl border ${
-        isError ? 'border-warn/60 bg-warn/5' : 'border-line bg-deep'
-      }`}
-    >
-      {/* Intent + LLM status badges */}
-      {response.intent && response.intent !== 'error' && (
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <span className="text-[9px] uppercase tracking-widest font-mono text-moss bg-surface px-2 py-0.5 rounded border border-line/40">
-            Intent: {response.intent}
-          </span>
-          <span
-            className={`text-[9px] uppercase tracking-widest font-mono px-2 py-0.5 rounded border ${
-              llmAvailable
-                ? 'bg-accent/10 text-accent border-accent/30'
-                : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-            }`}
-          >
-            {llmAvailable ? '✨ Gemini Synthesised' : '🔒 Deterministic'}
-          </span>
-        </div>
-      )}
-
-      {isError ? (
-        <p className="text-sm text-warn leading-relaxed">{response.answer}</p>
-      ) : (
-        <>
-          {/* Deterministic answer — always shown */}
-          <div className="mb-4">
-            <h4 className="text-[10px] uppercase tracking-wider text-accent font-bold mb-1 border-l-2 border-accent pl-2">
-              Deterministic Answer — Validated
-            </h4>
-            <p className="text-sm text-mist leading-relaxed whitespace-pre-line">
-              {deterministicText}
-            </p>
-          </div>
-
-          {/* LLM explanation — optional */}
-          <div className="mb-1 pt-3 border-t border-line/50">
-            <h4
-              className={`text-[10px] uppercase tracking-wider font-bold mb-1 border-l-2 pl-2 ${
-                llmAvailable ? 'text-sky border-sky' : 'text-moss border-moss'
-              }`}
-            >
-              Gemini Explanation —{' '}
-              {llmAvailable
-                ? 'Available'
-                : `Unavailable (${response.llm_status ?? 'disconnected'})`}
-            </h4>
-            <p className="text-sm text-mist/80 italic leading-relaxed">
-              {llmAvailable && response.llm_explanation
-                ? response.llm_explanation
-                : 'The LLM explanation layer is currently disconnected or was blocked by the safety validator. The deterministic finding above remains accurate and authoritative.'}
-            </p>
-          </div>
-        </>
-      )}
-
-      {/* Evidence — rendered as pre-converted strings, never objects */}
-      {!isError && evidenceItems.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-line/50">
-          <h4 className="text-[10px] uppercase tracking-wider text-moss mb-2">
-            Grounded Evidence
-          </h4>
-          <ul className="space-y-1">
-            {evidenceItems.map((text, i) => (
-              <li
-                key={i}
-                className="text-xs text-sky font-mono bg-surface-2 p-1.5 rounded"
-              >
-                {text}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Limitation + versions */}
-      {response.limitation && (
-        <LimitationNotice
-          limitation={response.limitation}
-          versions={response.metadata}
-        />
-      )}
-
-      {/* Follow-up suggestions */}
-      {response.suggested_follow_ups && response.suggested_follow_ups.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-line/50">
-          <span className="text-[10px] uppercase tracking-wider text-moss font-mono">
-            Ask a follow-up
-          </span>
-          <SuggestedQuestions
-            questions={response.suggested_follow_ups}
-            onClick={onSuggestClick}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-</file>
-
-<file path="frontend/next-env.d.ts">
-/// <reference types="next" />
-/// <reference types="next/image-types/global" />
-import "./.next/dev/types/routes.d.ts";
-import "./.next/dev/types/root-params.d.ts";
-
-// NOTE: This file should not be edited
-// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
 </file>
 
 <file path="frontend/package.json">
@@ -9205,183 +9324,6 @@ Release manifest · clean-clone report · final analytical revalidation · build
 Synthetic data only; frontend (facility-team) and backend (shift) data are different scopes and are never combined; ranking uses output gap only (overtime is context, not a risk score); descriptive 5-day view, no statistical significance; no forecasting or prediction; not for real staffing or payroll decisions. The assistant refuses out-of-scope, predictive and unsafe questions and is designed to reject LLM text containing numbers not in the approved evidence; the current numeric check has a known gap (finding B1) that must be fixed before this claim can be relied on.
 
 `UAT_CHECKLIST.md` and `VAR_REPORT.md` predate the current layout and are retained for history only.
-</file>
-
-<file path="backend/api/assistant.py">
-import os
-import uuid
-import json
-from fastapi import APIRouter
-from pydantic import BaseModel
-
-try:
-    from google import genai
-except ImportError:
-    genai = None
-
-from assistant.core.scope_guard import evaluate_scope
-from assistant.core.intent_classifier import classify_intent
-from assistant.core.output_validator import validate_numeric_fidelity
-from assistant.core.query_router import get_priority_items
-from assistant.queries.result_queries import get_result_explanation, get_limitations, get_methodology
-from assistant.queries.summary_queries import get_data_freshness
-
-router = APIRouter()
-
-class QueryRequest(BaseModel):
-    question: str
-
-@router.post("/query")
-async def query_assistant(req: QueryRequest):
-    try:
-        question = req.question
-
-        # 1. Scope Check
-        scope = evaluate_scope(question)
-        if scope == "UNSAFE":
-            intent_str, status, answer, result = "unsafe", "unsafe", "Request blocked by security policy.", {}
-        elif scope == "OUT_OF_SCOPE":
-            intent_str, status, answer, result = "unsupported", "unsupported", "I can only answer questions about current Shift Productivity rankings.", {}
-        else:
-            # 2. Intent Classification — returns {"intent": str, "parameters": dict}
-            intent_result = classify_intent(question)
-            # Always extract the string; guard against legacy string returns too
-            if isinstance(intent_result, dict):
-                intent_str = intent_result.get("intent", "OUT_OF_SCOPE")
-                intent_params = intent_result.get("parameters", {})
-            else:
-                intent_str = str(intent_result)
-                intent_params = {}
-
-            status = "answered"
-            result = {}
-
-            if intent_str == "AMBIGUOUS":
-                status, answer, result = "unsupported", "Could you clarify which specific facility and team you want to review?", {"limitation": "Assistant requires specific entity names."}
-            elif intent_str == "OUT_OF_SCOPE":
-                status, answer, result = "unsupported", "I can only answer questions about current Shift Productivity rankings.", {}
-            elif intent_str == "explain_method":
-                result = get_methodology()
-            elif intent_str == "explain_limitation":
-                result = get_limitations()
-            elif intent_str == "get_data_freshness":
-                result = get_data_freshness()
-            elif intent_str == "explain_result":
-                # Prefer entity from parameters; fall back to question text scan
-                entity = intent_params.get("entity_id", "facility_a_night_watch")
-                if not entity or "facility_b" in question.lower():
-                    entity = "facility_b_night_watch"
-                result = get_result_explanation(entity)
-            else:
-                # Default: list_priority_items
-                result = get_priority_items()
-
-            if result.get("status") == "unavailable":
-                status, answer = "unavailable", result.get("limitation", "No matching data available.")
-            else:
-                answer = "Request processed deterministically based on approved data outputs."
-
-        # 3. LLM / Fallback Logic
-        llm_status = "unavailable (Missing Config)"
-        llm_explanation = None
-        api_key = os.environ.get("GEMINI_API_KEY")
-
-        if api_key and genai and status == "answered":
-            try:
-                client = genai.Client(api_key=api_key)
-                response = client.models.generate_content(
-                    model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash-lite"),
-                    contents=f"Explain this data naturally: {result.get('answer_data')} Evidence: {result.get('evidence')}"
-                )
-                if validate_numeric_fidelity(response.text, result):
-                    llm_status = "success"
-                    llm_explanation = response.text
-                else:
-                    llm_status = "rejected_by_validator (Hallucination Detected)"
-            except Exception as llm_err:
-                llm_status = f"unavailable ({type(llm_err).__name__})"
-
-        # Ensure evidence is always a list to prevent React crashes
-        ev_list = result.get("evidence")
-        if not isinstance(ev_list, list):
-            ev_list = []
-
-        # Build a human-readable deterministic_finding from result data
-        answer_data = result.get("answer_data", {})
-        if answer_data and isinstance(answer_data, dict):
-            items = answer_data.get("items", [])
-            if items and isinstance(items, list):
-                # Priority items: build a readable summary
-                lines = []
-                for item in items[:3]:
-                    if isinstance(item, dict):
-                        entity = item.get("entity_id", "").replace("_", " ")
-                        rank = item.get("priority_rank", "")
-                        val = item.get("result_value", "")
-                        cat = item.get("result_category", "")
-                        finding = item.get("finding", "")
-                        if finding:
-                            lines.append(f"#{rank} {entity}: {finding}")
-                        else:
-                            lines.append(f"#{rank} {entity} — gap {val} ({cat})")
-                deterministic_finding = "\n".join(lines) if lines else answer
-            else:
-                # Methodology / limitations / freshness: build from key fields
-                parts = []
-                for k, v in answer_data.items():
-                    if isinstance(v, str) and v:
-                        parts.append(v)
-                    elif isinstance(v, list):
-                        parts.extend([str(i) for i in v[:5] if isinstance(i, str)])
-                deterministic_finding = " ".join(parts) if parts else answer
-        else:
-            deterministic_finding = answer
-
-        return {
-            "answer_id": f"ANS-{uuid.uuid4().hex[:8]}",
-            "status": status,
-            "intent": intent_str,          # always a plain string now
-            "llm_status": llm_status,
-            "answer": answer,
-            "deterministic_finding": deterministic_finding,
-            "llm_explanation": llm_explanation,
-            "evidence": ev_list,
-            "evidence_references": ev_list,
-            "key_values": {},
-            "metadata": result.get("metadata") or {
-                "data_version": "1.0.0",
-                "method_version": "1.0.0",
-                "quality_status": "validated"
-            },
-            "limitation": result.get("limitation") or "Synthetic data only. Not for real staffing decisions.",
-            "suggested_follow_ups": [
-                "Which group ranks highest?",
-                "Which groups are below baseline?",
-                "What are the limitations of this data?",
-                "When was this data generated?"
-            ]
-        }
-
-    except Exception as e:
-        return {
-            "answer_id": f"ANS-{uuid.uuid4().hex[:8]}",
-            "status": "error",
-            "intent": "error",
-            "llm_status": "error",
-            "answer": f"Backend Error: {str(e)}",
-            "deterministic_finding": "",
-            "llm_explanation": None,
-            "evidence": [],
-            "evidence_references": [],
-            "key_values": {},
-            "metadata": {
-                "data_version": "1.0.0",
-                "method_version": "1.0.0",
-                "quality_status": "rejected"
-            },
-            "limitation": "Error processing request.",
-            "suggested_follow_ups": []
-        }
 </file>
 
 <file path="data-science/outputs/intelligence_results.json">
@@ -9693,6 +9635,356 @@ async def query_assistant(req: QueryRequest):
 }
 </file>
 
+<file path="frontend/app/intelligence/page.tsx">
+'use client'
+import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { loadIntelligenceResults, loadIntelligenceSummary } from '../../lib/intelligenceLoader';
+import { validateIntelligenceCollection, checkDataFreshness } from '../../lib/intelligenceValidator';
+import { IntelligenceResult, IntelligenceSummary } from '../../types/intelligence';
+import { AssistantPanel } from '../../components/data-assistant/AssistantPanel';
+
+const TEAM: Record<string, string> = { morning_crew: 'Morning Crew', evening_crew: 'Evening Crew', night_watch: 'Night Watch' };
+const label = (id: string | null) => {
+  const m = /^facility_([ab])_(.+)$/.exec(id || '');
+  return m ? `Facility ${m[1].toUpperCase()} · ${TEAM[m[2]] || m[2]}` : id || 'Unknown';
+};
+const signed = (v: number) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1);
+const ev = (r: IntelligenceResult, f: string) => r.evidence.find(e => e.factor === f)?.value as number | undefined;
+
+type Obs = { entity_id: string; observed_at: string; metric_name: string; metric_value: number; source_record_id: string; record_id: string; source_name: string };
+
+export default function DataIntelligencePage() {
+  const [results, setResults] = useState<IntelligenceResult[]>([]);
+  const [summary, setSummary] = useState<IntelligenceSummary | null>(null);
+  const [obs, setObs] = useState<Obs[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [facility, setFacility] = useState('all');
+  const [cmp, setCmp] = useState('all');
+  const [selected, setSelected] = useState<string>('');
+  const [fresh, setFresh] = useState({ isVersionMismatch: false, isStaleTime: false });
+  const [assistant, setAssistant] = useState<string | null>(null);
+  const [showRef, setShowRef] = useState(false);
+
+  useEffect(() => {
+    Promise.all([loadIntelligenceResults(), loadIntelligenceSummary(), fetch('/data/intelligence/canonical_observations.json').then(r => (r.ok ? r.json() : [])).catch(() => [])])
+      .then(([res, sum, canon]) => {
+        validateIntelligenceCollection(res, sum);
+        setResults(res); setSummary(sum); setFresh(checkDataFreshness(sum, res));
+        setObs((canon as Obs[]).filter(o => o.source_name?.startsWith('Frontend') && o.observed_at));
+        setSelected(res[0]?.entity_id || '');
+        setLoading(false);
+      })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, []);
+
+  const visible = useMemo(() => results.filter(r =>
+    (facility === 'all' || (r.entity_id || '').startsWith(`facility_${facility}`)) &&
+    (cmp === 'all' || r.result_category === (cmp === 'below' ? 'low' : 'high'))), [results, facility, cmp]);
+  const active = visible.find(r => r.entity_id === selected) || visible[0];
+
+  if (loading) return <div className="flex h-screen items-center justify-center bg-deep text-mist">Validating contract &amp; loading intelligence…</div>;
+  if (error) return <div className="flex h-screen flex-col items-center justify-center bg-deep p-6 text-crit"><h1 className="text-2xl font-bold">Integration Blocked</h1><p className="mt-2">{error}</p></div>;
+  if (!summary) return null;
+
+  const baseline = ev(results[0], 'baseline_output_per_hour');
+  const below = visible.filter(r => (r.result_value ?? 0) < 0);
+  const worst = visible.length ? Math.min(...visible.map(r => r.result_value ?? 0)) : null;
+  const maxAbs = Math.max(1, ...results.map(r => Math.abs(r.result_value ?? 0)));
+  const daily = active ? obs.filter(o => o.entity_id === active.entity_id) : [];
+  const days = Array.from(new Set(daily.map(o => o.observed_at.slice(0, 10)))).sort();
+  const val = (d: string, m: string) => daily.find(o => o.observed_at.startsWith(d) && o.metric_name === m);
+  const sel = 'rounded-lg border border-line bg-surface px-3 py-2 text-xs text-mist';
+
+  return (
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-deep p-4 font-sans text-mist md:p-6 lg:p-10">
+      <header className="mb-6 flex flex-col gap-3 border-b border-line pb-5 md:flex-row md:items-end md:justify-between">
+        <div className="min-w-0">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <Link href="/" className="font-mono text-sm text-sky hover:underline">&larr; Back to Operations View</Link>
+            {fresh.isVersionMismatch && <span className="rounded bg-crit/20 px-2 py-0.5 text-xs font-bold uppercase text-crit">Version Mismatch</span>}
+            {fresh.isStaleTime && !fresh.isVersionMismatch && <span className="rounded bg-warn/20 px-2 py-0.5 text-xs font-bold uppercase text-warn">Snapshot older than 7 days</span>}
+          </div>
+          <h1 className="gradient-text font-display text-2xl font-bold md:text-3xl">Shift Performance Review</h1>
+          <p className="mt-1 text-sm text-moss">Compare observed team output against the validated {baseline?.toFixed(1)} units/hour baseline.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface p-3 font-mono text-xs text-moss">
+          <span className="rounded border border-warn/40 bg-warn/10 px-2 py-1 text-warn">Synthetic dataset · Oct 24–28, 2026</span>
+          <span>Track A · Method v{summary.method_version} · Data v{summary.data_version}</span>
+          <button onClick={() => active && setAssistant(`Explain the result for ${active.entity_id}`)} className="rounded-full bg-accent px-3 py-2 font-extrabold uppercase text-deep">Explain selection</button>
+        </div>
+      </header>
+
+      <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[
+          ['Observed groups', String(visible.length), '2 facilities · 3 teams each', ''],
+          ['Comparison baseline', baseline?.toFixed(1) ?? '—', 'Units per hour · fixed Track A', ''],
+          ['Below baseline', String(below.length), 'Groups needing closer review', 'text-crit'],
+          ['Largest gap', worst === null ? '—' : signed(worst), 'Units/hour · observed, not forecast', 'text-crit'],
+        ].map(([l, v, m, c]) => (
+          <div key={l} className="min-w-0 rounded-xl border border-line bg-surface p-4">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-moss">{l}</div>
+            <div className={`font-display text-2xl font-extrabold ${c}`}>{v}</div>
+            <div className="text-[11px] text-moss">{m}</div>
+          </div>
+        ))}
+      </section>
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        <select className={sel} aria-label="Facility filter" value={facility} onChange={e => setFacility(e.target.value)}>
+          <option value="all">All facilities</option><option value="a">Facility A</option><option value="b">Facility B</option>
+        </select>
+        <select className={sel} aria-label="Baseline comparison filter" value={cmp} onChange={e => setCmp(e.target.value)}>
+          <option value="all">All comparisons</option><option value="below">Below baseline</option><option value="above">Above baseline</option>
+        </select>
+        <button className={sel} onClick={() => { setFacility('all'); setCmp('all'); }}>Reset</button>
+      </div>
+
+      {visible.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-line p-8 text-center text-moss">No groups match these filters.</div>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <div className="min-w-0 space-y-4">
+            <article className="rounded-xl border border-line bg-surface p-4">
+              <div className="mb-3 flex items-center justify-between"><h2 className="font-display text-sm font-bold">Output gap vs comparison baseline</h2><span className="text-[10px] text-moss">Click a bar · units/hour</span></div>
+              {visible.map(r => {
+                const v = r.result_value ?? 0; const w = (Math.abs(v) / maxAbs) * 100; const on = r.entity_id === active?.entity_id;
+                return (
+                  <button key={r.result_id} aria-pressed={on} onClick={() => setSelected(r.entity_id || '')}
+                    className={`grid w-full grid-cols-[110px_1fr_52px] items-center gap-2 rounded-lg px-2 py-1.5 text-left sm:grid-cols-[170px_1fr_60px] ${on ? 'bg-surface-2 ring-1 ring-sky/50' : 'hover:bg-surface-2'}`}>
+                    <span className="truncate text-[11px] font-semibold">#{r.priority_rank} {label(r.entity_id)}</span>
+                    <span className="relative grid h-5 grid-cols-2 rounded bg-deep/60">
+                      <span className="flex justify-end">{v < 0 && <span className="rounded bg-crit" style={{ width: `${w}%` }} />}</span>
+                      <span className="flex border-l border-moss/60">{v >= 0 && <span className="rounded bg-accent" style={{ width: `${w}%` }} />}</span>
+                    </span>
+                    <span className={`text-right text-[11px] font-bold ${v < 0 ? 'text-crit' : 'text-accent'}`}>{signed(v)}</span>
+                  </button>
+                );
+              })}
+              <p className="mt-3 text-[10px] text-moss">Negative values are below the baseline. Rank is based on output gap only; overtime is supporting context.</p>
+            </article>
+            <article className="rounded-xl border border-line bg-surface p-4">
+              <h2 className="mb-3 font-display text-sm font-bold">Findings worth investigating</h2>
+              {below.length === 0 ? <p className="text-xs text-moss">No below-baseline findings in this selection.</p> : below.slice(0, 3).map(r => (
+                <button key={r.result_id} onClick={() => setSelected(r.entity_id || '')} className="mb-2 w-full rounded-lg border border-line p-3 text-left hover:border-sky/50">
+                  <div className="text-[10px] font-bold uppercase text-crit">Review priority #{r.priority_rank} · gap {signed(r.result_value ?? 0)} units/hr</div>
+                  <div className="mt-1 text-sm font-semibold">{label(r.entity_id)}</div>
+                  <p className="text-[11px] text-moss">Observed average {ev(r, 'avg_output_per_hour')?.toFixed(1)} units/hr. Overtime {ev(r, 'avg_overtime_hours')?.toFixed(1)} hours is context, not a risk score.</p>
+                </button>
+              ))}
+            </article>
+          </div>
+
+          {active && (
+            <article className="min-w-0 self-start rounded-xl border border-line bg-surface p-4">
+              <div className="mb-1 text-[10px] uppercase tracking-wider text-moss">Data intelligence → <span className="text-sky">selected group</span> → evidence</div>
+              <div className="flex items-center justify-between gap-2"><h2 className="font-display text-lg font-bold">{label(active.entity_id)}</h2><span className="rounded-full bg-accent/15 px-2 py-1 text-[10px] font-bold uppercase text-accent">{active.quality_status}</span></div>
+              <div className="text-xs text-moss">Priority rank {active.priority_rank} / {results.length} · n={ev(active, 'record_count')} observed days</div>
+              <div className="my-3 grid grid-cols-3 gap-2">
+                {[['Output / hr', ev(active, 'avg_output_per_hour')?.toFixed(1)], ['Gap / hr', signed(active.result_value ?? 0)], ['Avg. OT hours', ev(active, 'avg_overtime_hours')?.toFixed(1)]].map(([l, v]) => (
+                  <div key={l} className="rounded-lg border border-line bg-deep/50 p-2"><div className="font-display text-lg font-bold">{v}</div><div className="text-[10px] text-moss">{l}</div></div>
+                ))}
+              </div>
+              <h3 className="mb-2 text-xs font-bold">Observed daily measurements</h3>
+              <div className="block w-full overflow-x-auto">
+                <table className="w-full min-w-[260px] text-left text-[11px]">
+                  <thead className="text-moss"><tr><th className="p-1.5">Date</th><th className="p-1.5">Output / hr</th><th className="p-1.5">OT hours</th></tr></thead>
+                  <tbody className="divide-y divide-line">
+                    {days.length === 0 ? <tr><td colSpan={3} className="p-2 text-moss">Daily observations unavailable (canonical_observations.json not found).</td></tr> :
+                      days.map(d => <tr key={d}><td className="p-1.5">{d}</td><td className="p-1.5">{val(d, 'output_per_hour')?.metric_value.toFixed(1)}</td><td className="p-1.5">{val(d, 'overtime_hours')?.metric_value.toFixed(1)}</td></tr>)}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-3 rounded-lg border border-warn/30 bg-warn/10 p-3 text-[11px] text-warn"><b>Interpretation limit:</b> {active.limitation} Overtime supports investigation but does not establish a coverage-risk score, cause or prediction.</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button onClick={() => setShowRef(s => !s)} className="rounded-lg border border-line px-3 py-2 text-[11px] font-bold">{showRef ? 'Hide' : 'Show'} evidence reference</button>
+                <button onClick={() => setAssistant(`Explain the result for ${active.entity_id}`)} className="rounded-lg bg-accent px-3 py-2 text-[11px] font-extrabold text-deep">Ask grounded assistant</button>
+              </div>
+              {showRef && <div className="mt-2 break-all rounded-lg border border-line bg-deep/50 p-2 font-mono text-[10px] text-moss">
+                {active.result_id} · data v{active.data_version} · method v{active.method_version} · period {active.period_start?.slice(0, 10)}→{active.period_end?.slice(0, 10)} · source records: {daily.map(o => o.record_id).join(', ') || 'n/a'}</div>}
+            </article>
+          )}
+        </div>
+      )}
+
+      <section className="mt-8 grid gap-6 border-t border-line pt-6 text-xs md:grid-cols-2">
+        <div><h4 className="mb-2 font-bold uppercase tracking-widest text-moss">Methodology</h4><p className="text-mist/70">{summary.primary_analytical_question}</p>
+          <p className="mt-2 text-mist/70">Group mean output minus the overall frontend baseline ({baseline?.toFixed(1)} units/hr), dense-ranked ascending. Not recalculated in the browser.</p>
+          <span className="mt-2 inline-block rounded bg-accent/10 px-2 py-1 text-accent">Validation: {summary.validation_result}</span></div>
+        <div><h4 className="mb-2 font-bold uppercase tracking-widest text-moss">Limitations &amp; unsupported uses</h4>
+          <ul className="list-disc space-y-1 pl-4 text-mist/70">{summary.important_limitations.map((l, i) => <li key={i}>{l}</li>)}<li>Not a staffing, payroll or coverage-risk decision tool; no forecasting.</li></ul></div>
+      </section>
+
+      {assistant && <AssistantPanel onClose={() => setAssistant(null)} initialQuestion={assistant} />}
+    </div>
+  );
+}
+</file>
+
+<file path="frontend/components/data-assistant/AnswerCard.tsx">
+'use client';
+import React from 'react';
+import { EvidenceReferences } from './EvidenceReferences';
+import { LimitationNotice } from './LimitationNotice';
+import { SuggestedQuestions } from './SuggestedQuestions';
+
+interface AnswerCardProps {
+  response: {
+    answer_id?: string;
+    status: string;
+    answer: string;
+    intent?: string;
+    deterministic_finding?: string;
+    llm_explanation?: string | null;
+    llm_status?: string;
+    evidence?: any[];
+    evidence_references?: any[];
+    metadata?: {
+      data_version?: string;
+      method_version?: string;
+      quality_status?: string;
+    };
+    limitation?: string;
+    suggested_follow_ups?: string[];
+  };
+  onSuggestClick: (q: string) => void;
+}
+
+/** Render a single evidence item safely regardless of its shape */
+function safeEvidenceText(ev: any): string {
+  if (!ev || typeof ev !== 'object') return String(ev ?? '');
+  if (typeof ev.finding === 'string' && ev.finding) return ev.finding;
+  const factor = ev.factor != null ? String(ev.factor) : null;
+  const value  = ev.value  != null ? String(ev.value)  : null;
+  if (factor && value) return `${factor}: ${value}`;
+  if (factor) return factor;
+  // Last resort: stringify but never render an object directly
+  try { return JSON.stringify(ev); } catch { return '[evidence]'; }
+}
+
+export function AnswerCard({ response, onSuggestClick }: AnswerCardProps) {
+  const isError = ['error', 'unavailable'].includes(response.status);
+  const llmAvailable = response.llm_status === 'success';
+
+  // Evidence: prefer evidence_references; fall back to evidence
+  const rawEvidence =
+    response.evidence_references && response.evidence_references.length > 0
+      ? response.evidence_references
+      : response.evidence ?? [];
+
+  // Always a flat array of safe strings — React can never get an object child
+  const evidenceItems: string[] = Array.isArray(rawEvidence)
+    ? rawEvidence.map(safeEvidenceText).filter(Boolean)
+    : [];
+
+  // The primary text to show in the deterministic section
+  const deterministicText =
+    response.deterministic_finding || response.answer || '';
+
+  return (
+    <div
+      className={`p-4 mb-4 rounded-xl border ${
+        isError ? 'border-warn/60 bg-warn/5' : 'border-line bg-deep'
+      }`}
+    >
+      {/* Intent + LLM status badges */}
+      {response.intent && response.intent !== 'error' && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="text-[9px] uppercase tracking-widest font-mono text-moss bg-surface px-2 py-0.5 rounded border border-line/40">
+            Intent: {response.intent}
+          </span>
+          <span
+            className={`text-[9px] uppercase tracking-widest font-mono px-2 py-0.5 rounded border ${
+              llmAvailable
+                ? 'bg-accent/10 text-accent border-accent/30'
+                : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+            }`}
+          >
+            {llmAvailable ? '✨ Gemini Synthesised' : '🔒 Deterministic'}
+          </span>
+        </div>
+      )}
+
+      {isError ? (
+        <p className="text-sm text-warn leading-relaxed">{response.answer}</p>
+      ) : (
+        <>
+          {/* Deterministic answer — always shown */}
+          <div className="mb-4">
+            <h4 className="text-[10px] uppercase tracking-wider text-accent font-bold mb-1 border-l-2 border-accent pl-2">
+              Deterministic Answer — Validated
+            </h4>
+            <p className="text-sm text-mist leading-relaxed whitespace-pre-line">
+              {deterministicText}
+            </p>
+          </div>
+
+          {/* LLM explanation — optional */}
+          <div className="mb-1 pt-3 border-t border-line/50">
+            <h4
+              className={`text-[10px] uppercase tracking-wider font-bold mb-1 border-l-2 pl-2 ${
+                llmAvailable ? 'text-sky border-sky' : 'text-moss border-moss'
+              }`}
+            >
+              Gemini Explanation —{' '}
+              {llmAvailable
+                ? 'Available'
+                : `Unavailable (${response.llm_status ?? 'disconnected'})`}
+            </h4>
+            <p className="text-sm text-mist/80 italic leading-relaxed">
+              {llmAvailable && response.llm_explanation
+                ? response.llm_explanation
+                : 'The LLM explanation layer is currently disconnected or was blocked by the safety validator. The deterministic finding above remains accurate and authoritative.'}
+            </p>
+          </div>
+        </>
+      )}
+
+      {/* Evidence — rendered as pre-converted strings, never objects */}
+      {!isError && evidenceItems.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-line/50">
+          <h4 className="text-[10px] uppercase tracking-wider text-moss mb-2">
+            Grounded Evidence
+          </h4>
+          <ul className="space-y-1">
+            {evidenceItems.map((text, i) => (
+              <li
+                key={i}
+                className="text-xs text-sky font-mono bg-surface-2 p-1.5 rounded"
+              >
+                {text}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Limitation + versions */}
+      {response.limitation && (
+        <LimitationNotice
+          limitation={response.limitation}
+          versions={response.metadata}
+        />
+      )}
+
+      {/* Follow-up suggestions */}
+      {response.suggested_follow_ups && response.suggested_follow_ups.length > 0 && (
+        <div className="mt-4 pt-3 border-t border-line/50">
+          <span className="text-[10px] uppercase tracking-wider text-moss font-mono">
+            Ask a follow-up
+          </span>
+          <SuggestedQuestions
+            questions={response.suggested_follow_ups}
+            onClick={onSuggestClick}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+</file>
+
 <file path="frontend/app/page.tsx">
 'use client'
 import React, { useState, useMemo, useEffect } from 'react';
@@ -9722,8 +10014,8 @@ const LOCATIONS: Loc[] = ['Facility A', 'Facility B'];
 const TEAMS: Team[] = ['Morning Crew', 'Evening Crew', 'Night Watch'];
 const TIME_OPTIONS = [
   { value: 'Last 7 Days', label: 'Last 7 Days' },
-  { value: 'Last 30 Days', label: 'Last 30 Days' },
-  { value: 'YTD', label: 'Year to Date' },
+  { value: 'Last 30 Days', label: 'Last 30 Days (simulated)' },
+  { value: 'YTD', label: 'Year to Date (simulated)' },
 ];
 
 const STATUS_COLOR: Record<string, string> = {
@@ -10025,7 +10317,7 @@ export default function ShiftProductivityDashboard() {
                 </h1>
                 <p className="mt-0.5 flex items-center gap-2 text-[11px] font-medium text-moss sm:text-sm">
                   <span className="blink inline-block h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_8px_#b8f23f]"></span>
-                  Real-Time Operational Intelligence
+                  Synthetic Operations Demonstration
                 </p>
                 <p className="mt-0.5 flex items-center gap-2 text-[11px] font-medium text-moss sm:text-sm">
                   <span className="blink inline-block h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_8px_#b8f23f]"></span>
@@ -10053,14 +10345,19 @@ export default function ShiftProductivityDashboard() {
           </header>
 
           <div className="pointer-events-auto flex max-w-2xl items-center gap-3 rounded-xl border border-line bg-surface p-2.5 shadow-lg">
-            <span className="shrink-0 rounded bg-sky/10 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-sky">Live Exceptions</span>
+            <span className="shrink-0 rounded bg-sky/10 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-sky">Demonstration Insight</span>
             <p className="line-clamp-2 flex-1 text-xs text-mist/80 sm:truncate">
-              {activeData.status === 'Critical' ? <span className="mr-2 font-bold text-crit">CRITICAL ALERT:</span> : null}
-              {activeData.status === 'Warning' ? <span className="mr-2 font-bold text-warn">SYSTEM WARNING:</span> : null}
+              {activeData.status === 'Critical' ? <span className="mr-2 font-bold text-crit">OBSERVED CRITICAL:</span> : null}
+              {activeData.status === 'Warning' ? <span className="mr-2 font-bold text-warn">OBSERVED WARNING:</span> : null}
               {activeData.issue}
             </p>
           </div>
 
+          <div className="pointer-events-auto grid max-w-2xl grid-cols-2 gap-2 sm:grid-cols-4">
+            {[["Facilities","2"],["Shift groups","6"],["Baseline","119.4 u/hr"],["Priority review","A / Night −25.8"]].map(([l,v]) => (
+              <div key={l} className="rounded-lg border border-line bg-surface px-3 py-2"><div className="eyebrow !text-[9px]">{l}</div><div className="font-display text-sm font-bold text-mist">{v}</div></div>
+            ))}
+          </div>
           <div className="pointer-events-auto flex w-fit items-center gap-4 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-moss">
             {(['Optimal', 'Warning', 'Critical'] as const).map(s => (
               <span key={s} className="flex items-center gap-1.5">
@@ -10302,6 +10599,191 @@ export default function ShiftProductivityDashboard() {
 }
 </file>
 
+<file path="frontend/next-env.d.ts">
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+import "./.next/types/routes.d.ts";
+import "./.next/types/root-params.d.ts";
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+</file>
+
+<file path="backend/api/assistant.py">
+import os
+import uuid
+import json
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+try:
+    from google import genai
+except ImportError:
+    genai = None
+
+from assistant.core.scope_guard import evaluate_scope
+from assistant.core.intent_classifier import classify_intent
+from assistant.core.output_validator import validate_numeric_fidelity
+from assistant.core.query_router import get_priority_items
+from assistant.queries.result_queries import get_result_explanation, get_limitations, get_methodology
+from assistant.queries.summary_queries import get_data_freshness
+
+router = APIRouter()
+
+class QueryRequest(BaseModel):
+    question: str
+
+@router.post("/query")
+async def query_assistant(req: QueryRequest):
+    try:
+        question = req.question
+
+        # 1. Scope Check
+        scope = evaluate_scope(question)
+        if scope == "UNSAFE":
+            intent_str, status, answer, result = "unsafe", "unsafe", "Request blocked by security policy.", {}
+        elif scope == "OUT_OF_SCOPE":
+            intent_str, status, answer, result = "unsupported", "unsupported", "I can only answer questions about current Shift Productivity rankings.", {}
+        else:
+            # 2. Intent Classification — returns {"intent": str, "parameters": dict}
+            intent_result = classify_intent(question)
+            # Always extract the string; guard against legacy string returns too
+            if isinstance(intent_result, dict):
+                intent_str = intent_result.get("intent", "OUT_OF_SCOPE")
+                intent_params = intent_result.get("parameters", {})
+            else:
+                intent_str = str(intent_result)
+                intent_params = {}
+
+            status = "answered"
+            result = {}
+
+            if intent_str == "AMBIGUOUS":
+                status, answer, result = "unsupported", "Could you clarify which specific facility and team you want to review?", {"limitation": "Assistant requires specific entity names."}
+            elif intent_str == "OUT_OF_SCOPE":
+                status, answer, result = "unsupported", "I can only answer questions about current Shift Productivity rankings.", {}
+            elif intent_str == "explain_method":
+                result = get_methodology()
+            elif intent_str == "explain_limitation":
+                result = get_limitations()
+            elif intent_str == "get_data_freshness":
+                result = get_data_freshness()
+            elif intent_str == "explain_result":
+                # Prefer entity from parameters; fall back to question text scan
+                entity = intent_params.get("entity_id") or "facility_a_night_watch"
+                result = get_result_explanation(entity)
+            else:
+                # Default: list_priority_items
+                result = get_priority_items()
+
+            if result.get("status") == "unavailable":
+                status, answer = "unavailable", result.get("limitation", "No matching data available.")
+            else:
+                answer = "Request processed deterministically based on approved data outputs."
+
+        # 3. LLM / Fallback Logic
+        llm_status = "unavailable (Missing Config)"
+        llm_explanation = None
+        api_key = os.environ.get("GEMINI_API_KEY")
+
+        if api_key and genai and status == "answered":
+            try:
+                client = genai.Client(api_key=api_key)
+                response = client.models.generate_content(
+                    model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash-lite"),
+                    contents=f"Explain this data naturally: {result.get('answer_data')} Evidence: {result.get('evidence')}"
+                )
+                if validate_numeric_fidelity(response.text, result):
+                    llm_status = "success"
+                    llm_explanation = response.text
+                else:
+                    llm_status = "rejected_by_validator (Hallucination Detected)"
+            except Exception as llm_err:
+                llm_status = f"unavailable ({type(llm_err).__name__})"
+
+        # Ensure evidence is always a list to prevent React crashes
+        ev_list = result.get("evidence")
+        if not isinstance(ev_list, list):
+            ev_list = []
+
+        # Build a human-readable deterministic_finding from result data
+        answer_data = result.get("answer_data", {})
+        if answer_data and isinstance(answer_data, dict):
+            items = answer_data.get("items", [])
+            if items and isinstance(items, list):
+                # Priority items: build a readable summary
+                lines = []
+                for item in items[:3]:
+                    if isinstance(item, dict):
+                        entity = item.get("entity_id", "").replace("_", " ")
+                        rank = item.get("priority_rank", "")
+                        val = item.get("result_value", "")
+                        cat = item.get("result_category", "")
+                        finding = item.get("finding", "")
+                        if finding:
+                            lines.append(f"#{rank} {entity}: {finding}")
+                        else:
+                            lines.append(f"#{rank} {entity} — gap {val} ({cat})")
+                deterministic_finding = "\n".join(lines) if lines else answer
+            else:
+                # Methodology / limitations / freshness: build from key fields
+                parts = []
+                for k, v in answer_data.items():
+                    if isinstance(v, str) and v:
+                        parts.append(v)
+                    elif isinstance(v, list):
+                        parts.extend([str(i) for i in v[:5] if isinstance(i, str)])
+                deterministic_finding = " ".join(parts) if parts else answer
+        else:
+            deterministic_finding = answer
+
+        return {
+            "answer_id": f"ANS-{uuid.uuid4().hex[:8]}",
+            "status": status,
+            "intent": intent_str,          # always a plain string now
+            "llm_status": llm_status,
+            "answer": answer,
+            "deterministic_finding": deterministic_finding,
+            "llm_explanation": llm_explanation,
+            "evidence": ev_list,
+            "evidence_references": ev_list,
+            "key_values": {},
+            "metadata": result.get("metadata") or {
+                "data_version": "1.0.0",
+                "method_version": "1.0.0",
+                "quality_status": "validated"
+            },
+            "limitation": result.get("limitation") or "Synthetic data only. Not for real staffing decisions.",
+            "suggested_follow_ups": [
+                "Which group ranks highest?",
+                "Which groups are below baseline?",
+                "What are the limitations of this data?",
+                "When was this data generated?"
+            ]
+        }
+
+    except Exception as e:
+        return {
+            "answer_id": f"ANS-{uuid.uuid4().hex[:8]}",
+            "status": "error",
+            "intent": "error",
+            "llm_status": "error",
+            "answer": f"Backend Error: {str(e)}",
+            "deterministic_finding": "",
+            "llm_explanation": None,
+            "evidence": [],
+            "evidence_references": [],
+            "key_values": {},
+            "metadata": {
+                "data_version": "1.0.0",
+                "method_version": "1.0.0",
+                "quality_status": "rejected"
+            },
+            "limitation": "Error processing request.",
+            "suggested_follow_ups": []
+        }
+</file>
+
 <file path="frontend/components/data-assistant/AssistantStatus.tsx">
 'use client';
 import React from 'react';
@@ -10389,64 +10871,38 @@ export function AssistantStatus({
 import re
 import json
 
+NUM = re.compile(r'\b\d+(?:\.\d+)?\b')
 
-def validate_numeric_fidelity(text: str, result_data: dict) -> bool:
-    """
-    Validates that all numbers in LLM-generated text exist within the evidence.
-    Satisfies Phase 3 Finding B1.
-    result_data shape: the full query result dict (has 'answer_data', 'evidence', etc.)
-    """
+
+def _allowed_numbers(package: dict) -> set:
+    """Numbers permitted in an LLM answer: only those present in the approved
+    evidence package (values, ranks, versions). No hard-coded allowances."""
+    allowed = set(NUM.findall(json.dumps(package)))
+    # normalise 40 vs 40.0 so formatting differences are not rejected
+    for n in list(allowed):
+        f = float(n)
+        allowed.add(str(f))
+        if f == int(f):
+            allowed.add(str(int(f)))
+    return allowed
+
+
+def _check(text: str, package: dict) -> bool:
     if not text:
         return False
-
-    llm_numbers = set(re.findall(r'\b\d+(?:\.\d+)?\b', text))
-
-    # Extract all allowed numbers from the deterministic payload
-    result_str = json.dumps(result_data)
-    allowed_numbers = set(re.findall(r'\b\d+(?:\.\d+)?\b', result_str))
-
-    # B1 Exception: allow ordinal ranks explicitly
-    items = result_data.get("answer_data", {}).get("items", [])
-    if isinstance(items, list):
-        for item in items:
-            if isinstance(item, dict) and "priority_rank" in item:
-                allowed_numbers.add(str(item["priority_rank"]))
-
-    # Allow standard dataset context numbers
-    allowed_numbers.update(["2026", "10", "24", "30", "28", "7", "1"])
-
-    hallucinated = llm_numbers - allowed_numbers
-    if hallucinated:
-        print(f"\n--- B1 HALLUCINATION BLOCKED! Unauthorized numbers: {hallucinated} ---\n")
+    bad = set(NUM.findall(text)) - _allowed_numbers(package)
+    if bad:
+        print(f"[validator] rejected, numbers not in evidence: {sorted(bad)}")
         return False
-
     return True
+
+
+def validate_numeric_fidelity(text: str, result_data: dict) -> bool:
+    return _check(text, result_data)
 
 
 def validate_grounded_response(text: str, evidence_package: dict) -> bool:
-    """
-    Public alias used by tests and grounding harness.
-    Accepts either:
-      - an evidence_package with an 'evidence' key  (test shape)
-      - a full result_data dict with 'answer_data'  (backend shape)
-    Both are handled by normalising into the validate_numeric_fidelity format.
-    """
-    if not text:
-        return False
-
-    # Build allowed numbers from every numeric value in the package
-    package_str = json.dumps(evidence_package)
-    allowed_numbers = set(re.findall(r'\b\d+(?:\.\d+)?\b', package_str))
-    allowed_numbers.update(["2026", "10", "24", "30", "28", "7", "1"])
-
-    llm_numbers = set(re.findall(r'\b\d+(?:\.\d+)?\b', text))
-    hallucinated = llm_numbers - allowed_numbers
-
-    if hallucinated:
-        print(f"\n--- GROUNDING CHECK FAILED: unauthorized numbers {hallucinated} ---\n")
-        return False
-
-    return True
+    return _check(text, evidence_package)
 </file>
 
 <file path="frontend/components/data-assistant/AssistantPanel.tsx">
@@ -10472,9 +10928,10 @@ interface AssistantState {
 
 interface AssistantPanelProps {
   onClose: () => void;
+  initialQuestion?: string;
 }
 
-export function AssistantPanel({ onClose }: AssistantPanelProps) {
+export function AssistantPanel({ onClose, initialQuestion }: AssistantPanelProps) {
   const [status, setStatus] = useState<AssistantState>({
     response: null,
     isLoading: false,
@@ -10529,6 +10986,11 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
       });
     }
   };
+
+  useEffect(() => {
+    if (initialQuestion) handleAsk(initialQuestion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuestion]);
 
   const showInitialPrompt = !status.response && !status.isLoading;
 
