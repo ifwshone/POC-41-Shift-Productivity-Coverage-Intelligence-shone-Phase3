@@ -58,9 +58,7 @@ async def query_assistant(req: QueryRequest):
                 result = get_data_freshness()
             elif intent_str == "explain_result":
                 # Prefer entity from parameters; fall back to question text scan
-                entity = intent_params.get("entity_id", "facility_a_night_watch")
-                if not entity or "facility_b" in question.lower():
-                    entity = "facility_b_night_watch"
+                entity = intent_params.get("entity_id") or "facility_a_night_watch"
                 result = get_result_explanation(entity)
             else:
                 # Default: list_priority_items

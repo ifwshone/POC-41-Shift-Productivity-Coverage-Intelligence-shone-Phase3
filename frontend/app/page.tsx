@@ -26,8 +26,8 @@ const LOCATIONS: Loc[] = ['Facility A', 'Facility B'];
 const TEAMS: Team[] = ['Morning Crew', 'Evening Crew', 'Night Watch'];
 const TIME_OPTIONS = [
   { value: 'Last 7 Days', label: 'Last 7 Days' },
-  { value: 'Last 30 Days', label: 'Last 30 Days' },
-  { value: 'YTD', label: 'Year to Date' },
+  { value: 'Last 30 Days', label: 'Last 30 Days (simulated)' },
+  { value: 'YTD', label: 'Year to Date (simulated)' },
 ];
 
 const STATUS_COLOR: Record<string, string> = {
@@ -329,7 +329,7 @@ export default function ShiftProductivityDashboard() {
                 </h1>
                 <p className="mt-0.5 flex items-center gap-2 text-[11px] font-medium text-moss sm:text-sm">
                   <span className="blink inline-block h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_8px_#b8f23f]"></span>
-                  Real-Time Operational Intelligence
+                  Synthetic Operations Demonstration
                 </p>
                 <p className="mt-0.5 flex items-center gap-2 text-[11px] font-medium text-moss sm:text-sm">
                   <span className="blink inline-block h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_8px_#b8f23f]"></span>
@@ -357,14 +357,19 @@ export default function ShiftProductivityDashboard() {
           </header>
 
           <div className="pointer-events-auto flex max-w-2xl items-center gap-3 rounded-xl border border-line bg-surface p-2.5 shadow-lg">
-            <span className="shrink-0 rounded bg-sky/10 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-sky">Live Exceptions</span>
+            <span className="shrink-0 rounded bg-sky/10 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-sky">Demonstration Insight</span>
             <p className="line-clamp-2 flex-1 text-xs text-mist/80 sm:truncate">
-              {activeData.status === 'Critical' ? <span className="mr-2 font-bold text-crit">CRITICAL ALERT:</span> : null}
-              {activeData.status === 'Warning' ? <span className="mr-2 font-bold text-warn">SYSTEM WARNING:</span> : null}
+              {activeData.status === 'Critical' ? <span className="mr-2 font-bold text-crit">OBSERVED CRITICAL:</span> : null}
+              {activeData.status === 'Warning' ? <span className="mr-2 font-bold text-warn">OBSERVED WARNING:</span> : null}
               {activeData.issue}
             </p>
           </div>
 
+          <div className="pointer-events-auto grid max-w-2xl grid-cols-2 gap-2 sm:grid-cols-4">
+            {[["Facilities","2"],["Shift groups","6"],["Baseline","119.4 u/hr"],["Priority review","A / Night −25.8"]].map(([l,v]) => (
+              <div key={l} className="rounded-lg border border-line bg-surface px-3 py-2"><div className="eyebrow !text-[9px]">{l}</div><div className="font-display text-sm font-bold text-mist">{v}</div></div>
+            ))}
+          </div>
           <div className="pointer-events-auto flex w-fit items-center gap-4 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-moss">
             {(['Optimal', 'Warning', 'Critical'] as const).map(s => (
               <span key={s} className="flex items-center gap-1.5">

@@ -17,6 +17,15 @@ def main():
         else:
             print(f"Warning: {filename} not found in outputs.")
 
+def copy_canonical():
+    root = Path(__file__).resolve().parents[1]
+    dest = root / 'frontend' / 'public' / 'data' / 'intelligence'
+    dest.mkdir(parents=True, exist_ok=True)
+    shutil.copy(root / 'data' / 'published' / 'intelligence_data.json', dest / 'canonical_observations.json')
+    print('Copied canonical observations.')
+
+
 if __name__ == "__main__":
     main()
+    copy_canonical()
     

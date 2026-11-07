@@ -20,9 +20,10 @@ interface AssistantState {
 
 interface AssistantPanelProps {
   onClose: () => void;
+  initialQuestion?: string;
 }
 
-export function AssistantPanel({ onClose }: AssistantPanelProps) {
+export function AssistantPanel({ onClose, initialQuestion }: AssistantPanelProps) {
   const [status, setStatus] = useState<AssistantState>({
     response: null,
     isLoading: false,
@@ -77,6 +78,11 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
       });
     }
   };
+
+  useEffect(() => {
+    if (initialQuestion) handleAsk(initialQuestion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuestion]);
 
   const showInitialPrompt = !status.response && !status.isLoading;
 
