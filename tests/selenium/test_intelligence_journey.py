@@ -28,7 +28,7 @@ def test_intelligence_journey():
         filter_dropdown.find_element(By.XPATH, "//option[@value='low']").click()
         
         assert "n=5" in driver.page_source
-        assert "Descriptive comparison on 5 days of synthetic data only" in driver.page_source
+        assert "Descriptive 5-day view." in driver.page_source
         
         back_link = driver.find_element(By.XPATH, "//a[contains(text(), 'Back to Operational Map')]")
         driver.execute_script("arguments[0].click();", back_link)

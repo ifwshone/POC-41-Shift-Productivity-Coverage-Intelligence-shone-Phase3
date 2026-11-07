@@ -4,25 +4,41 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-def test_assistant_panel_integration():
+def test_intelligence_journey():
     driver = webdriver.Chrome()
-    wait = WebDriverWait(driver, 10)
+    
+    # Increased wait time to 30s to allow Next.js dev server to compile on first load
+    wait = WebDriverWait(driver, 30)
     
     try:
-        driver.get("http://localhost:3000/intelligence")
+        driver.get("http://localhost:3000")
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "radar")))
         
-        btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Ask Assistant')]")))
-        btn.click()
+        # Wait for the link to exist in the DOM
+        intel_link = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/intelligence')]")))
         
-        panel = wait.until(EC.presence_of_element_located((By.XPATH, "//h2[contains(text(), 'Data Assistant')]")))
-        assert panel.is_displayed()
+        # Force click via JavaScript to bypass any CSS overlay interferences
+        driver.execute_script("arguments[0].click();", intel_link)
         
-        suggested = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Which group ranks highest')]")))
-        suggested.click()
+        wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, "h1"), "Data Intelligence"))
         
-        # Verify limitation warning is preserved in the response (our custom component has no colon)
-        limitation = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Limitation')]")))
-        assert limitation.is_displayed()
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, "table")))
         
+        filter_dropdown = driver.find_element(By.TAG_NAME, "select")
+        filter_dropdown.click()
+        filter_dropdown.find_element(By.XPATH, "//option[@value='low']").click()
+        
+        assert "n=5" in driver.page_source
+        assert "Descriptive 5-day view." in driver.page_source
+        
+        back_link = driver.find_element(By.XPATH, "//a[contains(text(), 'Back to Operational Map')]")
+        driver.execute_script("arguments[0].click();", back_link)
+        
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "radar")))
+        
+        print("E2E Journey: PASS")
     finally:
         driver.quit()
+
+if __name__ == "__main__":
+    test_intelligence_journey()

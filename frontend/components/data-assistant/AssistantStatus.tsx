@@ -1,16 +1,16 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import { AnswerCard } from './AnswerCard';
 import { UnsupportedQuestionState } from './UnsupportedQuestionState';
 
 export interface AssistantResponse {
   answer_id: string;
   status: string;
-  intent: string;
+  intent: string | { intent: string; parameters?: Record<string, unknown> };
   llm_status: string;
   answer: string;
   deterministic_finding?: string;
-  llm_explanation?: string;
+  llm_explanation?: string | null;
   evidence: any[];
   evidence_references: any[];
   limitation: string;
@@ -22,13 +22,29 @@ export interface AssistantResponse {
   };
 }
 
+/** Safely extract a plain string from intent, which may arrive as an object */
+export function resolveIntentString(
+  intent: AssistantResponse['intent']
+): string {
+  if (!intent) return '';
+  if (typeof intent === 'string') return intent;
+  if (typeof intent === 'object' && 'intent' in intent) {
+    return String(intent.intent);
+  }
+  return String(intent);
+}
+
 interface AssistantStatusProps {
   response: AssistantResponse | null;
   isLoading?: boolean;
   onFollowUpClick: (question: string) => void;
 }
 
-export function AssistantStatus({ response, isLoading, onFollowUpClick }: AssistantStatusProps) {
+export function AssistantStatus({
+  response,
+  isLoading,
+  onFollowUpClick,
+}: AssistantStatusProps) {
   if (isLoading) {
     return (
       <div className="p-4 rounded-lg bg-surface border border-line/50 animate-pulse">
@@ -40,10 +56,9 @@ export function AssistantStatus({ response, isLoading, onFollowUpClick }: Assist
     );
   }
 
-  if (!response) {
-    return null;
-  }
+  if (!response) return null;
 
+  const intentStr = resolveIntentString(response.intent);
   const isUnsupported = ['unsupported', 'unsafe'].includes(response.status);
 
   if (isUnsupported) {
@@ -58,7 +73,7 @@ export function AssistantStatus({ response, isLoading, onFollowUpClick }: Assist
 
   return (
     <AnswerCard
-      response={response}
+      response={{ ...response, intent: intentStr }}
       onSuggestClick={onFollowUpClick}
     />
   );

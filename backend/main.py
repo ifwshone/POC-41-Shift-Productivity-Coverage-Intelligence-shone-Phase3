@@ -1,44 +1,42 @@
 import os
-import json
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
-import numpy as np
-from dotenv import load_dotenv
-from backend.api.assistant import router as assistant_router
-
 import sys
+import json
 
-# Dynamically add parent directory and current directory to sys.path
+# 1. Inject Python path BEFORE local imports
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 for path in [CURRENT_DIR, PARENT_DIR]:
     if path not in sys.path:
         sys.path.insert(0, path)
 
-# Fallback-safe import
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+import pandas as pd
+import numpy as np
+from dotenv import load_dotenv
+
+# 2. Safely import the assistant router
 try:
     from backend.api.assistant import router as assistant_router
 except ModuleNotFoundError:
     from api.assistant import router as assistant_router
-# Security Guardrail: Never hardcode credentials
+
 load_dotenv()
 
 app = FastAPI(title="Shift Productivity & Coverage Intelligence API")
 
+# 3. Valid, permissive CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False, # Must be False when origins is "*"
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Mount the Grounded Data Assistant Router
 app.include_router(assistant_router, prefix="/api/assistant", tags=["assistant"])
 
 def generate_synthetic_shift_data():
-    # Fallback to mock data if synthetic generation fails
     try:
         np.random.seed(42)
         dates = pd.date_range(start="2026-10-24", periods=7, freq="D")
@@ -63,7 +61,6 @@ def generate_synthetic_shift_data():
 @app.get("/api/v1/intelligence/coverage")
 async def get_coverage_intelligence():
     data = generate_synthetic_shift_data()
-    # Transform raw data into insights
     df = pd.DataFrame(data)
     avg_output = df["output_per_hour"].mean()
     

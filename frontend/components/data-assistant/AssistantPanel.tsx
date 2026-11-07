@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AssistantStatus, AssistantResponse } from './AssistantStatus';
 import { QuestionInput } from './QuestionInput';
 import { SuggestedQuestions } from './SuggestedQuestions';
@@ -28,7 +28,7 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
     isLoading: false,
   });
 
-  // Trap focus inside the panel for accessibility
+  // Close on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -56,7 +56,6 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
 
       const data: AssistantResponse = await res.json();
       setStatus({ response: data, isLoading: false });
-
     } catch (error: any) {
       console.error('[AssistantPanel] fetch error:', error);
       setStatus({
@@ -65,10 +64,12 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
           status: 'error',
           intent: 'error',
           llm_status: 'error',
-          answer: 'Could not reach the assistant backend. The deterministic data on this page remains accurate.',
+          answer:
+            'Could not reach the assistant backend. The deterministic data on this page remains accurate.',
           evidence: [],
           evidence_references: [],
-          limitation: 'Unable to reach assistant API. Check NEXT_PUBLIC_API_URL and backend health.',
+          limitation:
+            'Unable to reach assistant API. Check NEXT_PUBLIC_API_URL and backend health.',
           suggested_follow_ups: INITIAL_QUESTIONS,
           metadata: { data_version: '1.0.0', method_version: '1.0.0' },
         },
@@ -80,14 +81,13 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
   const showInitialPrompt = !status.response && !status.isLoading;
 
   return (
-    // Overlay backdrop
     <div
       className="fixed inset-0 z-50 flex justify-end"
       role="dialog"
       aria-modal="true"
       aria-label="Data Assistant"
     >
-      {/* Dimmed backdrop — click to close */}
+      {/* Dimmed backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
@@ -100,8 +100,12 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-line/50 shrink-0">
           <div>
-            <h2 className="text-base font-bold text-white tracking-wide">Data Assistant</h2>
-            <p className="text-[10px] text-moss font-mono mt-0.5">Mode B — Deterministic + LLM</p>
+            <h2 className="text-base font-bold text-white tracking-wide">
+              Data Assistant
+            </h2>
+            <p className="text-[10px] text-moss font-mono mt-0.5">
+              Mode B — Deterministic + LLM
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -112,24 +116,25 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
           </button>
         </div>
 
-        {/* Scrollable content area */}
+        {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 custom-scrollbar">
-
-          {/* Initial state: show suggested questions before any query */}
           {showInitialPrompt && (
             <div className="mb-4">
               <p className="text-xs text-moss mb-3 leading-relaxed">
-                Ask a question about the current Shift Productivity comparative rankings, or choose one below.
-                Only supported questions are answered — the assistant will refuse out-of-scope requests.
+                Ask a question about the current Shift Productivity comparative
+                rankings, or choose one below. Only supported questions are
+                answered — the assistant will refuse out-of-scope requests.
               </p>
-              <div className="mb-1">
-                <span className="text-[10px] uppercase tracking-wider text-moss font-mono">Suggested questions</span>
-              </div>
-              <SuggestedQuestions questions={INITIAL_QUESTIONS} onClick={handleAsk} />
+              <span className="text-[10px] uppercase tracking-wider text-moss font-mono">
+                Suggested questions
+              </span>
+              <SuggestedQuestions
+                questions={INITIAL_QUESTIONS}
+                onClick={handleAsk}
+              />
             </div>
           )}
 
-          {/* Response area */}
           <AssistantStatus
             response={status.response}
             isLoading={status.isLoading}
@@ -137,7 +142,7 @@ export function AssistantPanel({ onClose }: AssistantPanelProps) {
           />
         </div>
 
-        {/* Input bar — always pinned at bottom */}
+        {/* Pinned input bar */}
         <div className="shrink-0 px-4 py-3 border-t border-line/50">
           <QuestionInput onAsk={handleAsk} disabled={status.isLoading} />
           <p className="text-[10px] text-moss/60 mt-2 font-mono text-center">
